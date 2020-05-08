@@ -1,0 +1,16 @@
+<apex:page standardController="Opportunity_Partner__c">
+    
+    <apex:includeLightning />
+    <div id="lightning" ></div>  
+    <script>
+        
+        $Lightning.use("c:DeletePartnersCompApp", function() {
+            $Lightning.createComponent("c:DeletePartnersComp",
+                { "PartnerId" : '{!Opportunity_Partner__c.Id}'},
+                "lightning",function(cmp) {
+                
+                }
+            );
+        });
+    </script>
+</apex:page>

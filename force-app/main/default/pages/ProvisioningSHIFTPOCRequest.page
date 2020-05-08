@@ -1,0 +1,26 @@
+<apex:page controller="ProvisioningSHIFTPOCController" tabStyle="Provisioning_Request__c" action="{!initProvisionRequest}">
+    <apex:sectionHeader title="Create Shift Instance"/>
+    <apex:form id="form">
+      <apex:actionFunction name="createCompany" action="{!createCompany}" status="status" />
+      <apex:actionFunction name="createUser" action="{!createUser}" status="status" />
+      <apex:actionFunction name="sendUserEmailNotification" action="{!sendUserEmailNotification}" status="status" />
+      <apex:actionFunction name="goback" action="{!goback}" status="status" />
+      <apex:pageMessages escape="false" />
+      <apex:actionStatus startText="Sending request..." id="status"/>
+      <apex:commandLink action="{!goback}" value="Back"/>
+    </apex:form>
+    <script>
+        if({!step} == 1) {
+            createCompany();
+        }
+        else if({!step} == 2) {
+            createUser();
+        }
+        else if({!step} == 3) {
+            sendUserEmailNotification();
+        }
+        else if({!step} == 4) {
+            setTimeout("goback()", 3000);
+        }
+    </script>
+</apex:page>

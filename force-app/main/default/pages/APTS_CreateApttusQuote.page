@@ -1,0 +1,309 @@
+<apex:page controller="APTS_CreateApttusQuoteController" sidebar="false" showHeader="false">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.nicescroll/3.6.0/jquery.nicescroll.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.11/angular.min.js" type="text/javascript"></script>
+<script src="https://npmcdn.com/tether@1.2.4/dist/js/tether.min.js"></script>
+<script src="https://npmcdn.com/bootstrap@4.0.0-alpha.5/dist/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.5/js/bootstrap.min.js" type="text/javascript">
+</script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.5/css/bootstrap.css" />
+        <script>
+             var executionrunning = false;  
+             window.onbeforeunload = function (e) {
+                    e = e || window.event;
+                   
+                    // For IE and Firefox prior to version 4
+                    if (e && executionrunning == true) {
+                      
+                        e.returnValue = 'Are you sure want to leave?';
+                        return 'Are you sure want to leave?';
+                    }
+                
+                    // For Safari
+                    
+            };                                         
+               
+               
+                var createProposalApp= angular.module('createProposalApp', []);
+                createProposalApp.controller('createProposalController' ,['$scope',function($scope,$filter){
+                    $scope.quoteIdArraystring  = '{!quoteIdArraystring}';
+                    $scope.quoteIdArray = JSON.parse("[" + $scope.quoteIdArraystring + "]")[0];
+                    $scope.maxCount = $scope.quoteIdArray.length;
+                    
+                    $scope.count = 0;
+                    $scope.message = 'Creating Proposal ('+$scope.count+'/'+$scope.maxCount+')';
+                    $scope.showLoadingImage = function() {
+                            $('.cstm-loading-img-submit').show();
+                            $('.messageBlock').show();
+                            $('.agreement-create').show();
+                            $('.overlay').show();
+                    }
+                    
+                    
+
+                    
+                    //console.log('222222=='+$scope.maxCount);
+                    
+                   // $scope.showLoadingImage();
+                    
+                    
+                    $scope.deleteOldProposal = function () {
+                         executionrunning  = true;
+                         $scope.message = 'Creating Proposal ('+$scope.count+'/'+$scope.maxCount+')';
+                         $scope.showLoadingImage();
+                        var sbQuoteId = $scope.quoteIdArray[$scope.count];
+                        Visualforce.remoting.Manager.invokeAction(
+                            '{!$RemoteAction.APTS_CreateApttusQuoteController.deleteOldProposal }',sbQuoteId,function(result, event) {
+                               $scope.createproposal();
+                            },{escape:false});
+                    }
+                    
+                    $scope.createproposal = function () {
+                         $scope.message = 'Creating Proposal ('+$scope.count+'/'+$scope.maxCount+')';
+                         $scope.showLoadingImage();
+                         var sbQuoteId = $scope.quoteIdArray[$scope.count];
+                         //console.log($scope.quoteIdArray);
+                         //console.log($scope.quoteIdArray[1]);
+                         //console.log($scope.quoteIdArray[2]);
+                         console.log(sbQuoteId);
+                         Visualforce.remoting.Manager.invokeAction(
+                            '{!$RemoteAction.APTS_CreateApttusQuoteController.createproposal}',sbQuoteId,
+                             function(result, event) {
+                               $scope.CreateCartForProposal(sbQuoteId,result);
+                            },{escape:false});
+                         
+                    }
+                    
+                    $scope.CreateCartForProposal = function (sbQuoteId,proposalId) {
+                        Visualforce.remoting.Manager.invokeAction(
+                            '{!$RemoteAction.APTS_CreateApttusQuoteController.CreateCartForProposal}',proposalId,
+                            function(result, event) {
+                                $scope.message =  'Adding Line Items';
+                                $scope.$apply();
+                                
+                               $scope.CreateCartlineItem(result,sbQuoteId,proposalId);
+                            },{escape:false}); 
+                        
+                    }
+                    
+                    $scope.CreateCartlineItem = function(cartId,sbQuoteId,proposalId) {
+        
+                        Visualforce.remoting.Manager.invokeAction(
+                            '{!$RemoteAction.APTS_CreateApttusQuoteController.CreateCartlineItem }',cartId, sbQuoteId,
+                            function(result, event) {
+                                $scope.message =  'Repricing Cart';
+                                $scope.$apply();              
+                                if(result > 0) {
+                                    $scope.updatelineitem(cartId,sbQuoteId,proposalId,result);
+                                } else {
+                                  $scope.count++;
+                                  if($scope.count<$scope.maxCount) {
+                                        $scope.deleteOldProposal();
+                                        $scope.message =  'Creating Proposal ('+$scope.count+'/'+$scope.maxCount+')';
+                                        $scope.$apply();
+                                  } else {
+                                        executionrunning = false;
+                                        var url = '/';
+                                        window.location = url;
+                                  }
+                                }
+                            },{escape:false}); 
+                        
+                    }
+                    
+                    
+                   $scope.updatelineitem = function(cartId,sbQuoteId,proposalId,count) {
+        
+                        Visualforce.remoting.Manager.invokeAction(
+                            '{!$RemoteAction.APTS_CreateApttusQuoteController.updatelineitem }',cartId, sbQuoteId,count,
+                            function(result, event) {
+                                if(result) {
+                                    console.log('in if');
+                                   $scope.repriceCart(cartId,sbQuoteId,proposalId,count); 
+                                }   else {
+                                    console.log('in else');
+                                    $scope.updatelineitem(cartId,sbQuoteId,proposalId,count);
+                                }        
+                       
+                                
+                            },{escape:false}); 
+                        
+                    }
+                    
+                    
+                    
+                    $scope.repriceCart = function (cartId,sbQuoteId,proposalId,count) {
+                        Visualforce.remoting.Manager.invokeAction(
+                            '{!$RemoteAction.APTS_CreateApttusQuoteController.repriceCart}',cartId,
+                            function(result, event) {
+                                    if(result) { 
+                                        $scope.repriceCart(cartId,sbQuoteId,proposalId);
+                                    } else {
+                                        //alert(2);
+
+                                        $scope.updateTermOnlineitem (cartId,sbQuoteId,proposalId,count);
+                                    }
+                                   
+                            },{escape:false}); 
+                        
+                    }
+                    
+                    
+                  $scope.updateTermOnlineitem = function(cartId,sbQuoteId,proposalId,count) {
+        
+                        Visualforce.remoting.Manager.invokeAction(
+                            '{!$RemoteAction.APTS_CreateApttusQuoteController.updateTermOnlineitem}',cartId, sbQuoteId, 
+                            function(result, event) {
+                                
+                                   $scope.repriceCartAfterTermUpdate(cartId,sbQuoteId,proposalId); 
+                              
+                            },{escape:false}); 
+                        
+                    } 
+                    
+                   $scope.repriceCartAfterTermUpdate = function (cartId,sbQuoteId,proposalId) {
+                        Visualforce.remoting.Manager.invokeAction(
+                            '{!$RemoteAction.APTS_CreateApttusQuoteController.repriceCart}',cartId,
+                            function(result, event) {
+                                    if(result) { 
+                                        $scope.repriceCartAfterTermUpdate (cartId,sbQuoteId,proposalId);
+                                    } else {
+                                        //alert(2);
+                                        $scope.message =  'Finalizing Proposal';
+                                        $scope.$apply();
+                                        $scope.finalizeCart(cartId,sbQuoteId,proposalId);
+                                    }
+                                   
+                            },{escape:false}); 
+                        
+                    }
+                    
+                    
+                    
+                    $scope.finalizeCart = function (cartId,sbQuoteId,proposalId) {
+        
+                        Visualforce.remoting.Manager.invokeAction(
+                            '{!$RemoteAction.APTS_CreateApttusQuoteController.finalizeCart}',cartId,
+                            function(result, event) {
+                                  $scope.count++;
+                                  if($scope.count<$scope.maxCount) {
+                                        $scope.deleteOldProposal();
+                                        $scope.message =  'Creating Proposal ('+$scope.count+'/'+$scope.maxCount+')';
+                                        $scope.$apply();
+                                  } else {
+                                        executionrunning = false;
+                                        var url = '/';
+                                        window.location = url;
+                                  }
+
+                            },{escape:false}); 
+                        
+                    }  
+                   // $scope.createproposal ();
+                }]);
+                
+                
+        </script>        
+<script>
+    $( document ).ready(function() {
+          $("#myModal").modal();
+        //var sbQuoteId = '{!QuoteId }';
+        //showLoadingImage();
+       // createproposal(sbQuoteId);
+    });
+    
+    function showLoadingImage(){
+           $('.cstm-loading-img-submit').show();
+            $('.messageBlock').show();
+            $('.agreement-create').show();
+            $('.overlay').show();
+        
+    }
+    
+    function hideLoadingImage(){
+        document.getElementById('LoadingImg').style.display = 'none';
+    }
+    
+
+        
+</script>
+<style>
+    .loading-container{
+        padding-top: 20%;
+        position: fixed;
+        left: 0px;
+        top:0px;
+        z-index: 999999999;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255,255,255,0.75);
+     
+    }
+     .overlay {
+            background-color: white;
+            z-index: 999;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+       .messageBlock{
+            background-color: white;
+            position: absolute;
+            top: 40%;
+            left: 43%;
+            z-index: 99;
+            width: 300px;
+            height: 150px;
+            text-align: center;
+        } 
+        .cstm-loading-img-submit {
+              display: none;
+              background-image: url({!$Resource.loadingimg});
+              width: 51px;  /* the exact width of the image */
+              height: 57px;  /* the exact height of the image */
+              position: absolute;
+              top: 25px;
+              margin-left: 40%;
+              z-index: 99;
+        }
+   
+</style>
+<body   ng-app="createProposalApp" ng-controller="createProposalController" ng-cloak='True' id="mainbody">
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        
+      </div>
+      <div class="modal-body">
+         You are Creating {{maxCount}} Steelbrick Quote to Apttus Quote. Are you sure want to create it?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" onclick="window.location='/'" data-dismiss="modal" style="background: #025aa5;color: white;" >No</button>
+        <button type="button" class="btn btn-primary" style="background: #025aa5;color: white;" onclick="$('#myModal').modal('hide');angular.element(document.getElementById('mainbody')).scope().deleteOldProposal();">Yes</button>
+      </div>
+    </div> 
+  </div>
+</div>
+
+
+<div id="LoadingImg" class="loading-container" style="display:none;">
+            <img src="{!$Resource.loadingimg}" style="margin-left: 50%;"/><br />
+        </div>
+  <div class="overlay">
+            <div class="messageBlock">
+                <div class="cstm-loading-img-submit"></div>
+                <div class="agreement-create" style="margin-top: 35%;">{{message}}</div>
+            </div>
+        </div> 
+        
+       
+             
+</body>
+</apex:page>

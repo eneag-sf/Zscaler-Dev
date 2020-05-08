@@ -1,0 +1,15 @@
+<apex:page showHeader="true" sidebar="false" >
+    <apex:includeLightning />
+    <div id="AccountInsalesforceID" />
+    <script>
+        $Lightning.use("c:AccountInSalesforceApp", function() {
+            $Lightning.createComponent("c:AccountInSalesforce",
+            { 
+            },
+            "AccountInsalesforceID",
+            function(cmp) {
+                console.log('Component created, do something cool here');
+            });
+        });
+    </script>
+</apex:page>

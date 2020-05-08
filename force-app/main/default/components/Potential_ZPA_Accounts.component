@@ -1,0 +1,50 @@
+<apex:component access="global" controller="Potential_ZPA_Accounts_Ctrl">
+    <apex:attribute name="userId1" description="This field is used to display list of Proposal products" 
+                     type="String" assignTo="{!userId}" />
+    <style>
+        
+    </style>
+        <div>
+            <div>
+                <div style="width:69%;float:left;padding:1px;">
+                    <div style="background:#3A3937;color:white;padding: 5px;font-size: 16px;font-weight: bold;">Potential ZPA Opportunities</div>
+                    <br/>
+                    <div style="padding:5px;font-size: 15px;"><b>Dear {!us.Name},</b><br/><br/>
+                        Here are the list of Zscaler Customers in your territory that have currently deployed Zapp. The number of active devices we see at these accounts tell us that they may be ready for a ZPA conversation.<br/><br/>
+                        If you have not already done so, we encourage you to reach out to the Zscaler Champion in following accounts.<br/><br/>
+                    </div>
+                    
+                    <table border="1" style="border:0px;border-collapse: collapse; width: 100%">
+                        <tr style="font-weight:bold; text-align: center; color:white; background-color: #4473C5;">
+                            <td>Customer Name</td>
+                            <td># ZIA Seats Purchased</td>                                                                        
+                            <td># Registered Devices</td>                                                                        
+                            <td>CSM Name</td>                                                                        
+                        </tr>
+                        <apex:repeat value="{!accwrp}" var="acc">
+                            
+                            <tr style="background-color: #CFD6E9;">
+                                <td style="padding:5px;"><apex:outputLink value="{!url+'/'+acc.acc.Id}" style="color: #0f4daf;text-decoration: none;">{!acc.acc.Name}</apex:outputLink></td>
+                                <td style="text-align: center;"><apex:outputField value="{!acc.acc.No_of_Platform_Seats__c}"/></td>
+                                <td style="text-align: center;"><apex:outputText value="{!acc.regDevice}"/></td>
+                                <td style="text-align: center;"><apex:outputField value="{!acc.acc.CSM_Name_New__r.Name}"/></td>
+                            </tr>
+                        </apex:repeat>
+                    </table><br/><br/>
+                    
+                </div>
+                <div style="width:30%;float:left;padding:1px;">
+                    <div style="background: #3A3937;color:white;text-align:center;padding: 5px;font-size: 16px;font-weight: bold;">Play Book</div>
+                    <div style="background:#012061;color:white;padding-top:2px;margin-top: 2px;padding:5px;font-size: 15px;">
+                        Step 1: Engage your CSM to understand the customer temperature.<br/><br/>
+                        Step 2: Read the customer success notes on the account.<br/><br/>
+                        Step 3: Request a meeting with the Zscaler champion at the customer. Use this <a href="https://apex.zscaler.com/node/9726" style="color:white;">template</a> to send an email to make the request.<br/><br/>
+                        Read more about ZPA <a href="https://apex.zscaler.com/zpa-vpn-alternative-upsell-program" style="color:white;">here.</a>
+                        
+                    </div>
+                                        
+                </div>
+            </div>
+        </div>
+
+</apex:component>

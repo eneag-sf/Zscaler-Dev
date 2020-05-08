@@ -1,0 +1,62 @@
+<apex:page controller="ApproveOrRejectQuoteController" sidebar="false" showHeader="false">
+ <!--<apex:stylesheet id="bootstrap" value="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />-->
+    <script>
+    function confirmAndClose() {
+        alert('Thank You, your response is captured.');
+        window.close();
+    }
+    </script>
+    <style type="text/css">
+    	
+        .pageModalBackdrop {
+            background-color: #FFF; 
+            position: absolute; 
+            left: 0px;
+            top: 0px; 
+            opacity: 0.5; 
+            height: 100%; 
+            width: 100%; 
+        }
+
+        .pageLoadingIcon {
+            background-image: url("/img/loading32.gif");
+            background-repeat: no-repeat;
+            background-size: 30px 30px;
+            height: 50px; 
+            width: 50px; 
+            position: absolute; 
+            top: 40%; 
+            left: 50%;
+            opacity: 1;
+            z-index: 9999;
+        }
+
+    </style>
+    <apex:form >
+   <!-- <div class="alert alert-info" role="alert"><b>Thank You, your response is captured.</b></div> -->
+        <apex:pageBlock >
+            <apex:pageBlockSection columns="2" id="appSec">
+                <apex:outputPanel >
+                    <apex:inputTextarea value="{!approvalComments}" title="Approval Comments" style="width: 100%;height: 57px;">
+                    </apex:inputTextarea>
+                </apex:outputPanel>
+                <apex:outputPanel >
+                    <br/>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <apex:commandButton title="Approve" value="Approve" action="{!approveQuote}" oncomplete="confirmAndClose();" status="pageLoadingModal"/>&nbsp;&nbsp;&nbsp;
+                    <apex:commandButton title="Reject" value="Reject" action="{!rejectQuote}" oncomplete="confirmAndClose();" status="pageLoadingModal"/>
+                </apex:outputPanel>
+            </apex:pageBlockSection>
+            <c:QuoteApprovalEmailComponent InputProposal="{!approverReq.Apttus_QPApprov__ProposalId__c}" InputInstanceURL="{!approverReq.APTS_Instance_URL__c}" InputApprovalRequest="{!approverReq.id}" InputApproverId="{!$User.Id}" InputIsAssignment="False" InputIsApproved="False" InputIsApproveOrReject="True"/>
+        </apex:pageBlock>
+
+        <!-- Loading Modal -->
+            <apex:actionStatus id="pageLoadingModal">
+                <apex:facet name="start"> -->
+                    <div class="pageModalBackdrop">
+                    </div>
+                    <div class="pageLoadingIcon">
+                    </div>
+                </apex:facet>
+            </apex:actionStatus> 
+    </apex:form> 
+</apex:page>

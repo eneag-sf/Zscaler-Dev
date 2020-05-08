@@ -1,0 +1,9 @@
+<apex:component controller="GetFeedItemsofCase" access="global">
+    <apex:attribute type="String" name="equipmentRequestId" assignTo="{!equipmentRequestRecordId}" description="Equipment Request Id"/>
+    <apex:attribute type="String" name="typeofTemplate1" assignTo="{!typeofTemplate}" description="Type of template"/>
+        <p>Dear {!ER.Contactid}</p>
+        <p>A new comment has been added by {!FeedItem.CreatedBy.FirstName} to your case regarding {!ER.Subject}.To reply to this comment,you can login to Customer Portal via Zscaler Admin Portal and adding comments or you can simply reply back to this email.</p>
+        <h4>Comments :-</h4>
+        <apex:outputText escape="false"  value="{!FeedItem.body}"/>
+        <p>Thanks</p>      
+</apex:component>

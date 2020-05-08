@@ -1,0 +1,16 @@
+<apex:page showHeader="true" sidebar="false" title="Vacation Coverage">
+    <title>Temporary Account Access</title>
+    <apex:includeLightning />
+    <div id="lightningDiv" />
+    <script>
+        $Lightning.use("c:TemporaryAccountAccessApp", function() {
+            $Lightning.createComponent("c:TemporaryAccountAccess",
+            { 
+            },
+            "lightningDiv",
+            function(cmp) {
+                console.log('Component created, do something cool here');
+            });
+        });
+    </script>
+</apex:page>

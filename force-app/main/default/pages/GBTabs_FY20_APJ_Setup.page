@@ -1,0 +1,46 @@
+<apex:page showHeader="false" sidebar="false" title="FY20 APJ Setup">
+	<GBLite:TabbedPageComponent pageAPIName="GBTabs_FY20_APJ_Setup" customJsIds="" customCssIds="">
+	<GBLite:EmbedComponent baseGridUrl="{!$Page.GBLite__Grid}" />
+		<script>
+			var pageDefinition = {
+	"name": "FY20 APJ Setup",
+	"tabs": [
+		{
+			"name": "Territory Grid",
+			"content": "{!gridPage}gname=FY20 Territory Planning APJ&amp;sh=0&amp;sfname=default",
+			"id": 1558703386332
+		},
+		{
+			"name": "North Asia Account Assignment",
+			"content": "{!gridPage}gname=FY20 Assignment -  North Asia&amp;sh=0&amp;sfname=default",
+			"id": 1558703457475
+		},
+		{
+			"name": "South Asia Account Assignment",
+			"content": "{!gridPage}gname=FY20 Assignment - South Asia&amp;sh=0&amp;sfname=default",
+			"id": 1558703523833
+		},
+		{
+			"name": "ANZ Account Assignment",
+			"content": "{!gridPage}gname=FY20 Assignment - ANZ&amp;sh=0&amp;sfname=default",
+			"id": 1558703548847
+		},
+		{
+			"name": "GCR Account Assignment",
+			"content": "{!gridPage}gname=FY20 Assignment - GCR&amp;sh=0&amp;sfname=default",
+			"id": 1558703590034
+		}
+	],
+	"id": 1558703386332,
+	"selectedCustomCSSIds": [],
+	"selectedCustomJSIds": [],
+	"description": "",
+	"globalButtons": true,
+	"object": "0",
+	"height": "800",
+	"showHeader": false,
+	"showSidebar": false
+};
+		</script>
+	</GBLite:TabbedPageComponent>
+</apex:page>

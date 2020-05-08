@@ -1,0 +1,122 @@
+<template>
+    <div class="datagrid">
+        <header class={customScrollClass} style="min-height: 2rem;">
+            <table class="sortable slds-table slds-table_bordered" style={DataGridStyle}>
+                <thead>
+                    <tr class="slds-text-heading_label">
+                        <th if:true={showRowNumber} style="font-size: x-small;width: 1.5rem;">
+                            #
+                        </th>
+                        <th if:true={showCheckBox} style="width: 1.5rem;text-align:center">
+                            <input type="checkbox" onchange={onRowSelection} style="margin-top: 0.25rem;"
+                                name={selectAll} checked={selectAll}>
+                        </th>
+                        <template for:each={updatedColumns} for:index="cIndex" for:item="column">
+
+                            <template if:true={column.sortable}>
+                                <th key={column.fieldName} title={column.label} aria-label={column.label}
+                                    data-fieldname={column.fieldName} data-type={column.type} onclick={onSort}
+                                    data-alternativetext={column.alternativeText} data-sorteddirection={sortData}
+                                    style={column.customStyle} class="pointer">
+
+                                    <span class={column.customClass} data-fieldname={column.fieldName} data-type={column.type} onclick={onSort}
+                                        data-alternativetext={column.alternativeText} data-sorteddirection={sortData}>
+                                        {column.label}
+
+                                        <lightning-icon icon-name="utility:arrowup" data-fieldname={column.fieldName}
+                                            data-type={column.type} onclick={onSort}
+                                            data-alternativetext={column.alternativeText}
+                                            data-sorteddirection={sortData} if:true={column.isASC} size="xx-small"
+                                            alternative-text="ASC" style="padding-left: 0.3rem">
+                                        </lightning-icon>
+
+                                        <lightning-icon icon-name="utility:arrowdown" data-fieldname={column.fieldName}
+                                            data-type={column.type} onclick={onSort}
+                                            data-alternativetext={column.alternativeText}
+                                            data-sorteddirection={sortData} if:true={column.isDESC} size="xx-small"
+                                            alternative-text="DESC" style="padding-left: 0.3rem">
+                                        </lightning-icon>
+                                    </span>
+                                </th>
+                            </template>
+
+                            <template if:false={column.sortable}>
+                                <th key={column.fieldName} title={column.label} aria-label={column.label}
+                                    data-fieldname={column.fieldName} data-type={column.type}
+                                    data-alternativetext={column.alternativeText} 
+                                    style={column.customStyle}>
+                                    
+                                    <span class={column.customClass} data-fieldname={column.fieldName} data-type={column.type} 
+                                        data-alternativetext={column.alternativeText}>
+                                        {column.label}
+                                    </span>
+                                </th>
+                            </template>
+                        </template>
+                    </tr>
+                </thead>
+                <tbody if:true={showCell}>
+                    <template if:false={noDataFound} for:each={currentRecords} for:index="index" for:item="record">
+                        <tr key={record.rowNum} data-idx={record.rowNum} data-component="row" style={record.rowclass}>
+                            <td if:true={showRowNumber} style="width: 1.5rem">
+                                {record.srNo}
+                            </td>
+                            <td if:true={showCheckBox} style="width: 1.5rem">
+                                <input type="checkbox" onchange={onRowSelection} name={record.Id} value={record.rowNum}
+                                    checked={record.isSelected} style="margin-top: 0.25rem;">
+                            </td>
+                            <template for:each={columns} for:index="cIndex" for:item="column">
+                                <td key={record.Id} class={column.cellClass} style={column.cellStyle}>
+                                    <c-custom-data-table-cell class="tableCell" idx={record.rowNum} value={record}
+                                        refresh={refresh} columndata={column} tableforlookup={tableforlookup}
+                                        onpicklistvaluechange={handlePickListValueChangeEvent} onrowaction={onSelection}>
+                                    </c-custom-data-table-cell>
+                                </td>
+                            </template>
+                        </tr>
+                    </template>
+                    <template if:true={noDataFound}>
+                        <tr>
+                            <td colspan="100%">{noDataFound}</td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </header>
+    </div>
+
+    <template if:true={isFooter}>
+        <footer class="slds-modal__footer">
+            <lightning-layout>
+                <lightning-layout-item if:false={isDisablePagination} size=8>
+                    <div style="float:left">
+                        <c-custom-pagination currentpagenumber={currentpagenumber} maxpagenumber={maxPageNumber}
+                            currentpagesize={rowSize} refresh={refresh} onvalchange={handlePagination}>
+                        </c-custom-pagination>
+                    </div>
+                </lightning-layout-item>
+                <lightning-layout-item if:true={isDisablePagination} size=8></lightning-layout-item>
+                <lightning-layout-item if:true={isDataGridSearchable} size=4>
+                    <lightning-layout>
+                        <lightning-layout-item size=10>
+                            <div>
+                                <lightning-input value={searchKey} type="search" name="search" style="width: 100%;"
+                                    variant="label-hidden" class="no-label" minlength="1"
+                                    message-when-bad-input="Your entry must be at least 1 characters."
+                                    onkeyup={handleKeyUp} onchange={clearSearchText}>
+                                </lightning-input>
+                            </div>
+                        </lightning-layout-item>
+                        <lightning-layout-item size=2>
+                            <lightning-button-group>
+                                <lightning-button-icon icon-name="utility:search" alternative-text="Search"
+                                    variant="brand" onclick={searchDataOnClick}>
+                                </lightning-button-icon>
+                            </lightning-button-group>
+                        </lightning-layout-item>
+                    </lightning-layout>
+                </lightning-layout-item>
+            </lightning-layout>
+        </footer>
+    </template>
+</template>

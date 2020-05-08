@@ -1,0 +1,15 @@
+.zs-rich-text-content{
+    width: 100%;
+}
+lightning-formatted-rich-text table {
+    max-width: 100px !important;
+    overflow-x: scroll;
+}
+lightning-formatted-rich-text div {
+    max-width: 100px !important;
+    overflow-x: scroll;
+}
+.zs-case-comment-display-comp h3{
+    text-transform: capitalize;
+    font-size: 1.2rem !important;
+}

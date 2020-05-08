@@ -1,0 +1,60 @@
+<apex:component access="global" controller="Contract_Extension_Controller">
+    <apex:attribute name="contractextensionId1" description="This field is used to display list of Proposal products" 
+                     type="String" assignTo="{!contractextensionId}" />
+    <apex:attribute name="ispending" description="This field is used to get instance URL" 
+                     type="Boolean" assignTo="{!isapprovalrequested}" />
+    <apex:attribute name="isapproved1" description="This field is used to get instance URL" 
+                     type="Boolean" assignTo="{!isapproved}" />
+    <apex:attribute name="isrejected1" description="This field is used to get instance URL" 
+                     type="Boolean" assignTo="{!isrejected}" />
+    
+
+    <table width="100%">
+        <tbody>
+            <tr>
+                <td align="left"><a style="vertical-align: baseline;" href="http://www.zscaler.com"><img style="" src="http://info.zscaler.com/rs/zscaler/images/zlogo-pms306-200x44.png" border="0" alt="Zscaler" height="36" /></a></td>
+                <td style="padding-right: 20px;" align="right"></td>
+            </tr>
+        </tbody>
+    </table>
+    <br/><br/>
+    <b>Hello,</b><br/><br/>      
+    <apex:outputPanel rendered="{!isapprovalrequested}">
+        The opportunity {!ContractExtensionreq.Opportunity__r.Name} has been submitted for Contract Extension Approval.<br/> <br/>
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!isapproved}">
+        The Contract Extension request for the opportunity {!ContractExtensionreq.Opportunity__r.Name} has been approved and the new contract end date is&nbsp;<apex:outputField value="{!ContractExtensionreq.Contract_Extension_Date__c}"/>.<br/> <br/>
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!isrejected}">
+        The Contract Extension request for the opportunity {!ContractExtensionreq.Opportunity__r.Name} has been rejected.<br/> <br/>
+    </apex:outputPanel>
+    
+    <apex:outputPanel rendered="{!isapprovalrequested || isapproved}">
+        <b>Overview</b><br/>
+        Account Name: {!ContractExtensionreq.Opportunity__r.Account.Name}<br/> 
+        Amount:&nbsp;<apex:outputField value="{!ContractExtensionreq.Opportunity__r.Amount}"/><br/> 
+        Contract End Date:&nbsp;<apex:outputField value="{!ContractExtensionreq.Opportunity__r.Contract_End_Date_New__c}"/><br/> 
+        ARR:&nbsp;<apex:outputField value="{!ContractExtensionreq.ACV__c}"/><br/> 
+        Reason for Extension: {!ContractExtensionreq.Reason_for_Extension__c}<br/>  
+        Extension Date Requested:&nbsp;<apex:outputField value="{!ContractExtensionreq.Contract_Extension_Date__c}"/><br/> 
+        <apex:outputPanel rendered="{!!ISNULL(ContractExtensionreq.Detailed_Reason_for_Contract_Extension__c)}">
+        Detailed Comments: {!ContractExtensionreq.Detailed_Reason_for_Contract_Extension__c}<br/>
+        </apex:outputPanel>
+        <br/>
+    </apex:outputPanel>
+    
+    
+    <b>Contract Extension Link:</b>&nbsp;&nbsp; <apex:outputLink value="{!url+'/'+ContractExtensionreq.Id}">{!ContractExtensionreq.Name}</apex:outputLink><br/><br/> 
+    
+    <table class="twelve columns" style="border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:center; width:900px; padding:0;background: #252d34;">
+        <tbody>
+            <tr style="vertical-align:top; text-align:center; padding:0;" align="center">
+                <td class="wrapper last" style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:center; position:relative; color:#999999; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:11px; margin:0; padding:10px 0px 0px;" align="center" valign="top">Copyright ©{!yearVal} Zscaler, Inc.<br />
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+
+
+</apex:component>

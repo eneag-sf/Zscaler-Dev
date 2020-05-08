@@ -1,0 +1,50 @@
+<apex:page controller="PLIExportExcel_Ctrl" showHeader="false" standardStylesheets="false" readOnly="true" contentType="application/vnd.ms-excel#Cart_Line_Items.xls">
+    <h2>Cart Line Items</h2>
+     <apex:dataTable value="{!proposalLineItemList}" rendered="{!proposalLineItemList.size > 0}" var="var" styleclass="slds-table slds-table--bordered">
+        <apex:column value="{!Var.Product_Name__c}" headerValue="Product Name"/>
+        <apex:column value="{!Var.APTS_Product_Code__c}" headerValue="SKU"/>
+        <apex:column headerValue="Base Price">
+            <apex:outputText value="{0, number,currency}">
+                <apex:param value="{!var.Apttus_QPConfig__BasePrice__c}"/>
+            </apex:outputText>
+        </apex:column>
+        <apex:column value="{!var.APTS_Quantity__c}" headerValue="Quantity" />
+        <apex:column value="{!var.Apttus_QPConfig__StartDate__c}" headerValue="Start Date"/>
+        <apex:column value="{!var.Apttus_QPConfig__EndDate__c}" headerValue="End Date"/>
+        <apex:column value="{!var.Term_to_Show__c}" headerValue="Term"/>
+        <apex:column value="{!var.APTS_Base_Price_override__c}" headerValue="List Price"/>
+        <apex:column value="{!var.APTS_Partner_Disc__c}" headerValue="Partner Disc"/>
+        <apex:column value="{!var.APTS_Deal_Reg_Disc__c}" headerValue="Deal Reg Disc"/>
+        <apex:column value="{!var.APTS_New_Logo_Disc__c}" headerValue="New Logo Disc"/>
+        <apex:column value="{!var.Apttus_QPConfig__AdjustmentType__c}" headerValue="Adjustment Type"/>
+        <apex:column value="{!var.APTS_Manual_Discount__c}" headerValue="Adjustment"/>
+        <apex:column value="{!var.APTS_Total_Discount_Percentage__c}" headerValue="Total Discount"/>
+        <apex:column value="{!var.APTS_Net_Price__c}" headerValue="Net Price"/>
+        <apex:column value="{!var.APTS_ACV__c}" headerValue="ACV"/>
+        <apex:column value="{!var.APTS_MRR__c}" headerValue="MRR"/>
+    </apex:dataTable>
+    <br/><br/>
+    <h2>Install Base</h2>
+    <apex:dataTable value="{!assetLineItemList}" rendered="{!assetLineItemList.size > 0}"
+                        var="var" styleclass="slds-table slds-table--bordered">
+                        <apex:column value="{!Var.Product_Name__c}" headerValue="Product Name"/>
+                        <apex:column value="{!Var.Product_Code__c}" headerValue="SKU"/>
+                        <apex:column headerValue="Quantity">
+                            <apex:outputText value="{0, number}">
+                                <apex:param value="{!var.Apttus_Config2__Quantity__c}" />
+                            </apex:outputText>
+                        </apex:column>
+                        <apex:column value="{!var.Apttus_Config2__StartDate__c}" headerValue="Start Date"/>
+                        <apex:column value="{!var.Apttus_Config2__EndDate__c}" headerValue="End Date"/>
+                        <apex:column value="{!var.Term_to_Show__c}" headerValue="Term"/>
+                        <apex:column value="{!var.APTS_Partner_Disc__c}" headerValue="Partner Disc"/>
+                        <apex:column value="{!var.APTS_Deal_Reg_Disc__c}" headerValue="Deal Reg Disc"/>
+                        <apex:column value="{!var.APTS_New_Logo_Disc__c}" headerValue="New Logo Disc"/>
+                        <apex:column value="{!var.Adjustment_Type__c}" headerValue="Adjustment Type"/>
+                        <apex:column value="{!var.Adjustment_Amount__c}" headerValue="Adjustment"/>
+                        <apex:column value="{!var.APTS_Total_Discount_Percentage__c}" headerValue="Total Discount"/>
+                        <apex:column value="{!var.Apttus_Config2__NetPrice__c}" headerValue="Net Price"/>
+                        <apex:column value="{!var.APTS_ACV__c}" headerValue="ACV"/>
+                        <apex:column value="{!var.APTS_MRR__c}" headerValue="MRR"/>
+                    </apex:dataTable>
+</apex:page>

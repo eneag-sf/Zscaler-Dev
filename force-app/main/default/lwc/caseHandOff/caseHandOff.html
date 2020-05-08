@@ -1,0 +1,25 @@
+<template>
+    <template if:true={errmsg}>
+        <div class={errmsgclass} style="margin-bottom:5px;">
+            {errmsg}
+        </div>
+    </template>
+    <!--<template if:true={userloaded}>
+        <template if:true={caseloaded}>-->
+    <template if:true={showCaseDetails}>
+        <div class="slds-grid slds-gutters" style="padding: 15px;">
+            <div class="slds-col">
+                <lightning-textarea onchange={assignreason} name="reasonforESC" value={reason}
+                    label="Reason for Case Escalation" required></lightning-textarea>
+            </div>
+        </div>
+        <div style="text-align: right;">
+            <hr>
+            <lightning-button label="Cancel" variant="neutral" onclick={cancelCase}></lightning-button>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <lightning-button label="Save" variant="brand" onclick={savecase}></lightning-button>
+        </div>
+    </template>
+    <!--</template>
+    </template>-->
+</template>

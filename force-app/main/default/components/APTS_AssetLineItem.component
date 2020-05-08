@@ -1,0 +1,35 @@
+<apex:component access="global" controller="APTS_AssetLineItemComponentController" >
+  
+  <apex:attribute name="AccountId" description="This is the account Id." 
+                     type="string" assignTo="{!accntId}" />
+    <apex:attribute name="NumberOfDays" description="This is the number of days for expiry mail" 
+                     type="string" assignTo="{!noOfDays}" />  
+  
+  <table border = "1">
+        <tr>
+            <th>Product</th>
+            <th>Start Date</th>
+            <th>End Date</th>                     
+            
+         </tr>
+  
+        <apex:repeat value="{!lstAssetExpiring}" var="asset">
+  
+            <tr> 
+                <td align = "center">
+                    <apex:outputText value="{!asset.Apttus_Config2__ProductId__r.Name}"/>
+                </td>
+                
+                <td align = "left">
+                    <apex:outputText value="{!asset.Apttus_Config2__StartDate__c}"/>
+                </td>
+                
+                <td align = "left">
+                    <apex:outputText value="{!asset.Apttus_Config2__EndDate__c}"/>
+                </td>                
+                
+            </tr>
+  
+        </apex:repeat>
+    </table>
+</apex:component>

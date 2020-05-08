@@ -1,0 +1,34 @@
+<template>
+    <div class="zs-contact-us-page">
+        <lightning-card title="Zscaler Global Phone Support">
+            <div>
+                Zscaler global support is available around the clock, with dedicated customer support. Find regional and
+                toll free numbers at&nbsp;<a href="https://help.zscaler.com/phone-support"
+                    target="_blank">https://help.zscaler.com/phone-support</a>
+            </div>
+        </lightning-card>
+        <lightning-card if:true={showContacts} title={customernametitle}>
+            <lightning-layout multiple-rows="true">
+                <template for:each={contacts} for:item="item">
+                    <lightning-layout-item key={item.accname} size="3" padding="around-small">
+                        <lightning-tile label={item.TeamMemberRole} href="#" type="media">
+                            <lightning-avatar size="small" src="#" slot="media" initials=""
+                                fallback-icon-name="standard:user">
+                            </lightning-avatar>
+                            <br>
+                            <p>
+                                {item.User.Name}
+                            </p>
+                            <p>
+                                {item.User.Email}
+                            </p>
+                            <p>
+                                {item.User.Phone}
+                            </p>
+                        </lightning-tile>
+                    </lightning-layout-item>
+                </template>
+            </lightning-layout>
+        </lightning-card>
+    </div>
+</template>

@@ -1,0 +1,54 @@
+<apex:page controller="RequestHelpForLeadController" tabStyle="Lead" showHeader="false" sidebar="false">
+	<apex:form id="frmId">
+		<style type="text/css">
+			.pageModalBackdrop {
+	            background-color: #FFF; 
+	            position: absolute; 
+	            left: 0px;
+	            top: 0px; 
+	            opacity: 0.5; 
+	            height: 100%; 
+	            width: 100%; 
+	        }
+
+	        .pageLoadingIcon {
+	            background-image: url("/img/loading32.gif");
+	            background-repeat: no-repeat;
+	            background-size: 30px 30px;
+	            height: 50px; 
+	            width: 50px; 
+	            position: absolute; 
+	            top: 40%; 
+	            left: 50%;
+	            opacity: 1;
+	            z-index: 9999;
+	        }
+		</style>
+		<apex:pageBlock id="pgBlkId">
+			<apex:outputPanel id="opId" rendered="{!hasSaved}">
+				<script type="text/javascript">
+					(function (){
+						window.close();	
+					})();
+				</script>
+			</apex:outputPanel>
+			<apex:pageBlockButtons >
+                <apex:commandButton action="{!save}" value="Save"  reRender="pgBlkId" status="pageLoadingModal"/>
+                <apex:commandButton action="{!cancel}" value="Cancel" immediate="true" oncomplete="window.close();" status="pageLoadingModal"/>
+            </apex:pageBlockButtons>
+			<apex:pageBlockSection title="Case Basic Information" collapsible="false" columns="1">
+				<apex:inputField value="{!newCase.Subject}" required="True" style="min-width: 500px;"/>	
+				<apex:inputField value="{!newCase.Description}" required="True" style="min-height: 300px; min-width: 500px;"/>	
+			</apex:pageBlockSection>
+			<apex:actionStatus id="pageLoadingModal">
+                <apex:facet name="start">
+                    <div class="pageModalBackdrop">
+                    </div>
+                    <div class="pageLoadingIcon">
+                    </div>
+                </apex:facet>
+            </apex:actionStatus>
+		</apex:pageBlock>
+
+	</apex:form>
+</apex:page>

@@ -1,0 +1,134 @@
+<template>
+    <div class="zs-case-creation">
+
+        <div class="slds-grid">
+            <h2>Submit a Case</h2>
+        </div>
+        <fieldset class="slds-box slds-container--medium">
+            <template if:true={errmsg}>
+                <div class="slds-box slds-theme_error" style="margin-bottom:5px;">
+                    {errmsg}
+                </div>
+            </template>
+            <template if:true={loadData}>
+                <lightning-record-edit-form layout-type="compact" density="comfy" object-api-name="Case"
+                    onerror={handleError} onsuccess={handleSuccess} onsubmit={handleSubmit}
+                    record-type-id={recordTypeId}>
+                    <lightning-messages></lightning-messages>
+                    <div>
+                        <template if:true={showPriorityMessage}>
+                            <div class="slds-box slds-theme_warning" style="margin-bottom:5px;">
+                                In order for us to help you faster with your high priority case, please call Zscaler
+                                Customer Support. Find regional Zscaler customer support number at&nbsp;<a
+                                    href="https://help.zscaler.com/phone-support"
+                                    target="_blank">https://help.zscaler.com/phone-support</a>
+                            </div>
+                        </template>
+                        <lightning-layout pull-to-boundary="medium" multiple-rows="true">
+                            <lightning-layout-item size="12" padding="around-medium">
+                                <lightning-input-field field-name='Subject' required onchange={handleFieldChange}>
+                                </lightning-input-field>
+                            </lightning-layout-item>
+                            <template if:true={showAccount}>
+                                <lightning-layout-item size="4" style="padding-left: 1.3rem;" padding="around-medium">
+                                    <label for="account-name" class="slds-form-element__label slds-no-flex">End
+                                        Customer</label>
+                                    <lightning-input-field aura:id='account-name' onchange={handleFieldChange}
+                                        field-name='AccountId' value={accountId} variant="label-hidden" required>
+                                    </lightning-input-field>
+                                </lightning-layout-item>
+                                <lightning-layout-item size="4" padding="around-medium">
+                                    <lightning-input-field onchange={handleFieldChange} required
+                                        field-name='zscaler_org_id__c'>
+                                    </lightning-input-field>
+                                </lightning-layout-item>
+                                <lightning-layout-item size="4" padding="around-medium">
+                                    <lightning-input-field onchange={handleFieldChange}
+                                        field-name='Internal_Ticket_Number__c' required>
+                                    </lightning-input-field>
+                                </lightning-layout-item>
+                            </template>
+
+                            <template if:false={showAccount}>
+                                <lightning-layout-item size="12" padding="around-medium">
+                                    <lightning-input-field onchange={handleFieldChange} field-name='zscaler_org_id__c'>
+                                    </lightning-input-field>
+                                </lightning-layout-item>
+                            </template>
+                            <lightning-layout-item size="4" padding="around-medium">
+                                <lightning-input-field onchange={handleFieldChange} field-name='Product_New__c'
+                                    required>
+                                </lightning-input-field>
+                            </lightning-layout-item>
+                            <lightning-layout-item size="4" padding="around-medium">
+                                <lightning-input-field field-name='Priority' required onchange={changeProduct}>
+                                </lightning-input-field>
+                            </lightning-layout-item>
+                            <lightning-layout-item size="4" padding="around-medium">
+                                <lightning-input-field onchange={handleFieldChange} field-name='Case_Type__c' required>
+                                </lightning-input-field>
+                            </lightning-layout-item>
+                            <lightning-layout-item size="6" padding="around-medium">
+                                <lightning-input-field onchange={handleFieldChange}
+                                    field-name='Preferred_Contact_Time_Zone__c' value={timezone} required>
+                                </lightning-input-field>
+                            </lightning-layout-item>
+                            <lightning-layout-item size="6" padding="around-medium">
+                                <div class="slds-grid">
+                                    <lightning-input-field onchange={handleFieldChange}
+                                        field-name='Preferred_Contact_Number__c' value={phonenum} required>
+                                    </lightning-input-field>
+                                </div>
+                                <div class="slds-grid"><span style="color:#b55e5e;font-weight:700;">Please enter number
+                                        with country code (Ex: +1 .... ....)</span></div>
+                            </lightning-layout-item>
+                            <lightning-layout-item size="12" padding="around-medium">
+                                <div class="slds-grid">
+                                    <lightning-input-field onchange={handleDescchange} field-name='Description'
+                                        required>
+                                    </lightning-input-field>
+                                </div>
+                                <div class="slds-grid" style="float: right;"><span
+                                        style="color:#b55e5e;font-weight:700;">{remChars}</span></div>
+                            </lightning-layout-item>
+
+                            <!--<lightning-file-upload label="Upload files" name="fileUploader" record-id={recordId} multiple
+                            onuploadfinished={handleUploadFinish}>
+                        </lightning-file-upload>-->
+                            <lightning-layout-item size="12" padding="around-medium">
+                                <div class="slds-grid slds-gutters" style="padding: 15px;">
+                                    <div class="slds-col">
+                                        <label class="slds-form-element__label slds-no-flex">Attachment&nbsp;<span style="color:#b55e5e;font-size:13px;">(Maximum file size allowed: 20MB)</span>                                    </label>
+                                        <!--<lightning-input style="width: 747px;text-align:center;" label=""
+                                            name="file uploader" onchange={handleFilesChange} type="file" multiple>
+                                        </lightning-input>-->
+                                        <lightning-file-upload label="" style="width: 747px;text-align:center;" name="fileUploader"
+                                            record-id={userId} multiple onuploadfinished={handleUploadFinish}>
+                                        </lightning-file-upload>
+                                        <div class="slds-text-body_small slds-text-color_error">{fileName}
+                                        </div>
+                                    </div>
+                                </div>
+                            </lightning-layout-item>
+                        </lightning-layout>
+                    </div>
+                    <hr style="margin-top: 10px; margin-bottom:10px;">
+                    <template if:false={loading}>
+                        <div class="slds-box slds-box_small" style="text-align: right;border: 0px; border-radius: 0px;">
+                            <lightning-button class="slds-m-right_small" variant="brand" type="submit" name="save"
+                                label="Submit Case">
+                            </lightning-button>
+                            <lightning-button variant="neutral" name="cancel" label="Cancel" onclick={handleCancel}>
+                            </lightning-button>
+                        </div>
+                    </template>
+                </lightning-record-edit-form>
+            </template>
+        </fieldset>
+        <template if:true={loading}>
+            <div class="slds-spinner_container">
+                <lightning-spinner variant="brand" size="medium"></lightning-spinner>
+            </div>
+        </template>
+    </div>
+</template>

@@ -1,0 +1,21 @@
+<template>
+    <!-- To refresh screen -->
+    <span style="display: none;">{refresh}</span>
+    <!-- To refresh screen -->
+    <span class={className} role="group">
+        <lightning-button-icon icon-name="utility:left" variant="bare" alternative-text="First" onclick={firstPage} size="medium" class="pagination-button">
+        </lightning-button-icon>
+        <lightning-button-icon icon-name="utility:chevronleft" variant="bare" alternative-text="Prev" onclick={prevPage} size="medium" class="pagination-button">
+        </lightning-button-icon>
+        <span class="pagination-number">{pageDisplay}</span>
+        <lightning-button-icon icon-name="utility:chevronright" variant="bare" alternative-text="Next" onclick={nextPage} size="medium" class="pagination-button">
+        </lightning-button-icon>
+        <lightning-button-icon icon-name="utility:right" variant="bare" alternative-text="Last" onclick={lastPage} size="medium" class="pagination-button">
+        </lightning-button-icon>
+        <select onchange={changePageSize} class="page-size-select" size="medium" >
+            <template for:each={options} for:item="option">
+                <option key={option.value} value={option.value} selected={option.selected}>{option.label}</option>
+            </template>       
+        </select>           
+    </span>  
+</template>

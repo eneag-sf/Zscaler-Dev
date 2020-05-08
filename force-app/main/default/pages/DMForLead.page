@@ -1,0 +1,44 @@
+<apex:page standardController="Lead" sidebar="false" showHeader="false">
+<script type="text/javascript">
+function openpopup()
+{
+  
+       newwindow=window.open('https://www.demomail.net/demomailsfdc/demomailfromlead.aspx?sessionID={!$Api.Session_ID}&serverUrl={!$Api.Enterprise_Server_URL_100}&leadID={!Lead.Id}','name','width=900,height=500,toolbar=no,personalbar=no,location=no,directories=no,statusbar=no,menubar=no,status=no,re sizable=yes,left=300,screenX=60,top=50,screenY=100,scrollbars=yes');
+   
+}
+</script>
+<style>
+      .activeTab {background-color: #236FBD; color:white; 
+         background-image:none}
+      .inactiveTab { background-color: lightgrey; color:black; 
+         background-image:none}
+   </style>
+    <apex:tabPanel switchType="client" selectedTab="tabdetails" id="ContactPanel" tabClass="activeTab" inactiveTabClass="inactiveTab">
+         <apex:tab label="Video Sent">
+             <iframe id="gridFrame1" scrolling="auto" height="200" width="100%" frameborder="0"
+              src="https://www.demomail.net/demomailsfdc/leaddemomails.aspx?sessionID={!$Api.Session_ID}&serverUrl={!$Api.Enterprise_Server_URL_100}&leadID={!Lead.Id}
+" >
+            </iframe>
+        </apex:tab>
+        
+         <apex:tab label="Viewing Activity">
+             <iframe id="gridFrame2" scrolling="auto" height="200" width="100%" frameborder="0"
+              src=" https://www.demomail.net/demomailsfdc/leadviewings.aspx?sessionID={!$Api.Session_ID}&serverUrl={!$Api.Enterprise_Server_URL_100}&leadID={!Lead.Id}
+">
+            </iframe>
+        </apex:tab>
+        
+         
+             <apex:tab label="Demo Track Viewings">
+<iframe id="gridFrame3" scrolling="auto" height="200" width="100%" frameborder="0" src="https://www.demomail.net/demomailsfdc/leaddtviewings.aspx?sessionID={!$Api.Session_ID}&serverUrl={!$Api.Enterprise_Server_URL_100}&leadid={!Lead.Id}&firstname={!Lead.FirstName}&lastname={!Lead.LastName}&email={!Lead.Email}
+" >
+            </iframe>
+        </apex:tab>
+        
+<apex:tab label="Send Video">
+           <apex:form >
+            <apex:commandButton onclick="openpopup();return false;" value="Send Video" />
+         </apex:form>
+        </apex:tab>
+          </apex:tabPanel>
+</apex:page>

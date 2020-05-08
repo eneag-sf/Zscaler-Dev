@@ -1,0 +1,22 @@
+<div class="dropdown">
+  <button class="btn" title="{{header}}"  onclick="return false;" ng-click="toggleSelect()" ng-disabled="disabled" ng-class="{'error': !valid()}">
+    <span class="pull-left">{{header}}</span>
+    <span class="caret pull-right"></span>
+  </button>
+  <ul class="dropdown-menu">
+    <li>
+      <input class="input-block-level" type="text" ng-model="searchText.label" autofocus="autofocus" placeholder="Filter" />
+    </li>
+    <li ng-show="multiple">
+      <button class="btn-link btn-small" onclick="return false;" ng-click="checkAll()"><i class="icon-ok"></i>Select all</button>
+      <button class="btn-link btn-small" onclick="return false;" ng-click="uncheckAll()"><i class="icon-remove"></i>Deselect all</button>
+    </li>
+    <li ng-style="{'background-color': i.label.toString().indexOf('***') != -1 ? '#e9e9e9;height: 25px' : ''}" ng-repeat="i in items | filter:searchText">
+		
+      <input ng-show="i.label.toString().indexOf('***') == -1" type="checkbox" ng-click="select(i); focus()" ng-checked="i.checked"/>
+      <a ng-show="i.label.toString().indexOf('***') == -1" ng-click="select(i);">
+        <i ng-class="{'icon-ok': i.checked, 'icon-empty': !i.checked}"></i>{{i.label}}</a>
+	  <div ng-show="i.label.toString().indexOf('***') != -1" style="padding: 2px 0 2px 0px;text-align: center;font-weight: bold;">{{i.label}}</div>
+    </li>
+  </ul>
+</div>

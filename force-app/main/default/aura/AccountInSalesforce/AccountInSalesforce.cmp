@@ -1,0 +1,779 @@
+<aura:component controller="AccountInSalesforceController" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction">   
+    <!-- Include Static Resource-->
+    
+    
+    <aura:attribute name="ZIAoptions" type="List"/>
+    <aura:attribute name="ZPAoptions" type="List"/>
+    <aura:attribute name="SelectedZIAoptions" type="List"/>
+    <aura:attribute name="SelectedZPAoptions" type="List"/>
+    <aura:attribute name="ZIAString" type="string"/>
+    <aura:attribute name="ZPAString" type="string"/>
+    
+    <aura:attribute name="isRequestModel" type="boolean" default="false"/>
+    <aura:attribute name="showSuccess" type="boolean" default="false" />
+    <aura:attribute name="successMessage" type="string" default="" />
+    
+    
+    <!-- CREATE ATTRIBUTE/VARIABLE-->
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:attribute name="AccountRec" type="Account" default="{ 'sobjectType': 'Account'}"/>   
+    <aura:attribute name="searchResult" type="List" description="use for store and display account search list return from server"/>
+    <aura:attribute name="lstOfUserRecordAccess" type="List" />
+    <aura:attribute name="AccRecords" type="Account" />
+    <aura:attribute name="successMsg" type="string" />
+    <aura:attribute name="searchKeyword" type="String" description="use for store user search input"/>
+    <aura:attribute name="Message" type="boolean" default="false" description="use for display no record found message"/>
+     <aura:attribute name="errMessage" type="string" default="" />
+    <aura:attribute name="TotalNumberOfRecord" type="integer" default="0" description="use for display Number of records"/>
+    <aura:attribute name="isEditAcess" type="boolean" default="false" />
+    <aura:attribute name="isSubmited" type="boolean" default="false" />
+    <aura:attribute name="ismodalSubmited" type="boolean" default="false" />
+    <aura:attribute name="ismodalcheck" type="boolean" default="false" />
+    <aura:attribute name="isRequeestAccess" type="boolean" default="false" />
+    <aura:attribute name="JustificationRequestvalue" type="String" default=""  description="use for store case Justification for Request value"/>
+    <aura:attribute name="selectedrecid" type="string" />
+    <aura:attribute name="AccRecName" type="string" /> 
+    <!--<aura:attribute name="countryval" type="string" /> -->
+    <aura:attribute name="geo" type="string" /> 
+    <aura:attribute name="pickListData" type="object" default="" />
+    <aura:attribute name="Region" type="string" /> 
+    <aura:attribute name="selectedNameDrop" type="String" access="public"/>
+    <aura:attribute name="selectedIndustry" type="String" access="public"/>
+    
+    
+    <aura:attribute name="ltngSelectedvalue" type="string" default="--None--"/>
+    
+    <aura:attribute name="OldDate" type="Date"  />
+    <aura:attribute name="mPartnerCloseDate" type="Date"  />
+    <aura:attribute name="mTotalZPAACV" type="Decimal"  />
+    <aura:attribute name="mTotalZIAACV" type="Decimal"  />
+    
+    
+    <aura:attribute name="PaginationList" type="Account[]"/>
+    <aura:attribute name="startPage" type="Integer" />
+    <aura:attribute name="endPage" type="Integer"/>
+    <aura:attribute name="totalRecords" type="Integer"/>
+    <aura:attribute name="pageSize" type="Integer" default="10"/>
+    <aura:attribute name="page" type="integer" description="using for store page Number"/>
+    <aura:attribute name="pages" type="integer" description="using for store All Pages page Number"/>
+    
+    <aura:attribute name="isOpen" type="boolean" default="false"/>
+    <aura:attribute name="isOpenRequestAcess" type="boolean" default="false"/>
+    <aura:method name="pressEnterKeyMethod" action="{!c.Search}" access="public" />
+    
+    <!-- SHOW LOADING SPINNER--> 
+    <lightning:spinner variant="brand" size="large" aura:id="Id_spinner" class="slds-hide" />
+    
+
+        <div class="slds-p-around_xx-small" style="background: white;display:">
+            
+            <aura:if isTrue="{!v.Message}">
+                <div class="slds-notify_container slds-is-relative">
+                    <div class="slds-notify slds-notify_toast slds-theme_error" role="alert">
+                        <div class="slds-notify__content">
+                            <h2 class="slds-text-heading_small">{!v.errMessage}</h2>
+                        </div>
+                    </div>
+                </div>
+            </aura:if>
+            
+            <aura:if isTrue="{!v.isEditAcess}">
+                <div class="slds-notify_container slds-is-relative">
+                    <div class="slds-notify slds-notify_toast slds-theme--success" role="alert">
+                        <div class="slds-notify__content">
+                            <h2 class="slds-text-heading_small">{!v.successMsg}</h2>
+                        </div>
+                    </div>
+                </div>
+            </aura:if>
+            
+            <div class="demo-only demo-only--sizing slds-grid slds-wrap">
+                <div class="slds-size_4-of-12">
+                    <div class=" slds-box_x-small  slds-m-around_x-small">
+                        <div class="slds-form-element__control">
+                           <span onkeypress="{!c.onkeypressEvent}"> 
+                            <lightning:input value="{!v.searchKeyword}" 
+                                             placeholder="search Accounts.."
+                                             aura:id="searchField"
+                                             label="Account Name "
+                                             />
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                
+                <div class="slds-size_3-of-12">
+                    <div class=" slds-box_x-small  slds-m-around_x-small">
+                        <div class="slds-form-element__control">
+                            <label>GEO</label> 
+                            <!--<lightning:input type="text" id="SearchKeyValue1" value="{!v.geo}" />-->
+                            <lightning:select value="{!v.geo}" >
+                                <option value="" text="---None--" />
+                                <aura:iteration items="{!v.pickListData.geo}" var="rec">
+                                    <option value="{!rec.value}" text="{!rec.label}"/>
+                                </aura:iteration>
+                            </lightning:select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="slds-size_3-of-12">
+                    <div class=" slds-box_x-small  slds-m-around_x-small">
+                        <div class="slds-form-element__control">
+                            <label>Region</label> 
+                            <lightning:select value="{!v.Region}" >
+                                <option value="" text="---None--" />
+                                <aura:iteration items="{!v.pickListData.Region}" var="rec">
+                                    <option value="{!rec.value}" text="{!rec.label}"/>
+                                </aura:iteration>
+                            </lightning:select>
+                            <!--<lightning:input type="text" id="SearchKeyValue1" value="{!v.Region}" />-->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="slds-size_2-of-12">
+                    <div class=" slds-box_x-small  slds-m-around_x-small" >
+                        <div class="slds-form-element__control">
+                            <!--<label>Name Drop</label>-->
+                            <lightning:select label="Name Drop" name="Name Drop" value="{!v.selectedNameDrop}">
+                                <option value="{!null}">Please select</option>
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                                <!--<aura:iteration items="{!v.statusList}" var="status">
+                                <option value="{!status.value}" selected="{!status.value == v.selectedStatus}">{!status.label}</option>
+                            </aura:iteration>-->
+                            </lightning:select>
+                            <!--<lightning:input type="text" id="SearchKeyValue1" value="{!v.countryval}" />-->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="slds-size_4-of-12">
+                    <div class=" slds-box_x-small  slds-m-around_x-small" style="width: 100%;">
+                        <c:multiSelect aura:id="ZIAoptionsMS" mslabel="ZIA Use Cases" msoptions="{!v.ZIAoptions}" selectedOptions="{!V.SelectedZIAoptions}"/>
+                        <!--<div class="slds-form-element__control">-->
+                        <!--<label>ZIA Use Cases</label>
+                        <lightning:input type="text" id="SearchKeyValue1" value="{!v.countryval}" />-->
+                        <!--<label class="slds-form-element__label" for="my-multi-select">ZIA Use Cases</label>-->
+                        <!--<div class="slds-form-element__control">-->
+                        <!--<c:multiSelect aura:id="jobLocationMS" msoptions="{!v.myOptions}"/>-->
+                        <!--</div>
+                    </div>-->
+                    </div>
+                </div>
+                
+                <div class="slds-size_4-of-12">
+                    <div class=" slds-box_x-small  slds-m-around_x-small"  style="width: 100%;">
+                        <c:multiSelect aura:id="ZPAoptionsMS" mslabel="ZPA Use Cases" msoptions="{!v.ZPAoptions}"  selectedOptions="{!V.SelectedZPAoptions}"/>
+                        
+                        <!--<div class="slds-form-element__control">
+                        <label>ZPA Use Cases</label> 
+                        <lightning:input type="text" id="SearchKeyValue1" value="{!v.countryval}" />
+                    </div>-->
+                    </div>
+                </div>
+                
+                <div class="slds-size_4-of-12">
+                    <div class=" slds-box_x-small slds-m-around_x-small">
+                        <div class="slds-form-element__control">
+                            <lightning:select label="Industry" name="Industry" value="{!v.selectedIndustry}"> 
+                                <!--<ui:inputSelect aura:id="Industryval" class="slds-select"  value="{!v.AccountRec.Industry}"/>-->
+                                <option value="{!null}">Please select</option>
+                                <option value="Arts, Entertainment &amp; Recreation">Arts, Entertainment &amp; Recreation</option>
+                                <option value="Advertising">Advertising</option>
+                                <option value="Aerospace &amp; Defense">Aerospace &amp; Defense</option>
+                                <option value="Agriculture &amp; Forestry">Agriculture &amp; Forestry</option>
+                                <option value="Basic Materials and Chemicals">Basic Materials and Chemicals</option>
+                                <option value="Construction">Construction</option>
+                                <option value="Consumer Services">Consumer Services</option>
+                                <option value="Education">Education</option>
+                                <option value="Energy">Energy</option>
+                                <option value="Financial Services">Financial Services</option>
+                                <option value="Food, Beverage &amp; Tobacco">Food, Beverage &amp; Tobacco</option>
+                                <option value="Government">Government</option>
+                                <option value="Federal">Federal</option>
+                                <option value="Healthcare">Healthcare</option>
+                                <option value="High Tech">High Tech</option>
+                                <option value="Household &amp; Personal Products">Household &amp; Personal Products</option>
+                                <option value="Insurance">Insurance</option>
+                                <option value="Legal">Legal</option>
+                                <option value="Nonprofit Institutions">Nonprofit Institutions</option>
+                                <option value="Manufacturing">Manufacturing</option>
+                                <option value="Media">Media</option>
+                                <option value="Mining">Mining</option>
+                                <option value="Oil &amp; Gas">Oil &amp; Gas</option>
+                                <option value="Pharmaceutical">Pharmaceutical</option>
+                                <option value="Real Estate">Real Estate</option>
+                                <option value="Religious Organizations">Religious Organizations</option>
+                                <option value="Restaurants, Bars &amp; Food Services">Restaurants, Bars &amp; Food Services</option>
+                                <option value="Retail &amp; Wholesale">Retail &amp; Wholesale</option>
+                                <option value="Services">Services</option>
+                                <option value="Telecommunications">Telecommunications</option>
+                                <option value="Transportation Services">Transportation Services</option>
+                                <option value="Utilities">Utilities</option>
+                                <option value="Other">Other</option>
+                            </lightning:select>
+                        </div>
+                    </div>
+                </div>
+                
+                
+                
+            </div>
+            
+        </div>
+        
+        <!-- TOTAL RECORDS BADGES--> 
+        <!--<div class="slds-m-around_x-small">
+            <lightning:badge label="{!v.TotalNumberOfRecord}" />
+        </div>-->
+        
+        <!-- ERROR MESSAGE IF NOT RECORDS FOUND--> 
+        
+        <center>
+            <div>
+                <lightning:button onclick="{!c.Search}"
+                                  variant="brand"
+                                  label="Search"
+                                  iconName="utility:search"/> 
+            </div>
+        </center>
+        
+        <aura:html tag="style">
+            .smodal__container1{ 
+            height : 100% !important;
+            width: 80% !important; 
+            max-width: 1000vh !important; 
+            } 
+            .slds-modal__footer1{ 
+            display: inline !important; 
+            }
+        </aura:html>
+        
+        <aura:if isTrue="{!!v.Message}">
+            <aura:if isTrue="{!not(empty(v.searchResult))}">
+                <div class="slds-m-around_medium slds-form_horizontal slds-scrollable_x" >
+                    <aura:if isTrue="{!v.isOpen}">
+                        <!--###### MODAL BOX Start######--> 
+                        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                            <div class="slds-modal__container">
+                                <!-- ###### MODAL BOX HEADER Start ######-->
+                                <header class="slds-modal__header" style="background-color:rgb(0, 95, 178)">
+                                    <lightning:buttonIcon iconName="utility:close"
+                                                          onclick="{! c.closeModel }"
+                                                          alternativeText="close"
+                                                          variant="bare-inverse"
+                                                          class="slds-modal__close"/>
+                                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate" style="text-:right"><b><div class="slds-text-color_inverse">{!v.AccRecords.Name}</div></b></h2>
+                                </header>
+                                <!--###### MODAL BOX BODY Part Start######-->
+                                
+                                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                                    <div class="slds-grid">
+                                        <aura:if isTrue="{!v.showSuccess}">
+                                            <!-- Show the message to ui -->
+                                            <div class="slds-m-bottom--small slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_success" role="alert">
+                                                <span class="slds-assistive-text">error</span>
+                                                <h2>{!v.successMessage}</h2>
+                                            </div>
+                                        </aura:if>
+                                        <aura:if isTrue="{!v.isRequestModel}">
+                                            
+                                            <div class="slds-p-bottom_medium" style="width:100%">
+                                                <ui:inputTextarea aura:id="textAreaBox" label="Justification for Request access:"
+                                                                  class="slds-input"
+                                                                  labelClass="slds-form-element__label"
+                                                                  value="{!v.JustificationRequestvalue}" />
+                                                <div class="slds-float_right slds-p-top_small">
+                                                    <lightning:button variant="brand" label="Submit For Approval" title="Submit For Approval" onclick="{! c.RequestToAccount }" />
+                                                    <lightning:button variant="neutral" label="Cancel" title="Cancel" onclick="{! c.closeRequetModel }" />
+                                                </div>  
+                                            </div>
+                                            
+                                        </aura:if>
+                                    </div>
+                                    <div class="slds-grid">
+                                        
+                                        
+                                        <div class="slds-col">
+                                            <table class="slds-table">
+                                                <thead style="border-bottom: 1px solid darkgrey">
+                                                    <tr class="slds-text-title_caps">
+                                                        <th scope="col">
+                                                            <div class="slds-truncate" title="Sales Team">Sales Team</div>
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tr>
+                                                    <td>
+                                                        <b>Owner</b>  
+                                                        <br/> 
+                                                        {!v.AccRecords.Owner.Name}
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <b>Sales Engineer</b> 
+                                                        <br/> 
+                                                        {!v.AccRecords.Sales_Engineer__r.Full_Name__c}
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <b>Area Director</b> 
+                                                        <br/> 
+                                                        {!v.AccRecords.Area_Director__r.Name}
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <b>Renewal Rep</b>  
+                                                        <br/> 
+                                                        {!v.AccRecords.Customer_Advocate__r.Full_Name__c}
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <b>Channel Manager</b> 
+                                                        <br/>
+                                                        {!v.AccRecords.Channel_Manager__r.Full_Name__c}
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <b>CSM</b>  
+                                                        <br/> 
+                                                        {!v.AccRecords.CSM_Name_New__r.Full_Name__c}
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <b>TAM</b> 
+                                                        <br/> 
+                                                        {!v.AccRecords.TAM_Name_New__r.Name}
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <b>LDR</b> 
+                                                        <br/> 
+                                                        {!v.AccRecords.Lead_Development__c}
+                                                    </td>
+                                                </tr> 
+                                            </table>
+                                        </div>
+                                        <aura:if isTrue="{!v.AccRecords.Type == 'Customer'}">
+                                            <div class="slds-col">
+                                                <table class="slds-table ">
+                                                    <thead style="border-bottom: 1px solid darkgrey">
+                                                        <tr class="slds-text-title_caps">
+                                                            <th scope="col">
+                                                                <div class="slds-truncate" title="Subscriptions">Subscriptions</div>
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tr>
+                                                        <aura:if isTrue="{!v.AccRecords.No_of_Platform_Seats__c > 0}">
+                                                            <td>
+                                                                <b>ZIA</b> 
+                                                                <br/> 
+                                                                Yes
+                                                            </td>
+                                                        </aura:if>
+                                                        <aura:if isTrue="{!v.AccRecords.No_of_Platform_Seats__c == 0}">
+                                                            <td>
+                                                                <b>ZIA</b> 
+                                                                <br/> 
+                                                                No
+                                                            </td>       
+                                                        </aura:if>
+                                                    </tr>
+                                                    <tr>
+                                                        <aura:if isTrue="{!v.AccRecords.Users_ZPA_Platform__c > 0}">
+                                                            <td>
+                                                                <b>ZPA</b> 
+                                                                <br/> 
+                                                                Yes
+                                                            </td>
+                                                        </aura:if>
+                                                        <aura:if isTrue="{!v.AccRecords.Users_ZPA_Platform__c == 0}">
+                                                            <td>
+                                                                <b>ZPA</b> 
+                                                                <br/> 
+                                                                No
+                                                            </td>       
+                                                        </aura:if>
+                                                    </tr>
+                                                    
+                                                    <tr>
+                                                        <td>
+                                                            <b>Customer Since</b> 
+                                                            <br/> 
+                                                            <ui:outputDate aura:id="oDate" value="{!v.OldDate}" format="MMM DD YYYY" />
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            
+                                            <aura:if isTrue="{!or(v.AccRecords.Namedrop__c != '', v.AccRecords.Namedrop__c != null, v.AccRecords.ZIA_Use_Cases__c != '' , v.AccRecords.ZIA_Use_Cases__c != null, v.AccRecords.ZPA_Use_Cases__c != '' , v.AccRecords.ZPA_Use_Cases__c != null)}">
+                                                <div class="slds-col">
+                                                    <table class="slds-table ">
+                                                        <thead style="border-bottom: 1px solid darkgrey">
+                                                            <tr class="slds-text-title_caps">
+                                                                <th scope="col">
+                                                                    <div class="slds-truncate" title="Reference">Reference</div>
+                                                                </th>
+                                                            </tr>
+                                                        </thead>
+                                                        <aura:if isTrue="{!and(v.AccRecords.Namedrop__c != '' , v.AccRecords.Namedrop__c != null)}">
+                                                            <tr>
+                                                                <td>
+                                                                    <b>Name Drop</b> 
+                                                                    <br/> 
+                                                                    {!v.AccRecords.Namedrop__c}
+                                                                </td>
+                                                            </tr>
+                                                        </aura:if>
+                                                        <aura:if isTrue="{!and(v.AccRecords.ZIA_Use_Cases__c != '' , v.AccRecords.ZIA_Use_Cases__c != null)}">
+                                                            <tr>
+                                                                <td class="slds-cell-wrap">
+                                                                    <b>ZIA Use Case</b> 
+                                                                    <br/> 
+                                                                    {!v.AccRecords.ZIA_Use_Cases__c}
+                                                                </td>
+                                                            </tr>
+                                                        </aura:if>
+                                                        <aura:if isTrue="{!and(v.AccRecords.ZPA_Use_Cases__c != '' , v.AccRecords.ZPA_Use_Cases__c != null)}">
+                                                            <tr>
+                                                                <td class="slds-cell-wrap">
+                                                                    <b>ZPA Use Case</b> 
+                                                                    <br/> 
+                                                                    {!v.AccRecords.ZPA_Use_Cases__c}
+                                                                </td>
+                                                            </tr>
+                                                        </aura:if>
+                                                    </table>
+                                                </div>
+                                            </aura:if>
+                                        </aura:if>
+                                        
+                                        <div class="slds-col">
+                                            <table class="slds-table ">
+                                                <thead style="border-bottom: 1px solid darkgrey">
+                                                    <tr class="slds-text-title_caps">
+                                                        <th scope="col">
+                                                            <div class="slds-truncate" title="Profile">Profile</div>
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tr>
+                                                    <td>
+                                                        <b>Industry</b> 
+                                                        <br/>
+                                                        {!v.AccRecords.Industry}
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <b>Market Segment</b> 
+                                                        <br/> 
+                                                        {!v.AccRecords.Market_Segment__c}
+                                                    </td>
+                                                </tr>
+                                                <aura:if isTrue="{!v.AccRecords.Type == 'Customer'}">
+                                                    <tr>
+                                                        <td>
+                                                            <b>Customer Support Segment</b>
+                                                            <br/> 
+                                                            <!-- need to Map Customer Support Segment here -->
+                                                            {!v.AccRecords.Type}
+                                                        </td>
+                                                    </tr>
+                                                </aura:if>
+                                                <tr>
+                                                    <td>
+                                                        <b>Type</b> 
+                                                        <br/> 
+                                                        {!v.AccRecords.Type}
+                                                    </td>
+                                                </tr>
+                                                <aura:if isTrue="{!v.AccRecords.Type == 'Prospect'}">
+                                                    <tr>
+                                                        <td>
+                                                            <b>Prospect type</b> 
+                                                            <br/> 
+                                                            {!v.AccRecords.Prospect_Type__c}
+                                                        </td>
+                                                    </tr>
+                                                </aura:if>
+                                            </table>
+                                        </div>
+                                        
+                                        <aura:if isTrue="{!v.AccRecords.Type == 'Prospect'}">
+                                            <aura:if isTrue="{!if(or(v.AccRecords.Prospect_Type__c == 'Pipeline' , v.AccRecords.Prospect_Type__c == 'POC'), true, false)}">
+                                                <div class="slds-col" >
+                                                    <table class="slds-table ">
+                                                        <thead style="border-bottom: 1px solid darkgrey">
+                                                            <tr class="slds-text-title_caps">
+                                                                <th scope="col">
+                                                                    <div class="slds-truncate" title="PipeLine">PipeLine</div>
+                                                                </th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tr>
+                                                            <td>
+                                                                <b>ZIA</b> 
+                                                                <br/>
+                                                                <lightning:formattedNumber value="{!v.mTotalZIAACV}" style="currency" currencyCode="USD" minimumFractionDigits="2" maximumFractionDigits="2"/>
+                                                                
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                <b>ZPA</b> 
+                                                                <br/>
+                                                                <lightning:formattedNumber value="{!v.mTotalZPAACV}" style="currency" currencyCode="USD" minimumFractionDigits="2" maximumFractionDigits="2"/>
+                                                                
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                <b>Close Quarter</b> 
+                                                                <br/> 
+                                                                <ui:outputDate aura:id="closeDate" value="{!v.mPartnerCloseDate}" format="MMM DD YYYY" />
+                                                                
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+                                            </aura:if>
+                                        </aura:if>
+                                    </div>
+                                </div>
+                                <!--###### MODAL BOX FOOTER Part Start ######-->
+                                <footer class="slds-modal__footer">
+                                    <!-- <button type="button" class="slds-button slds-button_brand" id="{!v.AccRecords.Id}" onclick="{!c.redirectToAccount}" style="margin-left:10px;">Go To Account
+                                </button>-->
+                                    
+                                    
+                                    <aura:if isTrue="{!and(v.ismodalSubmited == false , v.ismodalcheck == 'false')}"> 
+                                        <!--<img src="{!$Resource.RequestAcess}" title="Request Access" onclick="{!c.checkCaseRec}" id="{!acc.Accrec.Id}" style="width:25px;height:20px;cursor: pointer;"/>-->
+                                        <button type="button" class="slds-button slds-button_brand" disabled="{!v.isRequestModel}" style="white-space: inherit;" onclick="{!c.openRequetModel}" id="{!v.AccRecords.Id}">Request Access</button>
+                                    </aura:if>  
+                                    
+                                    
+                                    
+                                    <aura:if isTrue="{!and(v.ismodalSubmited !=true , v.ismodalcheck != 'false')}">
+                                        <button type="button" class="slds-button slds-button_brand" id="{!v.AccRecords.Id}" onclick="{!c.redirectToAccount}">Go To Account
+                                        </button>
+                                    </aura:if>
+                                    
+                                    <!-- <aura:if isTrue="{!v.ismodalSubmited}">-->
+                                    <aura:if isTrue="{!and(v.ismodalcheck == 'false' , v.ismodalSubmited == true)}">
+                                        <!--<img src="{!$Resource.Requestsubmited}" title="Access Requested" disabled="true" style="width:25px;height:20px;"/>-->
+                                        <button type="button" class="slds-button slds-button_neutral" disabled="true" style="white-space: inherit;" >Access Requested</button>
+                                    </aura:if>
+                                    
+                                    <button type="button" class="slds-button slds-button_brand" onclick="{!c.redirectToNewSCI}" id="{!v.AccRecords.Id}" style="margin-left:10px;">Create SCI</button>
+                                    <lightning:button variant="neutral" 
+                                                      label="Close"
+                                                      title="Close"
+                                                      onclick="{!c.closeModel }"/>
+                                    <!-- <lightning:button variant="brand" 
+                                          label="Like and Close"
+                                          title="Like and Close"
+                                          onclick="{! c.likenClose }"/>-->
+                                </footer>
+                            </div>
+                        </section>
+                        <div class="slds-backdrop slds-backdrop_open"></div>
+                        <!--###### MODAL BOX Part END Here ######-->
+                    </aura:if>
+                    
+                    
+                    <aura:if isTrue="{!v.isOpenRequestAcess}">
+                        <!--###### openRequestAcessModel MODAL BOX Start######--> 
+                        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                            <div class="slds-modal__container" style="top: 10%;height : auto !important; width: auto !important; max-width: auto !important;">
+                                <!-- ###### MODAL BOX HEADER Start ######-->
+                                <header class="slds-modal__header" style="background-color:rgb(0, 95, 178)">
+                                    <lightning:buttonIcon iconName="utility:close"
+                                                          onclick="{! c.closeModel }"
+                                                          alternativeText="close"
+                                                          variant="bare-inverse"
+                                                          class="slds-modal__close"/>
+                                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate" style="text-:right"><b><div class="slds-text-color_inverse">{!v.AccRecName}</div></b></h2>
+                                </header>
+                                <!--###### openRequestAcessModel MODAL BOX BODY Part Start######-->
+                                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                                    
+                                    <ui:inputTextarea aura:id="JustificationRequest" label="Justification for Request access:"
+                                                      class="slds-input"
+                                                      labelClass="slds-form-element__label"
+                                                      value="{!v.JustificationRequestvalue}" />
+                                    
+                                    <!--<div class="container-fluid">
+                                
+                                <div class="form-group">
+                                    <label>Justification for Request</label>
+                                    <ui:inputText class="form-control" value="{!v.caserec.JustificationforRequest__c}"/>
+                                </div>
+                            </div>-->
+                                </div>
+                                <!--###### openRequestAcessModel MODAL BOX FOOTER Part Start ######-->
+                                <footer class="slds-modal__footer">
+                                    
+                                    <button type="button" class="slds-button slds-button_brand" style="white-space: inherit;" onclick="{!c.checkCaseRec}" >Submit For Approval</button>
+                                    
+                                    <lightning:button variant="neutral" 
+                                                      label="Cancel"
+                                                      title="Cancel"
+                                                      onclick="{!c.closeModel }"/>
+                                    <!-- <lightning:button variant="brand" 
+                                          label="Like and Close"
+                                          title="Like and Close"
+                                          onclick="{! c.likenClose }"/>-->
+                                </footer>
+                            </div>
+                        </section>
+                        <div class="slds-backdrop slds-backdrop_open"></div>
+                        <!--###### openRequestAcessModel MODAL BOX Part END Here ######-->
+                    </aura:if>
+                    
+                    <!-- TABLE CONTENT--> 
+                    
+                    <table class="slds-table slds-table_bordered slds-table_cell-buffer ">
+                        <thead>
+                            <tr class="slds-text-title_caps">
+                                <th scope="col" style="width: 25%;">
+                                    <div  title="Action">Action</div>
+                                </th>
+                                
+                                <th scope="col">
+                                    <div  title="Account Name">Account Name</div>
+                                </th>
+                                <th scope="col">
+                                    <div  title="Country">Country</div>
+                                </th>
+                                <th scope="col">
+                                    <div  title="Type">Type</div>
+                                </th>
+                                <th scope="col">
+                                    <div  title="Owner">Owner</div>
+                                </th>
+                                <th scope="col">
+                                    <div  title="Area Director">Area Director</div>
+                                </th>
+                                <th scope="col">
+                                    <div  title="Area">Area</div>
+                                </th>
+                                <th scope="col">
+                                    <div  title="Number of Employees/Users">Number of<br/> Employees/Users</div>
+                                </th>
+                                <!--<th scope="col">
+                                <div class="slds-truncate" title="Channel Manager Name">Channel Manager</div>
+                            </th>
+                            <th scope="col">
+                                <div class="slds-truncate" title="Lead Devlopment">Lead Devlopment</div>
+                            </th>
+                            <th scope="col">
+                                <div class="slds-truncate" title="CSM Name">CSM Name</div>
+                            </th>
+                            <th scope="col">
+                                <div class="slds-truncate" title="Tam Name">TAM Name</div>
+                            </th>
+                            <th scope="col">
+                                <div class="slds-truncate" title="Sales Territory Name">Sales Territory</div>
+                            </th>-->
+                            </tr>
+                        </thead>
+                        <tbody> 
+                            <!--### display all records of searchResult attribute by aura:iteration ###--> 
+                            <aura:iteration items="{!v.PaginationList}" var="acc" indexVar="count">
+                                <tr>
+                                    <td>
+                                        <aura:if isTrue="{!!acc.isChecked}">
+                                            <aura:if isTrue="{!!acc.Issubmitted}">
+                                                <!--<img src="{!$Resource.RequestAcess}" title="Request Access" onclick="{!c.checkCaseRec}" id="{!acc.Accrec.Id}" style="width:25px;height:20px;cursor: pointer;"/>--> 
+                                                <button type="button" class="slds-button slds-button_brand" style="white-space: inherit;padding:0px 12px;" onclick="{!c.openRequestAcessModel}" id="{!acc.Accrec.Id}" data-name="{!acc.Accrec.Name}">Request Access</button>
+                                            </aura:if>
+                                        </aura:if>
+                                        <aura:if isTrue="{!acc.isChecked}">                                                                                    
+                                            <button type="button" class="slds-button slds-button_brand" id="{!acc.Accrec.Id}" onclick="{!c.redirectToAccount}">Go To Account
+                                            </button>
+                                        </aura:if>
+                                        <aura:if isTrue="{!acc.Issubmitted}">
+                                            <!--<img src="{!$Resource.Requestsubmited}" title="Access Requested" disabled="true" style="width:25px;height:20px;"/>-->
+                                            <button type="button" class="slds-button slds-button_neutral"  style="white-space: inherit;padding:0px 5px;" >Access Requested</button>
+                                        </aura:if>
+                                        
+                                        <!--<lightning:helptext content="More Info" onclick="{!c.openModel}" id="{!acc.Accrec.Id}" style="width:25px;height:20px;margin-left:10px;cursor: pointer;"/>-->
+                                        <button type="button" class="slds-button slds-button_brand" onclick="{!c.redirectToNewSCI}" id="{!acc.Accrec.Id}" >Create SCI</button>
+                                        
+                                        <img src="{!$Resource.MoreInfo}" title="More Info" onclick="{!c.openModel}" data-ischeck="{!acc.isChecked}" data-issubmited="{!acc.Issubmitted}" id="{!acc.Accrec.Id}" style="width:30px;height:30px;cursor: pointer;margin-left:5px;"/>
+                                    </td>
+                                    
+                                    <td>
+                                        <div style="white-space: normal">
+                                            <!-- <a href="{!'/one/one.app?#/sObject/'+ acc.Id + '/view'}" target="_blank">{!acc.Name}</a>-->
+                                            <a href="{!'/'+acc.Accrec.Id}" target="_blank">{!acc.Accrec.Name}</a>
+                                        </div>
+                                    </td>
+                                    
+                                    <td>
+                                        <div >
+                                            {!acc.Accrec.BillingCountry}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div >
+                                            {!acc.Accrec.Type}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div >
+                                            {!acc.Accrec.Owner.Name}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div >
+                                            {!acc.Accrec.Area_Director__r.Name}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div >
+                                            {!acc.Accrec.Area__c}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div >
+                                            {!acc.Accrec.No_of_Employees_Users__c}
+                                        </div>
+                                    </td>
+                                </tr>
+                            </aura:iteration>
+                            
+                        </tbody>
+                    </table>
+                    <center style="margin-top:10px;">
+                        <lightning:buttonGroup>
+                            <lightning:button label="Previous" 
+                                              disabled="{!v.startPage == 0}"  
+                                              onclick="{!c.previous}" 
+                                              variant="brand"
+                                              iconName='utility:back'/>
+                            <lightning:button label="Next" 
+                                              disabled="{!v.endPage + 1 >= v.totalRecords}" 
+                                              onclick="{!c.next}" 
+                                              variant="brand"
+                                              iconName='utility:forward'/>
+                        </lightning:buttonGroup>
+                        <p class="slds-m-top--small slds-page-header__title slds-truncate">{!v.totalRecords} Accounts • page {!v.page + 1} / {!v.pages}</p>
+                    </center>
+                </div>
+            </aura:if>
+        </aura:if>
+  
+</aura:component>

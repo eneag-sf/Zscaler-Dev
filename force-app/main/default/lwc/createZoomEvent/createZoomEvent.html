@@ -1,0 +1,34 @@
+<template>
+    <div class="slds-box slds-box_small" style="background-color: rgb(255, 255, 255);">
+    <div style="margin-left: 6%" if:true={error}>
+        <lightning-badge label={error} style="color: red;"></lightning-badge>
+    </div>
+    <div>
+        <lightning-layout pull-to-boundary="small" multiple-rows="true" title="Meeting Details" verticalalign="start">
+            <lightning-layout-item title="Meeting Details" size="12" padding="around-medium" verticalalign="start">
+                <div class="slds-m-around--xx-large">
+                    <div class="container-fluid">
+                        <div class="slds-grid">
+                        <lightning-record-view-form record-id={recordId} object-api-name={Caseobject}>
+                            <lightning-formatted-text label="Meeting Invitee  " value={Contact} ></lightning-formatted-text>
+                        </lightning-record-view-form>
+                        </div>
+                        <div class="form-group">
+                            <lightning-input type="text" onchange={assigncasecomment} label="Subject"> </lightning-input>
+                        </div>
+                        <div class="form-group">
+                            <lightning-input label="Enter Start Time" name="EvntStime" type="datetime"  onchange={assignStartTime}></lightning-input>
+                        </div>
+                        <div class="form-group">
+                            <lightning-input label="Enter End Time" name="EvntEtime" type="datetime"  onchange={assignEndTime}></lightning-input>
+                        </div>  
+                                          
+                    </div>
+                    <br/>
+                    <lightning-button label="Submit" onclick={handleSave} variant="brand"></lightning-button>
+                </div>
+            </lightning-layout-item>
+        </lightning-layout>       
+    </div>
+    </div>
+</template>

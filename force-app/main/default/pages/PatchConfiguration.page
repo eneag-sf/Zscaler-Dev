@@ -1,0 +1,245 @@
+<apex:page controller="PatchConfigurationController" tabStyle="Patch__c" ><!--lightningStylesheets="true"-->
+    <apex:includeScript value="{!URLFOR($Resource.Patches, 'js/jquery.min.js')}" />
+    <style>
+        .hidden {
+            display: none;
+        }
+    </style>
+    <script>
+        $(document).ready(function() {
+            $(".leadRoles input[type='checkbox']").click(function() {
+                var clicked = $(this)[0];
+                $(".leadRoles input[type='checkbox']").each(function() {
+                    if($(this)[0] != clicked) {
+                        $(this).attr("checked", false);
+                    }
+                });
+            });
+            $(".accRoles input[type='checkbox']").click(function() {
+                var clicked = $(this)[0];
+                $(".accRoles input[type='checkbox']").each(function() {
+                    if($(this)[0] != clicked) {
+                        $(this).attr("checked", false);
+                    }
+                });
+            });
+            var accountPermissionSpan = $('span._permission');
+            accountPermissionSpan.each(function () {
+                var span = $(this);
+                if (span.parent().find('select').val()) {
+                    span.append('<a href="javascript:void(0)" onclick="openModals(event);">Permissions</a>');
+                }
+                span.parent().find('select').change(function () {
+                    window.toggleSpan(this);
+                })
+            });
+        });
+        function toggleSpan (ele) {
+            var value = ele.value;
+            var span = $(ele).parent().find('span');
+            if (span) {
+                if (value){
+                    if (span.children().length<=0){
+                        span.append('<a href="javascript:void(0)" onclick="openModals(event);">Permissions</a>');
+                    }
+                } else {
+                    if (span.children().length>0){
+                        span.children().remove();
+                    }
+                }
+            }
+        };
+        function openModals(e) {
+            let type = $(e.target).parents('div.pbSubsection').first().prev().children().first().text();
+            let role = $(e.target).parents('tr').children().first().text().replace(/\ + /g, "").replace(/[\r\n]/g, "");
+            let modals = $('#__modal');
+            modals.css({
+                backgroundColor: 'rgba(0,0,0,.33)',
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                zIndex: 9990,
+                display: 'block'
+            });
+            getPermisstions(type, role);
+        }
+        function cancel() {
+            var modals = $('#__modal');
+            modals.find('select').val("");
+            modals.css({
+                display: 'none',
+            });
+        }
+        function save() {
+            savePermisstions();
+            var modals = $('#__modal');
+            modals.find('select').val("");
+            modals.css({
+                display: 'none',
+            });
+        }
+    </script>
+    <apex:sectionHeader title="Patch Rules" subtitle="Configuration" />
+    <apex:form >
+        <apex:pageMessages />
+        <apex:pageBlock >
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Save" action="{!save}" />
+                <apex:commandButton value="Cancel" action="{!URLFOR($Page.PatchRules)}" />
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection columns="2" title="Lead" collapsible="false">
+                <apex:pageBlockTable value="{!mappings['Lead']}" var="m">
+                    <apex:column headerValue="Criteria">
+                        {!m.key}
+                    </apex:column>
+                    <apex:column headerValue="Field">
+                        <apex:selectList size="1" value="{!m.value}">
+                            <apex:selectOptions value="{!textFieldItems['Lead']}" />
+                        </apex:selectList>
+                    </apex:column>
+                </apex:pageBlockTable>
+                <apex:pageBlockTable value="{!roles['Lead']}" var="m">
+                    <apex:facet name="caption">{!IF(hasLeadShareEnabled, '', 'Lead sharing is not enabled')}</apex:facet>
+                    <apex:column headerValue="Role">
+                        {!m.key}
+                    </apex:column>
+                    <apex:column headerValue="Field">
+                        <apex:selectList size="1" value="{!m.value}">
+                            <apex:selectOptions value="{!userLookupFieldItems['Lead']}" />
+                        </apex:selectList>
+                    </apex:column>
+                    <apex:column headerValue="Assign Owner" style="text-align: center" styleClass="leadRoles">
+                        <apex:inputCheckbox value="{!m.addBool}" />
+                    </apex:column>
+                </apex:pageBlockTable>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection columns="2" title="Account" collapsible="false">
+                <apex:pageBlockTable value="{!mappings['Account']}" var="m">
+                    <apex:column headerValue="Criteria">
+                        {!m.key}
+                    </apex:column>
+                    <apex:column headerValue="Field">
+                        <apex:selectList size="1" value="{!m.value}">
+                            <apex:selectOptions value="{!textFieldItems['Account']}" />
+                        </apex:selectList>
+                    </apex:column>
+                </apex:pageBlockTable>
+                <apex:pageBlockTable value="{!roles['Account']}" var="m">
+                    <apex:facet name="caption">{!IF(hasAccountTeamEnabled, '', 'Account Team is not enabled')}</apex:facet>
+                    <apex:column headerValue="Role">
+                        {!m.key}
+                    </apex:column>
+                    <apex:column headerValue="Account Team" rendered="{!hasAccountTeamEnabled}">
+                        <apex:selectList size="1" value="{!m.value}">
+                            <apex:selectOptions value="{!accountTeamRoleItems}" />
+                        </apex:selectList>
+                        <span class="_permission"></span>
+                    </apex:column>
+                    <apex:column headerValue="Assign Owner" styleClass="accRoles">
+                        <apex:inputCheckbox value="{!m.addBool}" />
+                    </apex:column>
+                </apex:pageBlockTable>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection columns="2" title="Opportunity" collapsible="false">
+                <apex:pageBlockTable value="{!mappings['Account']}" var="m">
+                    <apex:column headerValue="Criteria" style="padding: 6px 5px;">
+                        {!m.key}
+                    </apex:column>
+                    <apex:column headerValue="Field" style="padding: 6px 5px;">
+                        <span class="{!IF(m.value == '', 'hidden', '')}">Account.{!m.value}</span>
+                    </apex:column>
+                </apex:pageBlockTable>
+                <apex:pageBlockTable value="{!roles['Account']}" var="m" >
+                    <apex:column headerValue="Role" style="padding: 6px 5px;">
+                        {!m.key}
+                    </apex:column>
+                    <apex:column headerValue="Opportunity Team" style="padding: 6px 5px;">
+                        {!m.value}
+                    </apex:column>
+                </apex:pageBlockTable>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+        <apex:actionFunction name="getPermisstions" action="{!retrieveTeamMemberPermissions}" rerender="resultPanel, resultPanel2" status="retrieveStatus">
+            <apex:param name="obj"  value="" /> 
+            <apex:param name="value"  value="" />
+        </apex:actionFunction>
+        <apex:actionFunction name="savePermisstions" action="{!saveTeamMemberPermissions}" reRender="noRender">
+        </apex:actionFunction>
+        <div id="__modal" style="display: none;">
+            <div style="width: 400px;position: absolute;top: 50%;left: 50%;margin-left: -200px;margin-top: -102px;background-color: whitesmoke;border-radius: 5px;box-shadow: 2px 2px 5px 0px">
+                <apex:outputPanel id="resultPanel">
+                    <div style="padding-left: 20px;;font-size: 20px;line-height: 46px;border-bottom: 1px solid #ddd">
+                        Set Access Level &nbsp;&nbsp;
+                        <apex:actionStatus startText="Requesting..." stopText="" id="retrieveStatus">
+                            <apex:facet name="start">
+                                <apex:outputPanel >
+                                    <img src="/img/loading32.gif" width="15" height="15" />
+                                    <apex:outputLabel value=""/>
+                                </apex:outputPanel>            
+                            </apex:facet>
+                        </apex:actionStatus> 
+                    </div>
+                    <div style="font-size:14px; margin-bottom: 10px;padding: 10px 0 10px 20px;;border-bottom: 1px solid #ddd">
+                        <table style="width: 100%" align="bottom">
+                            <tr>
+                                <td style="vertical-align: bottom;">
+                                    Account Access
+                                </td>
+                                <td>
+                                    <apex:selectList id="accountAccess" value="{!templeMapping.accountAccess}" size="1">
+                                        <apex:selectOption itemValue="Read" itemLabel="Read Only"/>
+                                        <apex:selectOption itemValue="Edit" itemLabel="Read/Write"/>
+                                    </apex:selectList>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="vertical-align: bottom;">
+                                    Opportunity Access
+                                </td>
+                                <td>
+                                    <apex:selectList id="opportunityAccess" value="{!templeMapping.opportunityAccess}" size="1">
+                                        <apex:selectOption itemValue="" itemLabel="Private"/>
+                                        <apex:selectOption itemValue="Read" itemLabel="Read Only"/>
+                                        <apex:selectOption itemValue="Edit" itemLabel="Read/Write"/>
+                                    </apex:selectList>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="vertical-align: bottom;">
+                                    Case Access
+                                </td>
+                                <td>
+                                    <apex:selectList id="caseAccess" value="{!templeMapping.caseAccess}" size="1">
+                                        <apex:selectOption itemValue="" itemLabel="Private"/>
+                                        <apex:selectOption itemValue="Read" itemLabel="Read Only"/>
+                                        <apex:selectOption itemValue="Edit" itemLabel="Read/Write"/>
+                                    </apex:selectList>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="vertical-align: bottom;">
+                                    Contact Access
+                                </td>
+                                <td>
+                                    <apex:selectList id="contactAccess" value="{!templeMapping.contactAccess}" size="1">
+                                        <apex:selectOption itemValue="" itemLabel="Private"/>
+                                        <apex:selectOption itemValue="Read" itemLabel="Read Only"/>
+                                        <apex:selectOption itemValue="Edit" itemLabel="Read/Write"/>
+                                    </apex:selectList>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div style="overflow: hidden;">
+                        <div style="text-align: center; padding-bottom: 10px;">
+                            <button type="button" onclick="save();" style="width: 44px;height: 20px;"> Save </button>
+                            <button type="button" onclick="cancel();" style="width: 44px;height: 20px;">Cancel</button>
+                        </div>
+                    </div>
+                </apex:outputPanel>
+            </div>
+        </div>
+    </apex:form>
+</apex:page>

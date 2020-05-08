@@ -1,0 +1,21 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome" access="global" controller="DeletePartnersClass">
+    <aura:attribute name="PartnerId" type="string" />
+    <aura:attribute name="OppId" type="string" />
+    <aura:attribute name="Errors" type="boolean" default="false" />
+    <aura:attribute name="errorMessage" type="string" />
+    <lightning:spinner variant="brand" size="large" aura:id="Id_spinner" class="slds-hide" />
+	<aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <div class="slds-float_right" style="align-self: flex-end;">
+        <a href="{!'/'+v.OppId}" target="_parent">Back To Opportunity</a>
+        <!--(Or) 
+        <a href="{!'/'+v.PartnerId}" target="_parent">Back To Partner</a>-->
+    </div>
+    <aura:if isTrue="{!v.Errors}">
+        <!-- Show the message to ui -->
+        <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error" role="alert">
+            <span class="slds-assistive-text">Error</span>
+            <h2>{!v.errorMessage}</h2>
+        </div>
+    </aura:if>
+</aura:component>

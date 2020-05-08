@@ -1,0 +1,1474 @@
+<apex:page showHeader="true" sidebar="false" controller="ZForecastingController" extensions="ZForecastingStatsService,ForecastingStatsService" tabStyle="ZForecasting__tab" action="{!init}">
+    <meta charset="utf-8" />
+    <script>
+      window.RESOURCE_ROOT = "{!URLFOR($Resource.Multiselect_Forecasting, '')}";
+    </script>
+    <apex:includeScript value="{!URLFOR($Resource.ZForecasting, 'js/jquery-1.11.3.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.ZForecasting, 'js/jquery-ui.min.js')}"/>
+    <!--script src="https://code.jquery.com/jquery-1.11.1.min.js"></script-->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular-animate.min.js"></script>
+
+    <!--apex:includeScript value="{!URLFOR($Resource.ZForecasting, 'js/angular.min.js')}"/-->
+    <!--apex:includeScript value="{!URLFOR($Resource.ZForecasting, 'js/angular-animate.min.js')}"/-->
+    <apex:includeScript value="{!URLFOR($Resource.ZForecasting, 'js/jsgrid.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.ZForecasting, 'js/oppListV2GlobalConfigs.js')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.ZForecasting, 'css/jquery-ui.min.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.ZForecasting, 'css/jsgrid.min.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.ZForecasting, 'css/jsgrid-theme.min.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.ZForecasting, 'css/fq.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.ZForecasting, 'css/toggle-switch.css')}" />
+
+    <script type="text/javascript">
+        var forecastEditable = {!AND(CurrentViewingUser.UserId == $User.Id, impersonateViewAsUser == false)};
+        var forecastEnabled = {!CurrentViewingUser.ForecastEnabled == true};
+        var fiscalQtr = "{!CurrentFiscalQuarter.FormattedString}";
+        var week = "{!CurrentWeek.FormattedString}";
+        var startDate = "{!CurrentFiscalQuarter.StartDate}";
+        var endDate = "{!CurrentFiscalQuarter.EndDate}";
+        var currentViewingUserId = "{!CurrentViewingUser.UserId}";
+        var viewNOTRA = "{!ViewNOTRA}";
+        var viewBillings= "{!ViewBillings}";
+        var viewNetNewACV= "{!ViewNetNewACV}";
+        var viewExportToExcel= "{!ViewExportToExcel}";
+        var CurrentLoginUserId = "{!$User.Id}";
+        var CurrentLoginUserName = "{!$User.FirstName + ' ' + $User.LastName}";
+        var userPath = "{!UserPath}";
+        var forecastType = "{!ForecastType}";
+        var forecastFamily = "{!ForecastFamily}";
+        var canEditPlan = {!canEditPlan};
+        var isViewingHistory = {!IsViewingHistory};
+        var zpaForecastEnabled = {!CurrentViewingUser.ZPAForecastEnabled == true};
+        var zpaForecastEditable = {!AND(CurrentViewingUser.UserId == $User.Id, impersonateViewAsUser == false)};
+        var showForecastFamilySwitch = {!showForecastFamilySwitch};
+        var showAsManagerInZPAForecasting = {!CurrentViewingUser.ShowAsManagerInZPAForecasting == true};
+        var inlineEditingState = '{!InlineEditingState}';
+        var oppListEditPicklistValues = JSON.parse( '{!OpportunityPicklistFieldsValues}' );
+        var oppListPageSize = 50;
+        var UserLevel = '{!UserLevel}';
+        var CurrentUserLevel = '{!CurrentUserLevel}';
+        var LoggedInUserLevel = '{!LoggedInUserLevel}';
+        var MyUserLevel = '{!MyUserLevel}';
+        var MyUserId = '{!MyUserId}';
+        var showMyForecastSection = {!showMyForecastSection};
+        var impersonateViewAsUser = {!impersonateViewAsUser};
+        var forecastEnabledForLoggedInUser = {!forecastEnabledForLoggedInUser};
+        var showMyRollupSection = {!showMyRollupSection};
+        var geoandregionmap = {!GeoAndRegionPicklistValues};
+        function calloppty(currentpicklist){
+            if(currentpicklist == 'closingweek'){
+                angular.element(document.getElementById('ngContainer')).scope().selectedclosingMonthvals = [];
+            }else if(currentpicklist == 'closingmonth'){
+                angular.element(document.getElementById('ngContainer')).scope().selectedclosingWeekvals = [];
+            }else if(currentpicklist == 'contractedmonth'){
+                angular.element(document.getElementById('ngContainer')).scope().selectedconedweekvals = [];
+            }else if(currentpicklist == 'contractedweek'){
+                angular.element(document.getElementById('ngContainer')).scope().selectedconedmonthvals = [];
+            }else if(currentpicklist == 'geopicklist'){
+
+                angular.element(document.getElementById('ngContainer')).scope().selectedregionvals = [];
+                angular.element(document.getElementById('ngContainer')).scope().loadregvalsmulti();
+            }else if(currentpicklist == 'notrafilter'){
+                angular.element(document.getElementById('ngContainer')).scope().clearallfilters(currentpicklist);
+                angular.element(document.getElementById('ngContainer')).scope().setnotradescription();
+
+            }
+
+            if(currentpicklist != 'notrafilter'){
+                angular.element(document.getElementById('ngContainer')).scope().clearnotra();
+            }
+            angular.element(document.getElementById('ngContainer')).scope().loadOpportunityListing();
+        }
+        
+        function assignlist(oppdata, levelminusonetitle, viewNotra, daterange){
+            console.log(oppdata);
+            document.getElementById("payloadId").value = JSON.stringify(oppdata);
+            document.getElementById("levelminusonetitle").value = levelminusonetitle;
+            document.getElementById("viewNotra").value = viewNotra;
+            document.getElementById("daterange").value = daterange;
+            sendform();
+        }
+
+    </script>
+    <script src="{!URLFOR($Resource.ZForecasting, 'js/forecast.js')}"></script>
+    <script src="{!URLFOR($Resource.ZForecasting, 'js/dialog.js')}"></script>
+    <apex:stylesheet value="{!URLFOR($Resource.Multiselect_Forecasting, 'multi-select/style.css')}" />
+    <script src="{!URLFOR($Resource.Multiselect_Forecasting, 'multi-select/multiselect.js')}"/>
+    <!-- <script src="{!URLFOR($Resource.Multiselect_Forecasting, 'multi-select/app.js')}"/> -->
+
+    <!--<div style="text-align: center; padding: 5px 5px; background-color: #fff3cd; color: #856404; border: 1px solid red; border-radius: 15px; "><h1>You are viewing the newly released Forecasting Module. You can listen to the Monday Masters <a target="_blank" href="https://drive.google.com/file/d/1iphV1BmOiUF9hcfvyorZS3xqyukRZUYt/view">recording</a> to learn more about this new module.</h1></div>-->
+    <apex:sectionHeader title="Forecasting" subTitle="{!CurrentFiscalQuarter.FormattedString} - {!IF(CurrentViewingUser.ForecastEnabled == true || CurrentViewingUser.ZPAForecastEnabled == true, CurrentViewingUser.UserName, '')}" />
+    <apex:PageMessages id="pageMessage" escape="true" />
+    <style>
+    .export-btn {
+        display: inline-block;
+        margin-bottom: 0;
+        line-height: 25px;
+        text-align: center;
+        vertical-align: middle;
+        cursor: pointer;
+        /*color: #333333;
+        text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
+        background-image: -moz-linear-gradient(top, #ffffff, #e6e6e6);
+        background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#ffffff), to(#e6e6e6));
+        background-image: -webkit-linear-gradient(top, #ffffff, #e6e6e6);
+        background-image: -o-linear-gradient(top, #ffffff, #e6e6e6);
+        background-image: linear-gradient(to bottom, #ffffff, #e6e6e6);
+        background-repeat: repeat-x;
+        filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffffff', endColorstr='#ffe6e6e6', GradientType=0);
+        border-color: #e6e6e6 #e6e6e6 #bfbfbf;
+        border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+        filter: progid:DXImageTransform.Microsoft.gradient(enabled = false);
+        border: 1px solid #cccccc;
+        border-bottom-color: #b3b3b3;
+        -webkit-border-radius: 4px;
+        -moz-border-radius: 4px;
+        border-radius: 4px;
+        -webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 1px 2px rgba(0,0,0,.05);
+        -moz-box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 1px 2px rgba(0,0,0,.05);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 1px 2px rgba(0,0,0,.05);
+        background-color: #FFF;*/
+        padding-left: 5px;
+        padding-right: 5px;
+        margin-bottom: 5px;
+    }
+    .helpOrb:hover {
+        background-position: top right;
+    }
+    .apexp .bPageBlock.apexDefaultPageBlock .pbBody .pbSubheader {
+        margin: 1% 0%;
+        background-color: #4863A0;
+    }
+
+    .listCaption{
+        margin-bottom: 10px;
+    }
+    .hard_top{
+        position: absolute !important;
+        left: 40%;
+    }
+    .firstcolumn{
+        background-color: #CADBFF;
+        text-align: center;
+    }
+    .bold{
+        font-weight: bold;
+    }
+    .hard_left {
+        position: absolute;
+        width: 155px !important;
+        left: 0;
+        border: 0.8px solid grey !important;
+        border-spacing: 1px !important;
+        margin-top: -1.0px !important;
+        height: 14.5px;
+    }
+    .outer {position:relative}
+    .inner {
+      overflow-x:auto;
+      overflow-y:visible;
+      max-width:75%;
+      margin-left:160px;
+    }
+    .pipe{
+        border-right: 1px solid;
+        padding: 0 8px 0 8px;
+    }
+    .pipe-filters{
+        border-left: 1px solid;
+        padding: 0 10px 0 5px;
+    }
+    ul li, ol li {
+        margin-left: 0px;
+        padding-left: 0;
+        /*width: 195px*/
+    }
+    .container {
+        width: 20px;
+    }
+    
+    .btn-switch {
+        position: relative;
+        float:right;
+        display: block;
+        width: 40px;
+        height: 20px;
+        cursor: pointer;
+        background-color: #F27878;
+        border: 2px solid #F27878;
+        border-radius: 20px;
+        
+    }
+    
+    .btn-switch-circle {
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: block;
+        height: 20px;
+        width: 20px;
+        background-color: #fff;
+        border-radius: 20px;
+    }
+    
+    .btn-switch--on {
+        background-color: #80CDBE;
+        border: 2px solid #80CDBE;
+    }
+    .btn-switch-circle--on {
+        left: auto;
+        right: 0;
+    }
+    .color-red{
+        color: red;
+    }
+    
+    </style>
+
+        <apex:form id="form">
+        
+        <div id="ngContainer" ng-app="forecastingApp" ng-controller="forecastingCtrl">
+            <div class="ptBreadcrumb"><span class="fa fa-user"></span>
+                <apex:variable var="p" value="" />
+                <apex:repeat value="{!UserNavPath}" var="usr">
+                    <apex:variable var="p" value="{!p + '/' + usr.UserId}" />
+                    <a href="{!$Page.ZForecasting}?path={!p}&type={{forecastType}}&family={{forecastFamily}}&impersonate={!impersonateViewAsUser}">{!usr.UserName}</a> &gt;
+                </apex:repeat>
+                <span style="margin-left:30%;color:red;" ng-show="requestInProgress>0">Loading...</span>
+                <span style="color:red;" ng-show="errorMessage != null">{{errorMessage}}</span>
+                <span style="float:right" ng-show="canEditPlan"><a href="/apex/ForecastingQuota?type={{forecastType}}&quarter={{fiscalQtr}}&family={{forecastFamily}}">Update Plans</a></span>
+                <apex:outputPanel rendered="{!canImpersonate}">
+                    <span style="float:right" ng-show="canEditPlan">&nbsp;|&nbsp;</span>
+                    <apex:commandLink id="impersonateUserLink" style="float: right;" action="{!toggleImpersonation}">View forecast as {!viewAsUserName}</apex:commandLink>
+                </apex:outputPanel>
+            </div>
+            <br/>
+            <div id="wrap">
+                <div class="fqTitleCon">
+                    <span class="fqTitle">Fiscal Quarter</span>
+                    <span class="fqNum">{!CurrentFiscalQuarter.FormattedString}</span>
+                    <a class="fqBtn" href="{!$Page.ZForecasting}?path={!$currentPage.parameters.path}&quarter={!CurrentFiscalQuarter.Previous.FormattedString}&type={{forecastType}}&family={{forecastFamily}}&impersonate={!impersonateViewAsUser}" title="Previous quarter"><img src="{!URLFOR($Resource.ZForecasting, 'img/fqBtnLeft.gif')}" /></a>
+                    <a class="fqBtn" href="{!$Page.ZForecasting}?path={!$currentPage.parameters.path}&quarter={!CurrentFiscalQuarter.Next.FormattedString}&type={{forecastType}}&family={{forecastFamily}}&impersonate={!impersonateViewAsUser}" title="Next quarter"><img src="{!URLFOR($Resource.ZForecasting, 'img/fqBtnRight.gif')}" /></a>
+                    <div ng-class="viewBillings != '' && viewBillings != null ? 'switch-toggle switch-6 switch-candy switch-candy-blue fqSwitch' : 'switch-toggle switch-5 switch-candy switch-candy-blue fqSwitch'" style="width:500px">
+                      <input id="forecastAll" name="view" type="radio" ng-checked="forecastType=='all'" />
+                      <label for="forecastAll" ng-click="forecastType='all';loadAll();cancelForecast();clearallfilters('');">All</label>
+                      <input id="forecastnewupsell" name="view" type="radio" ng-checked="forecastType=='new-upsell'" />
+                      <label for="forecastnewupsell" ng-click="forecastType='new-upsell';loadAll();cancelForecast();clearallfilters('');">N+U</label>
+                      <input id="forecastNew" name="view" type="radio" ng-checked="forecastType=='new'" />
+                      <label for="forecastNew" ng-click="forecastType='new';loadAll();cancelForecast();clearallfilters('');">New</label>
+                      <input id="forecastUpsell" name="view" type="radio" ng-checked="forecastType=='upsell'" />
+                      <label for="forecastUpsell" ng-click="forecastType='upsell';loadAll();cancelForecast();clearallfilters('');">Upsell</label>
+                      <input id="forecastRenewal" name="view" type="radio" ng-checked="forecastType=='renewal'" />
+                      <label for="forecastRenewal" ng-click="forecastType='renewal';loadAll();cancelForecast();clearallfilters('');">Renewal</label>
+                      <input id="forecastbillings" ng-show="viewBillings != '' && viewBillings != null" name="view" type="radio" ng-checked="forecastType=='billings'" />
+                      <label for="forecastbillings" ng-show="viewBillings != '' && viewBillings != null" ng-click="forecastType='billings';loadbillings();cancelForecast();clearallfilters('');">Billings</label>
+                      <a></a>
+                    </div>
+                    <!-- <div class="ffSwitch" ng-if="showForecastFamilySwitch">
+                        <div class="switch-toggle switch-2 switch-candy" style="width: 150px;">
+                            <input id="forecastZIA" name="family" type="radio" checked="checked" ng-checked="forecastFamily=='ZIA'" />
+                            <label for="forecastZIA" onclick="window.location.href='{!$Page.Forecasting}?quarter={!CurrentFiscalQuarter.FormattedString}&type={!ForecastType}&family=ZIA&impersonate=false'">Primary</label>
+                            <input id="forecastZPA" name="family" type="radio" ng-checked="forecastFamily=='ZPA'" />
+                            <label for="forecastZPA" onclick="window.location.href='{!$Page.Forecasting}?quarter={!CurrentFiscalQuarter.FormattedString}&type={!ForecastType}&family=ZPA&impersonate=false'">ZPA</label>
+                            <a></a>
+                        </div>
+                    </div> -->
+                    <span class="displayUnits">
+                        <input type="radio" name="displayUnits" value="M" ng-click="displayFormat='M'" />Millions
+                        <input type="radio" name="displayUnits" value="K" ng-click="displayFormat='K'" />Thousands
+                        <input type="radio" name="displayUnits" value="W" checked="true" ng-click="displayFormat='W'" />Whole
+                        <input type="radio" name="displayUnits" value="E" ng-click="displayFormat='E'" />Exact
+                    </span>
+                </div>
+            </div>
+
+            <apex:pageBlock id="billingsblock" html-ng-show="forecastType == 'billings'">
+                <table class="report" style="margin-top: 1%; margin-right: 5%">
+                    <thead>
+                        <tr class="header">
+                            <th colspan="8">ACV Forecast</th>
+                        </tr>
+                        <tr class="header">
+                            <th>&nbsp;</th>
+                            <th class="W80">Closed QTD</th>
+                            <th class="W80">ACV to Go</th>
+                            <th class="W80">Forecast</th>
+                            <th class="W100">Prior Yr</th>
+                            <th class="W80">Y/Y Growth</th>
+                            <th class="W80">Plan ACV</th>
+                            <th class="W80">% of Plan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="line" >
+                            <td class="center">Current Forecast</td>
+                            <td class="number">&nbsp;{{formatDecimal(isValidDecimals(billingsacvforecast.data.closedQTD) ? billingsacvforecast.data.closedQTD : null, displayFormat)}}
+                            </td>
+                            <td class="number">&nbsp;{{formatDecimal(isValidDecimals(billingsacvforecast.data.acvtogo) ? billingsacvforecast.data.acvtogo : null, displayFormat)}}
+                            </td>
+                            <td class="number">&nbsp;{{formatDecimal(isValidDecimals(billingsacvforecast.data.forecast) ? billingsacvforecast.data.forecast : null, displayFormat)}}
+                            </td>
+                            <td class="number" style="width:110px">&nbsp;
+                                <input ng-show="forecastSummary.isEditingPriorYrClosedYTD" type="text"
+                                lass="edit" ng-model="forecastSummary.editingModalPriorYrClosedYTD.PriorYrClosedYTD"/>
+                                <span ng-hide="forecastSummary.isEditingPriorYrClosedYTD">{{formatDecimal(isValidDecimals(billingsacvforecast.data.PriorYrClosedYTD) ? billingsacvforecast.data.PriorYrClosedYTD : 0, displayFormat)}}</span>
+                                <span class="fa fa-edit editBtnShow" ng-click="editPriorYrClosedYTD()" ng-show="!forecastSummary.isEditingPriorYrClosedYTD && viewBillings == 'Edit'" title="Edit">
+                                    <img src="{!URLFOR($Resource.ZForecasting, 'img/edit.png')}" style="width: 15px; height: 15px; float: left;" />
+                                </span>
+                                <span class="fa fa-check saveBtn" ng-click="savePriorYrClosedYTD()" title="Save" ng-show="forecastSummary.isEditingPriorYrClosedYTD">
+                                    <img src="{!URLFOR($Resource.ZForecasting, 'img/save.png')}" style="width: 15px; height: 15px; float: left;" />
+                                </span>
+                                <span class="fa fa-times undoBtn" ng-click="cancelPriorYrClosedYTD()" title="Undo" ng-show="forecastSummary.isEditingPriorYrClosedYTD">
+                                    <img src="{!URLFOR($Resource.ZForecasting, 'img/cancel.png')}" style="width: 15px; height: 15px; float: left;" />
+                                </span>
+                            </td>
+                            <td class="number">
+                                &nbsp;
+                                {{formatPercentagerounded(isValidDecimals(billingsacvforecast.data.YonYGrowth) ? billingsacvforecast.data.YonYGrowth : 'NA')}}
+                            </td>
+                            <td class="number">&nbsp;{{formatDecimal(isValidDecimals(billingsacvforecast.data.planacv) ? billingsacvforecast.data.planacv : null, displayFormat)}}
+                            </td>
+                            <td class="number">&nbsp;{{formatPercentagerounded(isValidDecimals(billingsacvforecast.data.forecast, billingsacvforecast.data.planacv) ? billingsacvforecast.data.forecast / billingsacvforecast.data.planacv * 100 : 'NA')}}
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+
+                <div class="clearfix"/>
+
+                <table class="report" style=" margin-top: 1%; margin-right: 5%">
+                    <thead>
+                        <tr class="header">
+                            <th colspan="8">Billings Forecast
+                                <span class="fa fa-edit editBtnShow" ng-click="editBillingsSummary()" ng-show="!billingsSummary.isEditing && viewBillings == 'Edit'" title="Edit">
+                                    <img src="{!URLFOR($Resource.ZForecasting, 'img/edit.png')}" style="width: 15px; height: 15px; float: left;" />
+                                </span>
+                                <span class="fa fa-check saveBtn" ng-click="saveBillingsSummary()" title="Save" ng-show="billingsSummary.isEditing">
+                                    <img src="{!URLFOR($Resource.ZForecasting, 'img/save.png')}" style="width: 15px; height: 15px; float: left;" />
+                                </span>
+                                <span class="fa fa-times undoBtn" ng-click="loadbillingsSummary()" title="Undo" ng-show="billingsSummary.isEditing">
+                                    <img src="{!URLFOR($Resource.ZForecasting, 'img/cancel.png')}" style="width: 15px; height: 15px; float: left;" />
+                                </span>
+                            </th>
+                            <th colspan="3">Billings Frequency Mix</th>
+                        </tr>
+                        <tr class="header">
+                            <th>&nbsp;</th>
+                            <th class="W80">NetSuite</th>
+                            <th class="W80">Bill to Go</th>
+                            <th class="W80">Total Billings</th>
+                            <th class="W80">Y/Y Growth</th>
+                            <th class="W80">Plan Billings</th>
+                            <th class="W80">1st Forecast</th>
+                            <th class="W80">Pr Yr Billings</th>
+                            <th class="W80">Forecast</th>
+                            <th class="W80">Plan</th>
+                            <th class="W80">Prior Year</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="line" >
+                            <td class="center">{{billingsSummary.data.greaterThanOneYear.type}}</td>
+                            <td class="number">&nbsp;
+                                <input ng-show="billingsSummary.isEditing" type="text" class="edit" ng-model="billingsSummaryEdit.data.greaterThanOneYear.netsuiteSummary"/>
+                                <span ng-hide="billingsSummary.isEditing">{{formatDecimal(isValidDecimals(billingsSummary.data.greaterThanOneYear.netsuiteSummary) ? billingsSummary.data.greaterThanOneYear.netsuiteSummary : null, displayFormat)}}</span>
+                            </td>
+                            <td class="number">&nbsp;
+                                <input ng-show="billingsSummary.isEditing" type="text" class="edit"      ng-model="billingsSummaryEdit.data.greaterThanOneYear.billToGoSummary"/>
+                                <span ng-hide="billingsSummary.isEditing">{{formatDecimal(isValidDecimals(billingsSummary.data.greaterThanOneYear.billToGoSummary) ? billingsSummary.data.greaterThanOneYear.billToGoSummary : null, displayFormat)}}</span>
+                            </td>
+                            <td class="number">&nbsp;
+                            {{formatDecimal(isValidDecimals(billingsSummary.data.greaterThanOneYear.totalBillingsSummary) ? billingsSummary.data.greaterThanOneYear.totalBillingsSummary : null, displayFormat)}}
+                            </td>
+                            <td class="number">
+                                &nbsp;{{formatPercentagerounded(isValidDecimals(billingsSummary.data.greaterThanOneYear.yOnYGrowth) ? billingsSummary.data.greaterThanOneYear.yOnYGrowth : 'NA')}}
+                            </td>
+                            <td class="number">&nbsp;
+                                <input ng-show="billingsSummary.isEditing" type="text" class="edit"      ng-model="billingsSummaryEdit.data.greaterThanOneYear.planBillingsSummary"/>
+                                <span ng-hide="billingsSummary.isEditing">{{formatDecimal(isValidDecimals(billingsSummary.data.greaterThanOneYear.planBillingsSummary) ? billingsSummary.data.greaterThanOneYear.planBillingsSummary : null, displayFormat)}}</span>
+                            </td>
+                            <td class="number">&nbsp;
+                                <input ng-show="billingsSummary.isEditing" type="text" class="edit"      ng-model="billingsSummaryEdit.data.greaterThanOneYear.firstForecastSummary"/>
+                                <span ng-hide="billingsSummary.isEditing">{{formatDecimal(isValidDecimals(billingsSummary.data.greaterThanOneYear.firstForecastSummary) ? billingsSummary.data.greaterThanOneYear.firstForecastSummary : null, displayFormat)}}</span>
+                            </td>
+                            <td class="number">&nbsp;
+                                <input ng-show="billingsSummary.isEditing" type="text" class="edit" ng-model="billingsSummaryEdit.data.greaterThanOneYear.priorYearBillingsSummary"/>
+                                <span ng-hide="billingsSummary.isEditing">{{formatDecimal(isValidDecimals(billingsSummary.data.greaterThanOneYear.priorYearBillingsSummary) ? billingsSummary.data.greaterThanOneYear.priorYearBillingsSummary : null, displayFormat)}}</span>
+                            </td>
+                            <td class="number">&nbsp;{{formatPercentagerounded(isValidDecimals(billingsSummary.data.greaterThanOneYear.totalBillingsSummary, billingsSummary.data.total.totalBillingsSummary) ? billingsSummary.data.greaterThanOneYear.totalBillingsSummary / billingsSummary.data.total.totalBillingsSummary * 100 : 'NA')}}
+                            </td>
+                            <td class="number">&nbsp;{{formatPercentagerounded(isValidDecimals(billingsSummary.data.greaterThanOneYear.planBillingsSummary, billingsSummary.data.total.planBillingsSummary) ? billingsSummary.data.greaterThanOneYear.planBillingsSummary / billingsSummary.data.total.planBillingsSummary * 100 : 'NA')}}
+                            </td>
+                            <td class="number">&nbsp;{{formatPercentagerounded(isValidDecimals(billingsSummary.data.greaterThanOneYear.priorYearBillingsSummary, billingsSummary.data.total.priorYearBillingsSummary) ? billingsSummary.data.greaterThanOneYear.priorYearBillingsSummary / billingsSummary.data.total.priorYearBillingsSummary * 100 : 'NA')}}
+                            </td>
+                        </tr>
+                        <tr class="line2" >
+                            <td class="center">{{billingsSummary.data.annual.type}}</td>
+                            <td class="number">&nbsp;
+                                <input ng-show="billingsSummary.isEditing" type="text" class="edit"      ng-model="billingsSummaryEdit.data.annual.netsuiteSummary"/>
+                                <span ng-hide="billingsSummary.isEditing">{{formatDecimal(isValidDecimals(billingsSummary.data.annual.netsuiteSummary) ? billingsSummary.data.annual.netsuiteSummary : null, displayFormat)}}</span>
+                            </td>
+                            <td class="number">&nbsp;
+                                <input ng-show="billingsSummary.isEditing" type="text" class="edit"      ng-model="billingsSummaryEdit.data.annual.billToGoSummary"/>
+                                <span ng-hide="billingsSummary.isEditing">{{formatDecimal(isValidDecimals(billingsSummary.data.annual.billToGoSummary) ? billingsSummary.data.annual.billToGoSummary : null, displayFormat)}}</span>
+                            </td>
+                            <td class="number">&nbsp;
+                            {{formatDecimal(isValidDecimals(billingsSummary.data.annual.totalBillingsSummary) ? billingsSummary.data.annual.totalBillingsSummary : null, displayFormat)}}
+                            </td>
+                            <td class="number">
+                                &nbsp;{{formatPercentagerounded(isValidDecimals(billingsSummary.data.annual.yOnYGrowth) ? billingsSummary.data.annual.yOnYGrowth : 'NA')}}
+                            </td>
+                            <td class="number">&nbsp;
+                                <input ng-show="billingsSummary.isEditing" type="text" class="edit"      ng-model="billingsSummaryEdit.data.annual.planBillingsSummary"/>
+                                <span ng-hide="billingsSummary.isEditing">{{formatDecimal(isValidDecimals(billingsSummary.data.annual.planBillingsSummary) ? billingsSummary.data.annual.planBillingsSummary : null, displayFormat)}}</span>
+                            </td>
+                            <td class="number">&nbsp;
+                                <input ng-show="billingsSummary.isEditing" type="text" class="edit"      ng-model="billingsSummaryEdit.data.annual.firstForecastSummary"/>
+                                <span ng-hide="billingsSummary.isEditing">{{formatDecimal(isValidDecimals(billingsSummary.data.annual.firstForecastSummary) ? billingsSummary.data.annual.firstForecastSummary : null, displayFormat)}}</span>
+                            </td>
+                            <td class="number">&nbsp;
+                                <input ng-show="billingsSummary.isEditing" type="text" class="edit" ng-model="billingsSummaryEdit.data.annual.priorYearBillingsSummary"/>
+                                <span ng-hide="billingsSummary.isEditing">{{formatDecimal(isValidDecimals(billingsSummary.data.annual.priorYearBillingsSummary) ? billingsSummary.data.annual.priorYearBillingsSummary : null, displayFormat)}}</span>
+                            </td>
+                            <td class="number">&nbsp;{{formatPercentagerounded(isValidDecimals(billingsSummary.data.annual.totalBillingsSummary, billingsSummary.data.total.totalBillingsSummary) ? billingsSummary.data.annual.totalBillingsSummary / billingsSummary.data.total.totalBillingsSummary * 100 : 'NA')}}
+                            </td>
+                            <td class="number">&nbsp;{{formatPercentagerounded(isValidDecimals(billingsSummary.data.annual.planBillingsSummary, billingsSummary.data.total.planBillingsSummary) ? billingsSummary.data.annual.planBillingsSummary / billingsSummary.data.total.planBillingsSummary * 100 : 'NA')}}
+                            </td>
+                            <td class="number">&nbsp;{{formatPercentagerounded(isValidDecimals(billingsSummary.data.annual.priorYearBillingsSummary, billingsSummary.data.total.priorYearBillingsSummary) ? billingsSummary.data.annual.priorYearBillingsSummary / billingsSummary.data.total.priorYearBillingsSummary * 100 : 'NA')}}
+                            </td>
+                        </tr>
+                        <tr class="line" >
+                            <td class="center">{{billingsSummary.data.lessThanOneYear.type}}</td>
+                            <td class="number">&nbsp;
+                                <input ng-show="billingsSummary.isEditing" type="text" class="edit"      ng-model="billingsSummaryEdit.data.lessThanOneYear.netsuiteSummary"/>
+                                <span ng-hide="billingsSummary.isEditing">{{formatDecimal(isValidDecimals(billingsSummary.data.lessThanOneYear.netsuiteSummary) ? billingsSummary.data.lessThanOneYear.netsuiteSummary : null, displayFormat)}}</span>
+                            </td>
+                            <td class="number">&nbsp;
+                                <input ng-show="billingsSummary.isEditing" type="text" class="edit"      ng-model="billingsSummaryEdit.data.lessThanOneYear.billToGoSummary"/>
+                                <span ng-hide="billingsSummary.isEditing">{{formatDecimal(isValidDecimals(billingsSummary.data.lessThanOneYear.billToGoSummary) ? billingsSummary.data.lessThanOneYear.billToGoSummary : null, displayFormat)}}</span>
+                            </td>
+                            <td class="number">&nbsp;
+                            {{formatDecimal(isValidDecimals(billingsSummary.data.lessThanOneYear.totalBillingsSummary) ? billingsSummary.data.lessThanOneYear.totalBillingsSummary : null, displayFormat)}}
+                            </td>
+                            <td class="number">
+                                &nbsp;{{formatPercentagerounded(isValidDecimals(billingsSummary.data.lessThanOneYear.yOnYGrowth) ? billingsSummary.data.lessThanOneYear.yOnYGrowth : 'NA')}}
+                            </td>
+                            <td class="number">&nbsp;
+                                <input ng-show="billingsSummary.isEditing" type="text" class="edit"      ng-model="billingsSummaryEdit.data.lessThanOneYear.planBillingsSummary"/>
+                                <span ng-hide="billingsSummary.isEditing">{{formatDecimal(isValidDecimals(billingsSummary.data.lessThanOneYear.planBillingsSummary) ? billingsSummary.data.lessThanOneYear.planBillingsSummary : null, displayFormat)}}</span>
+                            </td>
+                            <td class="number">&nbsp;
+                                <input ng-show="billingsSummary.isEditing" type="text" class="edit"      ng-model="billingsSummaryEdit.data.lessThanOneYear.firstForecastSummary"/>
+                                <span ng-hide="billingsSummary.isEditing">{{formatDecimal(isValidDecimals(billingsSummary.data.lessThanOneYear.firstForecastSummary) ? billingsSummary.data.lessThanOneYear.firstForecastSummary : null, displayFormat)}}</span>
+                            </td>
+                            <td class="number">&nbsp;
+                                <input ng-show="billingsSummary.isEditing" type="text" class="edit" ng-model="billingsSummaryEdit.data.lessThanOneYear.priorYearBillingsSummary"/>
+                                <span ng-hide="billingsSummary.isEditing">{{formatDecimal(isValidDecimals(billingsSummary.data.lessThanOneYear.priorYearBillingsSummary) ? billingsSummary.data.lessThanOneYear.priorYearBillingsSummary : null, displayFormat)}}</span>
+                            </td>
+                            <td class="number">&nbsp;{{formatPercentagerounded(isValidDecimals(billingsSummary.data.lessThanOneYear.totalBillingsSummary, billingsSummary.data.total.totalBillingsSummary) ? billingsSummary.data.lessThanOneYear.totalBillingsSummary / billingsSummary.data.total.totalBillingsSummary * 100 : 'NA')}}
+                            </td>
+                            <td class="number">&nbsp;{{formatPercentagerounded(isValidDecimals(billingsSummary.data.lessThanOneYear.planBillingsSummary, billingsSummary.data.total.planBillingsSummary) ? billingsSummary.data.lessThanOneYear.planBillingsSummary / billingsSummary.data.total.planBillingsSummary * 100 : 'NA')}}
+                            </td>
+                            <td class="number">&nbsp;{{formatPercentagerounded(isValidDecimals(billingsSummary.data.lessThanOneYear.priorYearBillingsSummary, billingsSummary.data.total.priorYearBillingsSummary) ? billingsSummary.data.lessThanOneYear.priorYearBillingsSummary / billingsSummary.data.total.priorYearBillingsSummary * 100 : 'NA')}}
+                            </td>
+                        </tr>
+                        <tr class="footer bold" >
+                            <td class="center">{{billingsSummary.data.total.type}}</td>
+                            <td class="number">&nbsp;{{formatDecimal(isValidDecimals(billingsSummary.data.total.netsuiteSummary) ? billingsSummary.data.total.netsuiteSummary : null, displayFormat)}}
+                            </td>
+                            <td class="number">&nbsp;{{formatDecimal(isValidDecimals(billingsSummary.data.total.billToGoSummary) ? billingsSummary.data.total.billToGoSummary : null, displayFormat)}}
+                            </td>
+                            <td class="number">&nbsp;{{formatDecimal(isValidDecimals(billingsSummary.data.total.totalBillingsSummary) ? billingsSummary.data.total.totalBillingsSummary : null, displayFormat)}}
+                            </td>
+                            <td class="number">
+                            {{formatPercentagerounded(isValidDecimals(billingsSummary.data.total.yOnYGrowth) ? billingsSummary.data.total.yOnYGrowth : 'NA')}}
+                            </td>
+                            <td class="number">&nbsp;{{formatDecimal(isValidDecimals(billingsSummary.data.total.planBillingsSummary) ? billingsSummary.data.total.planBillingsSummary  : null, displayFormat)}}
+                            </td>
+                            <td class="number">&nbsp;{{formatDecimal(isValidDecimals(billingsSummary.data.total.firstForecastSummary) ? billingsSummary.data.total.firstForecastSummary  : null, displayFormat)}}
+                            </td><td class="number">&nbsp;{{formatDecimal(isValidDecimals(billingsSummary.data.total.priorYearBillingsSummary) ? billingsSummary.data.total.priorYearBillingsSummary  : null, displayFormat)}}
+                            </td>
+                            <td class="number">&nbsp;</td>
+                            <td class="number">&nbsp;</td>
+                            <td class="number">&nbsp;</td>
+                        </tr>
+                        <tr class="line" >
+                            <td class="center">Billings growth not > 1 Year</td>
+                            <td class="number">&nbsp;</td>
+                            <td class="number">&nbsp;</td>
+                            <td class="number">&nbsp;</td>
+                            <td class="number">
+                            {{formatPercentagerounded(isValidDecimals(billingsSummary.data.growthNotGreaterThanOneYear) ? billingsSummary.data.growthNotGreaterThanOneYear : 'NA')}}
+                            </td>
+                            <td class="number">&nbsp;</td>
+                            <td class="number">&nbsp;</td>
+                            <td class="number">&nbsp;</td>
+                            <td class="number">&nbsp;</td>
+                            <td class="number">&nbsp;</td>
+                            <td class="number">&nbsp;</td>
+                        </tr>
+                        <tr class="line2" >
+                            <td class="center">Comments</td>
+                            <td colspan="10">
+                                <textarea ng-show="billingsSummary.isEditing" rows="3" style="width: 99%" ng-model="billingsSummaryEdit.data.comments"></textarea>
+                                <div ng-hide="billingsSummary.isEditing" style="max-width: 865px; overflow: auto; white-space: pre-wrap; max-height: 100px; font-weight: normal;">{{unescape(billingsSummary.data.comments)}}</div>
+                                </td>
+                            
+                        </tr>
+                    </tbody>
+                </table>
+            </apex:pageBlock>
+
+            <apex:pageBlock id="summaryBlock" html-ng-show="forecastType != 'billings'">
+                <table class="report" style="float:left">
+                    <tr class="header">
+                        <th class="W100">My Plan</th>
+                    </tr>
+                    <tr class="line">
+                        <td class="number">&nbsp;{{formatDecimal(forecastSummary.data.QTRQuota, displayFormat)}}</td>
+                    </tr>
+                </table>
+
+                <table class="report" style="float:left; margin-left: 5%;">
+                    <tr class="header">
+                        <th class="W100">Forecast
+                            <span><img src="/img/s.gif" class="helpOrb" title="Defaults to ML rollup. If you are the forecasting user, you can edit to override." style="display: inline; float: right;"
+                            alt="Defaults to ML rollup. If you are the forecasting user, you can edit to override." /></span></th>
+                        <th class="W100" ng-if="showMyForecastSection && forecastType!='all' && forecastType!='new-upsell' && !isViewingHistory">Locked
+                            <span><img src="/img/s.gif" class="helpOrb" title="Lock retains your override. Unlock to align to ML Rollup." style="display: inline; float: right;"
+                            alt="Lock retains your override. Unlock to align to ML Rollup." /></span></th>
+                        <th class="W100" ng-if="showMyForecastSection && !isViewingHistory">Gap to ML Rollup</th>
+                        <th class="W100" ng-if="showMyForecastSection">Forecast vs Plan</th>
+                        <th class="W100" ng-if="!isViewingHistory" style="background-color: lightgray;">Last Week</th>
+                        <th class="W100" style="background-color: lightgray;">1st Forecast<span><img src="/img/s.gif" class="helpOrb" title="We use W2 Forecast , if the W1 has less than 4 days" style="display: inline; float: right;"
+                                alt="We use W2 Forecast , if the W1 has less than 3 days"/></span></th>
+                        <th class="W100" style="background-color: lightgray;">1st Forecast of M3</th>
+                    </tr>
+                    <tr class="line">
+                        <td class="number" style="width: 60px">
+                            &nbsp;
+                            <input ng-show="forecastSummary.isEditing" type="text" class="edit" ng-model="forecastSummary.editingModal.Amount" ng-change="forecastSummary.editingModal.Locked = true" />
+                            <span ng-hide="forecastSummary.isEditing" ng-style="{color: forecastSummary.data.MyForecast - forecastSummary.data.MyLastWeekForecast > 0.5?'mediumseagreen':forecastSummary.data.MyForecast - forecastSummary.data.MyLastWeekForecast <= -0.5 ? 'red':'black'}">{{formatDecimal(forecastSummary.data.MyForecast, displayFormat)}}</span>
+                            <span class="fa fa-edit editBtnShow" ng-click="editForecast()" ng-show="!forecastSummary.isEditing && !isViewingHistory && forecastEditable && showMyForecastSection && forecastType!='all' && forecastType!='new-upsell'" title="Edit">
+                                <img src="{!URLFOR($Resource.ZForecasting, 'img/edit.png')}" style="width: 15px; height: 15px; float: left;" />
+                            </span>
+                            <span class="fa fa-check saveBtn" ng-click="saveForecast()" title="Save" ng-show="forecastSummary.isEditing && showMyForecastSection">
+                                <img src="{!URLFOR($Resource.ZForecasting, 'img/save.png')}" style="width: 15px; height: 15px; float: left;" />
+                            </span>
+                            <span class="fa fa-times undoBtn" ng-click="cancelForecast()" title="Undo" ng-show="forecastSummary.isEditing && showMyForecastSection">
+                                <img src="{!URLFOR($Resource.ZForecasting, 'img/cancel.png')}" style="width: 15px; height: 15px; float: left;" />
+                            </span>
+                        </td>
+                        <td ng-if="forecastSummary.isEditing && showMyForecastSection && forecastType!='all' && forecastType!='new-upsell' && !isViewingHistory" style="text-align: center;">
+                            <input type="checkbox" ng-model="forecastSummary.editingModal.Locked" ng-change="updateForecastNumber(this);" style="border: 1px solid grey;"></input>
+                        </td>
+                        <td ng-if="!forecastSummary.isEditing && showMyForecastSection && forecastType!='all'  && forecastType!='new-upsell' && !isViewingHistory" style="text-align: center;">
+                            <input type="checkbox" disabled="disabled" ng-model="forecastSummary.data.Locked"></input>
+                        </td>
+                        <td class="number" ng-if="showMyForecastSection && !isViewingHistory" ng-style="{color: forecastSummary.data.MyForecast ? forecastSummary.data.MyForecast - forecastSummary.data.MySummary.MostLikelyTotal > 0.5 ? 'red' : 'black' : 'black' }">&nbsp;{{formatDecimal(forecastSummary.data.MyForecast ? forecastSummary.data.MyForecast - forecastSummary.data.MySummary.MostLikelyTotal : 'NA', displayFormat)}}</td>
+                        <td class="number" ng-if="showMyForecastSection">&nbsp;{{formatPercentage(forecastSummary.data.QTRQuota ? forecastSummary.data.MyForecast / forecastSummary.data.QTRQuota * 100 : 'NA')}}</td>
+                        <td class="number" style="width: 60px" ng-if="!isViewingHistory">
+                            <span>{{formatDecimal(forecastSummary.data.MyLastWeekForecast, displayFormat)}}</span>
+                        </td>
+                        <td class="number" style="width: 60px">
+                            <span>{{formatDecimal(forecastSummary.data.MyM1W1Forecast, displayFormat)}}</span>
+                        </td>
+                        <td class="number" style="width: 60px">
+                            <span>{{formatDecimal(forecastSummary.data.MyM3W1Forecast, displayFormat)}}</span>
+                        </td>
+                    </tr>
+                    <tr class="header" ng-if="showMyForecastSection && forecastType!='all' && forecastType!='new-upsell' && !isViewingHistory">
+                        <th>
+                            Forecast Comments
+                        </th>
+                        <th colspan="6" style="text-align: left; background-color: #FFFFFF; max-width: 100%;" ng-hide="forecastSummary.isEditing">
+                            <div style="max-width: 600px; overflow: auto; white-space: pre-wrap; max-height: 50px; font-weight: normal;">{{forecastSummary.data.Comments}}</div>
+                        </th>
+                        <th colspan="6" style="text-align: left; background-color: #FFFFFF; padding: 0px;" ng-show="forecastSummary.isEditing">
+                            <textarea rows="4" style="width: 99%" ng-model="forecastSummary.editingModal.Comments"></textarea>
+                        </th>
+                    </tr>
+                </table>
+
+                <!-- <table class="report" style="float:left; margin-left: 5%" ng-if="showMyForecastSection">
+                    <tr class="header">
+                        <th class="W100">Gap to ML Rollup</th>
+                    </tr>
+                    <tr class="line">
+                        <td class="number">&nbsp;{{formatDecimal(forecastSummary.data.MyForecast ? forecastSummary.data.MyForecast - forecastSummary.data.MySummary.MostLikelyTotal : 'NA', displayFormat)}}</td>
+                    </tr>
+                </table> -->
+                <div class="clearfix"></div>
+
+                <table class="report" style="float:left; margin-top: 1%; margin-right: 5%" ng-hide="isViewingHistory">
+                    <thead>
+                        <tr class="header">
+                            <th colspan="5">{!CurrentViewingUser.UserName}'s Rollup</th>
+                        </tr>
+                        <tr class="header">
+                            <th >
+                                &nbsp;
+                            </th>
+                            <th class="W80">This Week</th>
+                            <th class="W80">vs Plan</th>
+                            <th class="W80">vs Forecast</th>
+                            <th class="W80" style="background-color: lightgray;">Last Week</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="line">
+                            <td class="center">Closed QTD
+                                <span><img src="/img/s.gif" class="helpOrb" title="Stage 13" style="display: inline; float: right;"
+                                alt="Stage 13" /></span></td>
+                            <td class="number" ng-style="{color: forecastSummary.data.MySummary.QTDClosedTotal - forecastSummary.data.MyLastWeekSummary.QTDClosedTotal > 0.5?'mediumseagreen':forecastSummary.data.MySummary.QTDClosedTotal - forecastSummary.data.MyLastWeekSummary.QTDClosedTotal <= -0.5? 'red':'black'}">{{formatDecimal(forecastSummary.data.MySummary.QTDClosedTotal, displayFormat)}}</td>
+                            <td class="number">{{formatPercentage(forecastSummary.data.QTRQuota ? forecastSummary.data.MySummary.QTDClosedTotal / forecastSummary.data.QTRQuota * 100 : 'NA')}}</td>
+                            <td class="number">{{formatPercentage(forecastSummary.data.MyForecast ? forecastSummary.data.MySummary.QTDClosedTotal / forecastSummary.data.MyForecast * 100 : 'NA')}}</td>
+                            <td class="number">{{formatDecimal(forecastSummary.data.MyLastWeekSummary.QTDClosedTotal, displayFormat)}}</td>
+                            <!-- <td class="number" ng-repeat="entry in forecastSummary.data.summary.MostLikelySummaryEntries">
+                                <span>{{formatDecimal(entry.Amount, displayFormat)}}</span>
+                            </td> -->
+                        </tr>
+                        <tr class="line2">
+                            <td class="center">Most Likely FC
+                                <span><img src="/img/s.gif" class="helpOrb" title="Closed + Commit + Most Likely" style="display: inline; float: right;"
+                                alt="Closed + Commit + Most Likely" /></span></td>
+                            <td class="number" ng-style="{color: forecastSummary.data.MySummary.MostLikelyTotal - forecastSummary.data.MyLastWeekSummary.MostLikelyTotal > 0.5?'mediumseagreen':forecastSummary.data.MySummary.MostLikelyTotal - forecastSummary.data.MyLastWeekSummary.MostLikelyTotal <= -0.5? 'red':'black'}">{{formatDecimal(forecastSummary.data.MySummary.MostLikelyTotal, displayFormat)}}</td>
+                            <td class="number">{{formatPercentage(forecastSummary.data.QTRQuota ? forecastSummary.data.MySummary.MostLikelyTotal / forecastSummary.data.QTRQuota * 100 : 'NA')}}</td>
+                            <td class="number">{{formatPercentage(forecastSummary.data.MyForecast ? forecastSummary.data.MySummary.MostLikelyTotal / forecastSummary.data.MyForecast * 100 : 'NA')}}</td>
+                            <td class="number">{{formatDecimal(forecastSummary.data.MyLastWeekSummary.MostLikelyTotal, displayFormat)}}</td>
+                            <!-- <td class="number" ng-repeat="entry in forecastSummary.data.summary.MostLikelySummaryEntries">
+                                <span>{{formatDecimal(entry.Amount, displayFormat)}}</span>
+                            </td> -->
+                        </tr>
+                        <tr class="line">
+                            <td class="center">Best Case FC
+                                <span><img src="/img/s.gif" class="helpOrb" title="Closed + Commit + Most Likely + Best Case" style="display: inline; float: right;"
+                                alt="Closed + Commit + Most Likely + Best Case" /></span></td>
+                            <td class="number" ng-style="{color: forecastSummary.data.MySummary.BestCaseTotal - forecastSummary.data.MyLastWeekSummary.BestCaseTotal > 0.5?'mediumseagreen':forecastSummary.data.MySummary.BestCaseTotal - forecastSummary.data.MyLastWeekSummary.BestCaseTotal <= -0.5? 'red':'black'}">{{formatDecimal(forecastSummary.data.MySummary.BestCaseTotal, displayFormat)}}</td>
+                            <td class="number">{{formatPercentage(forecastSummary.data.QTRQuota ? forecastSummary.data.MySummary.BestCaseTotal / forecastSummary.data.QTRQuota * 100 : 'NA')}}</td>
+                            <td class="number">{{formatPercentage(forecastSummary.data.MyForecast ? forecastSummary.data.MySummary.BestCaseTotal / forecastSummary.data.MyForecast * 100 : 'NA')}}</td>
+                            <td class="number">{{formatDecimal(forecastSummary.data.MyLastWeekSummary.BestCaseTotal, displayFormat)}}</td>
+                            <!-- <td class="number" ng-repeat="entry in forecastSummary.data.summary.BestCaseSummaryEntries">
+                                <span>{{formatDecimal(entry.Amount, displayFormat)}}</span>
+                            </td> -->
+                        </tr>
+                        <tr class="line2">
+                            <td class="center">Worst Case FC
+                                <span><img src="/img/s.gif" class="helpOrb" title="Closed + Commit" style="display: inline; float: right;"
+                                alt="Closed + Commit" /></span></td>
+                            <td class="number" ng-style="{color: forecastSummary.data.MySummary.WorstCaseTotal - forecastSummary.data.MyLastWeekSummary.WorstCaseTotal > 0.5?'mediumseagreen':forecastSummary.data.MySummary.WorstCaseTotal - forecastSummary.data.MyLastWeekSummary.WorstCaseTotal <= -0.5? 'red':'black'}">{{formatDecimal(forecastSummary.data.MySummary.WorstCaseTotal, displayFormat)}}</td>
+                            <td class="number">{{formatPercentage(forecastSummary.data.QTRQuota ? forecastSummary.data.MySummary.WorstCaseTotal / forecastSummary.data.QTRQuota * 100 : 'NA')}}</td>
+                            <td class="number">{{formatPercentage(forecastSummary.data.MyForecast ? forecastSummary.data.MySummary.WorstCaseTotal / forecastSummary.data.MyForecast * 100 : 'NA')}}</td>
+                            <td class="number">{{formatDecimal(forecastSummary.data.MyLastWeekSummary.WorstCaseTotal, displayFormat)}}</td>
+                            <!-- <td class="number" ng-repeat="entry in forecastSummary.data.summary.WorstCaseSummaryEntries">
+                                <span>{{formatDecimal(entry.Amount, displayFormat)}}</span>
+                            </td> -->
+                        </tr>
+                    </tbody>
+                </table>
+
+                <table class="report" style="float:left; margin-top: 1%; margin-right: 5%;" ng-show="!isViewingHistory && ((UserLevel != 'Rep') || (LevelMinusOne != 'Rep' && MyUserLevel != 'Rep' && LevelMinusOne != CurrentUserLevel) || showMyRollupSection)">
+                    <thead>
+                        <tr class="header">
+                            <th colspan="4">FC Rollup by Sales Role</th>
+                        </tr>
+                        <tr class="header">
+                            <th class="W100">
+                                &nbsp;
+                            </th>
+                            <th class="W80" ng-if="UserLevel != 'Rep'">RSM Rollup</th>
+                            <th class="W80" ng-if="LevelMinusOne != 'Rep' && MyUserLevel != 'Rep' && LevelMinusOne != CurrentUserLevel">{{LevelMinusOne == 'VP' ? 'VP' : LevelMinusOne == 'RVP' ? 'RVP' : LevelMinusOne == 'Director' ? 'AD' : LevelMinusOne == 'Manager' ? 'DM' : 'Level - 1'}}'s Rollup for {!CurrentViewingUser.UserName}</th>
+                            <th class="W80" ng-if="showMyRollupSection">My Rollup for {!CurrentViewingUser.UserName}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="line">
+                            <td class="center">Closed QTD</td>
+                            <td class="number" ng-if="UserLevel != 'Rep'">{{formatDecimal(forecastSummary.data.RSMSummary.QTDClosedTotal, displayFormat)}}</td>
+                            <td class="number" ng-if="LevelMinusOne != 'Rep' && MyUserLevel != 'Rep' && LevelMinusOne != CurrentUserLevel">{{formatDecimal(forecastSummary.data.LevelMinusOneSummary.QTDClosedTotal, displayFormat)}}</td>
+                            <td class="number" ng-if="showMyRollupSection">{{formatDecimal(forecastSummary.data.MyTopLevelSummary.QTDClosedTotal, displayFormat)}}</td>
+                        </tr>
+                        <tr class="line2">
+                            <td class="center">Most Likely</td>
+                            <td class="number" ng-if="UserLevel != 'Rep'">{{formatDecimal(forecastSummary.data.RSMSummary.MostLikelyTotal, displayFormat)}}</td>
+                            <td class="number" ng-if="LevelMinusOne != 'Rep' && MyUserLevel != 'Rep' && LevelMinusOne != CurrentUserLevel">{{formatDecimal(forecastSummary.data.LevelMinusOneSummary.MostLikelyTotal, displayFormat)}}</td>
+                            <td class="number" ng-if="showMyRollupSection">{{formatDecimal(forecastSummary.data.MyTopLevelSummary.MostLikelyTotal, displayFormat)}}</td>
+                        </tr>
+                        <tr class="line">
+                            <td class="center">Best Case</td>
+                            <td class="number" ng-if="UserLevel != 'Rep'">{{formatDecimal(forecastSummary.data.RSMSummary.BestCaseTotal, displayFormat)}}</td>
+                            <td class="number" ng-if="LevelMinusOne != 'Rep' && MyUserLevel != 'Rep' && LevelMinusOne != CurrentUserLevel">{{formatDecimal(forecastSummary.data.LevelMinusOneSummary.BestCaseTotal, displayFormat)}}</td>
+                            <td class="number" ng-if="showMyRollupSection">{{formatDecimal(forecastSummary.data.MyTopLevelSummary.BestCaseTotal, displayFormat)}}</td>
+                        </tr>
+                        <tr class="line2">
+                            <td class="center">Worst Case</td>
+                            <td class="number" ng-if="UserLevel != 'Rep'">{{formatDecimal(forecastSummary.data.RSMSummary.WorstCaseTotal, displayFormat)}}</td>
+                            <td class="number" ng-if="LevelMinusOne != 'Rep' && MyUserLevel != 'Rep' && LevelMinusOne != CurrentUserLevel">{{formatDecimal(forecastSummary.data.LevelMinusOneSummary.WorstCaseTotal, displayFormat)}}</td>
+                            <td class="number" ng-if="showMyRollupSection">{{formatDecimal(forecastSummary.data.MyTopLevelSummary.WorstCaseTotal, displayFormat)}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="clearfix"></div>
+                <table class="report" style="float:left; margin-top: 1%; margin-right: 5%"  ng-show="monthlyforecastsummary.data.entries.length > 0 && forecastType != 'all' && forecastType != 'renewal'">
+                    <thead>
+                        <tr class="header">
+                            <th colspan="{{monthlyforecastsummary.data.entries.length + 1}}">Monthly Forecast</th>
+                            <th colspan="2">Linearity</th>
+                        </tr>
+                        <tr class="header">
+                            <th>&nbsp;</th>
+                            <th class="W80" ng-style="{'background-color': forecast.highlight ? '':'lightgray'}" ng-repeat="forecast in monthlyforecastsummary.data.entries">&nbsp;
+                                {{forecast.month}}
+                            </th>
+                            <th class="W80" ng-style="{'background-color': 'lightgray'}">M1</th>
+                            <th class="W80" ng-style="{'background-color': 'lightgray'}">M2</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="line">
+                            <td class="center" >Plan ($)<span><img src="/img/s.gif" class="helpOrb" title="Plan for the Quarter cumulatively Distributed across months.
+M1 : 22% M2 : 55% M3 : 100%" style="display: inline; float: right;"
+                                alt="Plan for the Quarter cumulatively Distributed across months.
+M1 : 22% M2 : 55% M3 : 100%" /></span>
+                            </td>
+                            <td class="number" ng-repeat="forecast1 in monthlyforecastsummary.data.entries">&nbsp;{{formatDecimal(isValidDecimals(forecast1.planSnapshot) ? forecast1.planSnapshot : 0, displayFormat)}}
+                            </td>
+                            <td class="number"> &nbsp;{{formatPercentagerounded((monthlyforecastsummary.data.entries.length > 2) ? isValidDecimals(monthlyforecastsummary.data.entries[0].planSnapshot, monthlyforecastsummary.data.entries[2].planSnapshot) ? monthlyforecastsummary.data.entries[0].planSnapshot/monthlyforecastsummary.data.entries[2].planSnapshot *100 : 'NA':'NA')}}
+                            </td>
+                            <td class="number">&nbsp;{{formatPercentagerounded(monthlyforecastsummary.data.entries.length > 2 ?  isValidDecimals(monthlyforecastsummary.data.entries[1].planSnapshot, monthlyforecastsummary.data.entries[2].planSnapshot) ? monthlyforecastsummary.data.entries[1].planSnapshot/monthlyforecastsummary.data.entries[2].planSnapshot *100 : 'NA' : 'NA')}}
+                            </td>
+                        </tr>
+                        <tr class="line2" >
+                            <td class="center" >1st Forecast<span><img src="/img/s.gif" class="helpOrb" title="Snapshots taken first week of the Quarter. M1 and M2 are cumulative  ML deal Rollups. M3 is the first forecast recorded for the quarter. We Use W2 Forecast if the W1 has less than 3 days" style="display: inline; float: right;"
+                                alt="Snapshots taken first week of the Quarter. M1 and M2 are cumulative  ML deal Rollups. M3 is the first forecast recorded for the quarter. We Use W2 Forecast if the W1 has less than 3 days" /></span>
+                            </td>
+                            <td class="number" ng-repeat="forecast1 in monthlyforecastsummary.data.entries">&nbsp;{{formatDecimal(forecast1.islastmonth == true ? (isValidDecimals(forecastSummary.data.MyM1W1Forecast) ? forecastSummary.data.MyM1W1Forecast : 0) : (isValidDecimals(forecast1.forecastSnapshot) ? forecast1.forecastSnapshot : 0), displayFormat)}}
+                            </td>
+                            <td class="number">&nbsp;{{formatPercentagerounded(monthlyforecastsummary.data.entries.length > 2 ? isValidDecimals(monthlyforecastsummary.data.entries[0].forecastSnapshot, forecastSummary.data.MyM1W1Forecast) ? monthlyforecastsummary.data.entries[0].forecastSnapshot/forecastSummary.data.MyM1W1Forecast * 100 : 'NA' : 'NA')}}
+                            </td>
+                            <td class="number">&nbsp;{{formatPercentagerounded(monthlyforecastsummary.data.entries.length > 2 ? isValidDecimals(monthlyforecastsummary.data.entries[1].forecastSnapshot, forecastSummary.data.MyM1W1Forecast) ? monthlyforecastsummary.data.entries[1].forecastSnapshot/forecastSummary.data.MyM1W1Forecast * 100 : 'NA' : 'NA')}}
+                            </td>
+                        </tr>
+                        <tr class="line" >
+                            <td class="center" >Current Forecast<span><img src="/img/s.gif" class="helpOrb" title="M1 and M2 are cumulative rollup of ML deals. Only Closed deals considered for past months. M3 is the qtr forecast." style="display: inline; float: right;"
+                                alt="M1 and M2 are cumulative of ML deals. M3 is the ML rollup for the quarter." /></span>
+                            </td>
+                            <td class="number" ng-repeat="forecast1 in monthlyforecastsummary.data.entries">&nbsp;{{formatDecimal(forecast1.islastmonth == true? (isValidDecimals(forecastSummary.data.MyForecast) ? forecastSummary.data.MyForecast : 0) : (isValidDecimals(forecast1.forecastRollup)? forecast1.forecastRollup : 0), displayFormat)}}
+                            </td>
+                            <td class="number">&nbsp;{{formatPercentagerounded(monthlyforecastsummary.data.entries.length > 2 ? isValidDecimals(monthlyforecastsummary.data.entries[0].forecastRollup, forecastSummary.data.MyForecast) ? monthlyforecastsummary.data.entries[0].forecastRollup/forecastSummary.data.MyForecast * 100 : 'NA' : 'NA')}}
+                            </td>
+                            <td class="number">&nbsp;{{formatPercentagerounded(monthlyforecastsummary.data.entries.length > 2 ?  isValidDecimals(monthlyforecastsummary.data.entries[1].forecastRollup, forecastSummary.data.MyForecast) ? monthlyforecastsummary.data.entries[1].forecastRollup/forecastSummary.data.MyForecast * 100 : 'NA' : 'NA')}}
+                            </td>
+                        </tr>
+                        <tr class="line2 bold">
+                            <td class="center firstcolumn">Current Forecast vs Plan</td>
+                            <td class="number" ng-repeat="forecast in monthlyforecastsummary.data.entries">&nbsp;{{formatPercentage(forecast.islastmonth == true ?  isValidDecimals(forecastSummary.data.MyForecast, forecast.planSnapshot) ? forecastSummary.data.MyForecast / forecast.planSnapshot * 100 : 'NA' : isValidDecimals(forecast.forecastRollup, forecast.planSnapshot) ? forecast.forecastRollup / forecast.planSnapshot * 100 : 'NA')}}
+                            </td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr class="line bold">
+                            <td class="center firstcolumn">Current Forecast vs 1st Forecast</td>
+                            <td class="number" ng-repeat="forecast in monthlyforecastsummary.data.entries">&nbsp;
+                            {{formatPercentage(forecast.islastmonth == true ? isValidDecimals(forecastSummary.data.MyForecast, forecastSummary.data.MyM1W1Forecast) ? forecastSummary.data.MyForecast / forecastSummary.data.MyM1W1Forecast * 100 : 'NA' : isValidDecimals(forecast.forecastRollup, forecast.forecastSnapshot) ? forecast.forecastRollup / forecast.forecastSnapshot * 100 : 'NA')}}
+                            </td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <table class="report" style="float:left; margin-top: 1%; margin-right: 5%"  ng-show="netnewacvsummary.data != null && forecastType == 'new-upsell' && viewNetNewACV == 'true'">
+                    <thead>
+                        <tr class="header">
+                            <th colspan="4">Net New ACV Summary</th>
+                        </tr>
+                        <tr class="header">
+                            <th>&nbsp;</th>
+                            <th class="W80">Plan
+                            </th>
+                            <th class="W80">Forecast</th>
+                            <th class="W80">Variance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="line" >
+                            <td class="center">New ACV</td>
+                            <td class="number">&nbsp;{{formatDecimal(isValidDecimals(netnewacvsummary.data.newACVPlan) ? netnewacvsummary.data.newACVPlan : null, displayFormat)}}
+                            </td>
+                            <td class="number">&nbsp;{{formatDecimal(isValidDecimals(netnewacvsummary.data.newACVForecast) ? netnewacvsummary.data.newACVForecast : null, displayFormat)}}
+                            </td>
+                            <td class="number">&nbsp;{{formatDecimal(isValidDecimals(netnewacvsummary.data.newACVPlan, netnewacvsummary.data.newACVForecast) ? netnewacvsummary.data.newACVForecast - netnewacvsummary.data.newACVPlan : null, displayFormat)}}
+                            </td>
+                        </tr>
+                        <tr class="line2" >
+                            <td class="center">Notra</td>
+                            <td class="number">&nbsp;{{formatDecimal(isValidDecimals(netnewacvsummary.data.notraACVPlan) ? netnewacvsummary.data.notraACVPlan : null, displayFormat)}}
+                            </td>
+                            <td class="number">&nbsp;{{formatDecimal(isValidDecimals(netnewacvsummary.data.notraACVForecast ) ? netnewacvsummary.data.notraACVForecast : null, displayFormat)}}
+                            </td>
+                            <td class="number">&nbsp;{{formatDecimal(isValidDecimals(netnewacvsummary.data.notraACVPlan , netnewacvsummary.data.notraACVForecast ) ? netnewacvsummary.data.notraACVForecast  - netnewacvsummary.data.notraACVPlan : null, displayFormat)}}
+                            </td>
+                        </tr>
+                        <tr class="footer bold" >
+                            <td class="center">Net New ACV</td>
+                            <td class="number">&nbsp;{{formatDecimal(isValidDecimals(netnewacvsummary.data.newACVPlan, netnewacvsummary.data.notraACVPlan) ? netnewacvsummary.data.notraACVPlan + netnewacvsummary.data.newACVPlan : null, displayFormat)}}
+                            </td>
+                            <td class="number">&nbsp;{{formatDecimal(isValidDecimals(netnewacvsummary.data.newACVForecast, netnewacvsummary.data.notraACVForecast) ? netnewacvsummary.data.notraACVForecast + netnewacvsummary.data.newACVForecast : null, displayFormat)}}
+                            </td>
+                            <td class="number">&nbsp;{{formatDecimal(isValidDecimals(netnewacvsummary.data.newACVPlan, netnewacvsummary.data.notraACVPlan, netnewacvsummary.data.newACVForecast, netnewacvsummary.data.notraACVForecast) ? (netnewacvsummary.data.newACVForecast - netnewacvsummary.data.newACVPlan) + (netnewacvsummary.data.notraACVForecast  - netnewacvsummary.data.notraACVPlan) : null, displayFormat)}}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="clearfix"></div>
+                <table class="report" style="float:left; margin-top: 1%; margin-right: 5%; display:none;"  ng-show="forecastType == 'renewal' && viewNOTRA != '' &&  viewNOTRA != null">
+                    <thead>
+                        <tr class="header">
+                            <th colspan="2">NOTRA Plan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="line bold">
+                            <td class="center" >Total Renewals Available</td>
+                            <td class="number W100">&nbsp;{{formatDecimal(isValidDecimals(notrasummary.data.renewalBudget) ? notrasummary.data.renewalBudget : 0, displayFormat)}}
+                            </td>
+                        </tr>
+                        <tr class="line2 bold">
+                            <td class="center" >Renewals Plan</td>
+                            <td class="number W100">&nbsp;{{formatDecimal(isValidDecimals(notrasummary.data.renewalPlan) ? notrasummary.data.renewalPlan : 0, displayFormat)}}
+                            </td>
+                        </tr>
+                        <tr class="line2 bold" ng-show="CurrentLoginUserName == 'Jay Chaudhry'">
+                            <td class="center" >BD Renewals</td>
+                            <td class="number W100">&nbsp;{{formatDecimal(isValidDecimals(notrasummary.data.bdrenewal) ? notrasummary.data.bdrenewal : 0, displayFormat)}}
+                            </td>
+                        </tr>
+                        
+                    </tbody>
+                </table>
+
+                <table class="report" style="float:left; margin-top: 1%; margin-right: 5%"  ng-show="forecastType == 'renewal' && viewNOTRA != '' &&  viewNOTRA != null">
+                    <thead>
+                        <tr class="header">
+                            <th colspan="3">NOTRA</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="line bold">
+                            <td class="center" >Total Renewals Available</td>
+                            <td class="number W100">&nbsp;{{formatDecimal(isValidDecimals(notrasummary.data.renewalBudget) ? notrasummary.data.renewalBudget : 0, displayFormat)}}
+                            </td>
+                            <td class="center">Comments</td>
+                        </tr>
+                        <tr class="line2" >
+                            <td class="center" >Renewal - On time</td>
+                            <td class="number W100" >&nbsp;{{formatDecimal(isValidDecimals(notrasummary.data.renewalOnTime) ? notrasummary.data.renewalOnTime : 0, displayFormat)}}
+                            </td>
+                            <td rowspan="8" style="width:360px;">
+                                 <textarea ng-show="notrasummary.isEditingComments" rows="6" style="width: 99%" ng-model="notrasummary.editingModal.comments"></textarea>
+                                <div ng-hide="notrasummary.isEditingComments" style="max-width: 600px; overflow: auto; white-space: pre-wrap; max-height: 150px; font-weight: normal;">{{unescape(notrasummary.data.comments)}}</div>
+                                <span class="fa fa-edit editBtnShow" ng-click="editnotracomments()" ng-show="!notrasummary.isEditingComments && viewNOTRA == 'Edit'" title="Edit">
+                                    <img src="{!URLFOR($Resource.ZForecasting, 'img/edit.png')}" style="width: 15px; height: 15px; float: left;" />
+                                </span>
+                                <span class="fa fa-check saveBtn" ng-click="savenotracomments()" title="Save" ng-show="notrasummary.isEditingComments">
+                                    <img src="{!URLFOR($Resource.ZForecasting, 'img/save.png')}" style="width: 15px; height: 15px; float: left;" />
+                                </span>
+                                <span class="fa fa-times undoBtn" ng-click="cancelnotracomments()" title="Undo" ng-show="notrasummary.isEditingComments">
+                                    <img src="{!URLFOR($Resource.ZForecasting, 'img/cancel.png')}" style="width: 15px; height: 15px; float: left;" />
+                                </span>
+                            </td>
+                        </tr>
+                        <tr class="line" >
+                            <td class="center" >Renewal - Late</td>
+                            <td class="number W100">&nbsp;{{formatDecimal(isValidDecimals(notrasummary.data.renewalLate) ? notrasummary.data.renewalLate : 0, displayFormat)}}
+                            </td>
+                        </tr>
+                        <tr class="line2" >
+                            <td class="center" >Renewal - Prior Early</td>
+                            <td class="number W100">&nbsp;{{formatDecimal(isValidDecimals(notrasummary.data.renewalEarly) ? notrasummary.data.renewalEarly : 0, displayFormat)}}
+                            </td>
+                        </tr>
+                        <tr class="line" >
+                            <td class="center" >Renewal - Adjustment</td>
+                            <td class="number W100">&nbsp;
+                                <input ng-show="notrasummary.isEditingAdjustments" type="text"
+                                lass="edit" ng-model="notrasummary.editingModal.renewalAdjustment"/>
+                                <span ng-hide="notrasummary.isEditingAdjustments">{{formatDecimal(isValidDecimals(notrasummary.data.renewalAdjustment) ? notrasummary.data.renewalAdjustment : 0, displayFormat)}}</span>
+                                <span class="fa fa-edit editBtnShow" ng-click="editnotraadjustments()" ng-show="!notrasummary.isEditingAdjustments && viewNOTRA == 'Edit'" title="Edit">
+                                    <img src="{!URLFOR($Resource.ZForecasting, 'img/edit.png')}" style="width: 15px; height: 15px; float: left;" />
+                                </span>
+                                <span class="fa fa-check saveBtn" ng-click="savenotraadjustments()" title="Save" ng-show="notrasummary.isEditingAdjustments">
+                                    <img src="{!URLFOR($Resource.ZForecasting, 'img/save.png')}" style="width: 15px; height: 15px; float: left;" />
+                                </span>
+                                <span class="fa fa-times undoBtn" ng-click="cancelnotraadjustments()" title="Undo" ng-show="notrasummary.isEditingAdjustments">
+                                    <img src="{!URLFOR($Resource.ZForecasting, 'img/cancel.png')}" style="width: 15px; height: 15px; float: left;" />
+                                </span>
+                            </td>
+                        </tr>
+                        <tr class="footer bold">
+                            <td class="footer center" >Ontime Renewal Forecast</td>
+                            <td class="footer number W100">&nbsp;{{formatDecimal(isValidDecimals(notrasummary.data.renewalOnTimeAndLate) ? notrasummary.data.renewalOnTimeAndLate : 0, displayFormat)}}
+                            </td>
+                        </tr>
+                        <tr class="line" >
+                            <td class="center" >NOTRA Forecast</td>
+                            <td class="number W100">&nbsp;{{formatDecimal(isValidDecimals(notrasummary.data.notraActuals) ? notrasummary.data.notraActuals : 0, displayFormat)}}
+                            </td>
+                        </tr>
+                        <tr class="line2" >
+                            <td class="center" >NOTRA Plan<span><img src="/img/s.gif" class="helpOrb" title="Total Renewals Avail â€“ Renewals Plan" style="display: inline; float: right;"
+                                alt="Total Renewals Avail â€“ Renewals Plan" /></span></td>
+                            <td class="number W100">&nbsp;{{formatDecimal(isValidDecimals(notrasummary.data.notraBudgetAmount) ? notrasummary.data.notraBudgetAmount : 0, displayFormat)}}
+                            </td>
+                        </tr>
+                        <tr class="footer bold">
+                            <td class="footer center" >NOTRA Plan Variance</td>
+                            <td class="footer number W100">&nbsp;{{formatDecimal(isValidDecimals(notrasummary.data.notraBudgetVariance) ? notrasummary.data.notraBudgetVariance : 0, displayFormat)}}
+                            </td>
+                        </tr>
+                        
+                    </tbody>
+                </table>
+
+                <table class="report" style="float:left; margin-top: 1%; margin-right: 5%;display:none;"  ng-show="forecastType == 'renewal' && viewNOTRA == 'true'">
+                    <thead>
+                        <tr class="header">
+                            <th colspan="2">Renewal Churn/Risk</th>
+                        </tr>
+                    </thead>
+                    <thead>
+                        <tr class="header">
+                            <th colspan="2">Open Deals</th>
+                        </tr>
+                    </thead>
+                    <thead>
+                        <tr class="header">
+                            <th>CSM Stage</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="line">
+                            <td class="center bold" >Lost</td>
+                            <td class="number W100">&nbsp;{{formatDecimal(isValidDecimals(churnsummary.data.csmLostDealsSummary) ? churnsummary.data.csmLostDealsSummary : 0, displayFormat)}}
+                            </td>
+                        </tr>
+                        <tr class="line2" >
+                            <td class="center bold" >Risk</td>
+                            <td class="number W100" >&nbsp;{{formatDecimal(isValidDecimals(churnsummary.data.csmRiskDealsSummary) ? churnsummary.data.csmRiskDealsSummary : 0, displayFormat)}}
+                            </td>
+                        </tr>
+                        <tr class="footer bold">
+                            <td class="footer center" >Total</td>
+                            <td class="footer number W100">&nbsp;{{formatDecimal(isValidDecimals(churnsummary.data.csmTotalDealsSummary) ? churnsummary.data.csmTotalDealsSummary : 0, displayFormat)}}
+                            </td>
+                        </tr>
+                        <thead>
+                            <tr class="header">
+                                <th colspan="2">Closed Deals</th>
+                            </tr>
+                        </thead>
+                        <tr class="line" >
+                            <td class="center bold" >Closed Lost</td>
+                            <td class="number W100">&nbsp;{{formatDecimal(isValidDecimals(churnsummary.data.lostDealsSummary) ? churnsummary.data.lostDealsSummary : 0, displayFormat)}}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <!-- Hide this table as Last Week has been moved to Current Rollup -->
+                <table class="report" style="float:left; margin-top: 1%; margin-right: 5%" ng-hide="true">
+                    <thead>
+                        <tr class="header">
+                            <th colspan="3">Rollup History</th>
+                        </tr>
+                        <tr class="header">
+                            <th class="W100">
+                                &nbsp;
+                            </th>
+                            <th class="W80">Last Week</th>
+                            <th class="W80">vs Now</th>
+                            <!-- <th class="W80" style="background-color: lightgray;">M1 W1</th>
+                            <th class="W80" style="background-color: lightgray;">vs Now</th>
+                            <th class="W80">M3 W1</th>
+                            <th class="W80">vs Now</th> -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="line">
+                            <td class="center">Closed QTD</td>
+                            <td class="number">{{formatDecimal(forecastSummary.data.MyLastWeekSummary.QTDClosedTotal, displayFormat)}}</td>
+                            <td class="number">{{formatPercentage(forecastSummary.data.MyLastWeekSummary.QTDClosedTotal ? forecastSummary.data.MyLastWeekSummary.QTDClosedTotal / forecastSummary.data.MySummary.QTDClosedTotal * 100 : 'NA')}}</td>
+                            <!-- <td class="number">{{formatDecimal(forecastSummary.data.summary.MyQTDClosedTotal, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(forecastSummary.data.summary.MyQTDClosedTotal, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(forecastSummary.data.summary.MyQTDClosedTotal, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(forecastSummary.data.summary.MyQTDClosedTotal, displayFormat)}}</td> -->
+                            <!-- <td class="number" ng-repeat="entry in forecastSummary.data.summary.MostLikelySummaryEntries">
+                                <span>{{formatDecimal(entry.Amount, displayFormat)}}</span>
+                            </td> -->
+                        </tr>
+                        <tr class="line2">
+                            <td class="center">Most Likely</td>
+                            <td class="number">{{formatDecimal(forecastSummary.data.MyLastWeekSummary.MostLikelyTotal, displayFormat)}}</td>
+                            <td class="number">{{formatPercentage(forecastSummary.data.MyLastWeekSummary.MostLikelyTotal ? forecastSummary.data.MyLastWeekSummary.MostLikelyTotal / forecastSummary.data.MySummary.MostLikelyTotal * 100 : 'NA')}}</td>
+                            <!-- <td class="number">{{formatDecimal(forecastSummary.data.summary.MyMostLikelyTotal, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(forecastSummary.data.summary.MyMostLikelyTotal, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(forecastSummary.data.summary.MyMostLikelyTotal, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(forecastSummary.data.summary.MyMostLikelyTotal, displayFormat)}}</td> -->
+                            <!-- <td class="number" ng-repeat="entry in forecastSummary.data.summary.MostLikelySummaryEntries">
+                                <span>{{formatDecimal(entry.Amount, displayFormat)}}</span>
+                            </td> -->
+                        </tr>
+                        <tr class="line">
+                            <td class="center">Best Case</td>
+                            <td class="number">{{formatDecimal(forecastSummary.data.MyLastWeekSummary.BestCaseTotal, displayFormat)}}</td>
+                            <td class="number">{{formatPercentage(forecastSummary.data.MyLastWeekSummary.BestCaseTotal ? forecastSummary.data.MyLastWeekSummary.BestCaseTotal / forecastSummary.data.MySummary.BestCaseTotal * 100 : 'NA')}}</td>
+                            <!-- <td class="number">{{formatDecimal(forecastSummary.data.summary.MyBestCaseTotal, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(forecastSummary.data.summary.MyBestCaseTotal, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(forecastSummary.data.summary.MyBestCaseTotal, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(forecastSummary.data.summary.MyBestCaseTotal, displayFormat)}}</td> -->
+                            <!-- <td class="number" ng-repeat="entry in forecastSummary.data.summary.BestCaseSummaryEntries">
+                                <span>{{formatDecimal(entry.Amount, displayFormat)}}</span>
+                            </td> -->
+                        </tr>
+                        <tr class="line2">
+                            <td class="center">Worst Case</td>
+                            <td class="number">{{formatDecimal(forecastSummary.data.MyLastWeekSummary.WorstCaseTotal, displayFormat)}}</td>
+                            <td class="number">{{formatPercentage(forecastSummary.data.MyLastWeekSummary.WorstCaseTotal ? forecastSummary.data.MyLastWeekSummary.WorstCaseTotal / forecastSummary.data.MySummary.WorstCaseTotal * 100 : 'NA')}}</td>
+                            <!-- <td class="number">{{formatDecimal(forecastSummary.data.summary.MyWorstCaseTotal, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(forecastSummary.data.summary.MyWorstCaseTotal, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(forecastSummary.data.summary.MyWorstCaseTotal, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(forecastSummary.data.summary.MyWorstCaseTotal, displayFormat)}}</td> -->
+                            <!-- <td class="number" ng-repeat="entry in forecastSummary.data.summary.WorstCaseSummaryEntries">
+                                <span>{{formatDecimal(entry.Amount, displayFormat)}}</span>
+                            </td> -->
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="clearfix"></div>
+
+                <div class="clearfix"></div>
+            </apex:pageBlock>
+            <apex:pageBlock id="WeeklyForecast" title="Weekly Forecast" html-ng-show="weeklyforecastsummary.data.entries.length > 0  && forecastType!='renewal' && forecastType != 'billings'">
+                    <div class="outer" ng-show="weeklyforecastsummary.data.entries.length > 0">
+                        <div class="inner">
+                        <table class="report">
+                            <thead>
+                                <tr class="header">
+                                    <th class="header hard_left" >
+                                        &nbsp;
+                                    </th>
+                                    <th class="W80" ng-style="{'background-color': forecast.highlightColumn ? '':'lightgray'}" ng-repeat="forecast in weeklyforecastsummary.data.entries">&nbsp;
+                                        {{forecast.headerDate}}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="line">
+                                    <td class="line hard_left center" >Forecasted Deals
+                                    </td>
+                                    <td class="number" ng-repeat="forecast1 in weeklyforecastsummary.data.entries">&nbsp;{{formatDecimal(forecast1.snapshotAmount, displayFormat)}}
+                                    </td>
+                                </tr>
+                                <tr class="line2" >
+                                    <td class="line2 hard_left center" >Closed Won
+                                    </td>
+                                    <td class="number" ng-repeat="forecast1 in weeklyforecastsummary.data.entries">&nbsp;{{formatDecimal(forecast1.forecastAmount, displayFormat)}}
+                                    </td>
+                                </tr>
+                                <tr class="footer">
+                                    <td class="footer hard_left center" style="color:white;">% Attainment</td>
+                                    <td class="number" ng-repeat="forecast in weeklyforecastsummary.data.entries">&nbsp;
+                                    {{formatPercentage(isValidDecimals(forecast.forecastAmount, forecast.snapshotAmount) ? forecast.forecastAmount / forecast.snapshotAmount * 100 : 'NA')}}
+                                    </td>
+                                </tr>
+                                <tr class="header" ng-if="forecastType=='new-upsell' && !isViewingHistory">
+                                    <th class="line hard_left center">
+                                        Weekly Forecast Comment
+                                    </th>
+                                    <th colspan="{{weeklyforecastsummary.data.entries.length}}" style="text-align: left; background-color: #FFFFFF; max-width: 100%;height:14.5px" ng-hide="forecastSummary.isEditingWeeklyComments">
+                                        <span class="fa fa-edit editBtnShow" ng-click="editForecastWeeklyComments()" ng-show="!forecastSummary.isEditingWeeklyComments && !isViewingHistory && forecastEditable" title="Edit">
+                                            <img src="{!URLFOR($Resource.ZForecasting, 'img/edit.png')}" style="width: 12px; height: 12px; float: left;" />
+                                        </span>
+
+                                        <div style="max-width: 600px; overflow: auto; white-space: pre-wrap; max-height: 50px; font-weight: normal;">{{forecastSummary.data.WeeklyComments}}</div>
+                                    </th>
+                                    <th colspan="{{weeklyforecastsummary.data.entries.length}}" style="text-align: left; background-color: #FFFFFF; padding: 0px;height:14.5px" ng-show="forecastSummary.isEditingWeeklyComments">
+                                        <span class="fa fa-check saveBtn" ng-click="saveForecastWeeklyComments()" title="Save" ng-show="forecastSummary.isEditingWeeklyComments">
+                                            <img src="{!URLFOR($Resource.ZForecasting, 'img/save.png')}" style="width: 12px; height: 12px; float: left;" />
+                                        </span>
+                                        <span class="fa fa-times undoBtn" ng-click="cancelForecastWeeklyComments()" title="Undo" ng-show="forecastSummary.isEditingWeeklyComments">
+                                            <img src="{!URLFOR($Resource.ZForecasting, 'img/cancel.png')}" style="width: 12px; height: 12px; float: left;" />
+                                        </span>
+                                        <textarea rows="4" style="width: 99%" ng-model="forecastSummary.editingModal.WeeklyComments"></textarea>
+                                    </th>
+                                </tr>
+                            </tbody>
+                        </table>
+                        </div>
+                    </div>
+
+            </apex:pageBlock>
+            <!--<apex:pageBlock id="MonthlyForecast" title="Monthly Forecast" html-ng-show="monthlyforecastsummary.data.entries.length > 0">
+
+            </apex:pageBlock>-->
+            <apex:pageBlock id="teamListingBlock" title="Team Forecast" html-ng-show="teamForecasts.data.length > 0 && forecastType != 'billings'">
+                <table class="report">
+                    <thead>
+                        <tr class="header">
+                            <th class="minW100">Team</th>
+                            <th class="W100">Plan</th>
+                            <th class="W100">Forecast</th>
+                            <th class="W100">Forecast vs Plan</th>
+                            <th class="W100">Closed QTD</th>
+                            <th class="W100">Closed QTD vs Forecast</th>
+                            <th class="W100">ML Rollup</th>
+                            <th class="W100">BC Rollup</th>
+                            <th class="W100">WC Rollup</th>
+                            <!-- <th class="W100">Total Commit</th>
+                            <th class="W100">Total Upside</th> -->
+                            <th class="W100">Total Pipeline</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-class="{'line': !($index % 2), 'line2': !!($index % 2) }" ng-repeat="forecast in teamForecasts.data">
+                            <td>
+                                <a ng-if="forecast.UserId != currentUser" href="{!$Page.ZForecasting}?path={!UserPath}/{{forecast.UserId}}&type={{forecastType}}&family={{forecastFamily}}&impersonate={!impersonateViewAsUser}">{{forecast.UserName}}</a>
+                                <span ng-if="forecast.UserId == currentUser">{{forecast.UserName}}</span>
+                            </td>
+                            <td class="number">{{forecast.UserId != currentUser ? formatDecimal(forecast.QTRQuota, displayFormat) : ''}}</td>
+                            <td class="number">{{forecast.UserId != currentUser ? formatDecimal(forecast.MyForecast, displayFormat) : ''}}</td>
+                            <td class="number">{{forecast.UserId != currentUser ? formatPercentage(isValidDecimals(forecast.QTRQuota, forecast.MyForecast) ? forecast.MyForecast / forecast.QTRQuota * 100 : 'NA') : ''}}</td>
+                            <td class="number">{{formatDecimal(forecast.MySummary.QTDClosedTotal, displayFormat)}}</td>
+                            <td class="number">{{forecast.UserId != currentUser ? formatPercentage(isValidDecimals(forecast.MySummary.QTDClosedTotal, forecast.MyForecast) ? forecast.MySummary.QTDClosedTotal / forecast.MyForecast * 100 : 'NA') : ''}}</td>
+                            <td class="number">{{formatDecimal(forecast.MySummary.MostLikelyTotal, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(forecast.MySummary.BestCaseTotal, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(forecast.MySummary.WorstCaseTotal, displayFormat)}}</td>
+                            <!-- <td class="number">{{formatDecimal(forecast.TotalCommit, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(forecast.TotalUpside, displayFormat)}}</td> -->
+                            <td class="number">{{formatDecimal(forecast.TotalPipeline, displayFormat)}}</td>
+                        </tr>
+                        <tr class="footer">
+                            <td>Team Total</td>
+                            <td class="number">{{formatDecimal(teamForecasts.total.QTRQuota, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(teamForecasts.total.TotalMyForecast, displayFormat)}}</td>
+                            <td class="number">{{formatPercentage(isValidDecimals(teamForecasts.total.QTRQuota, teamForecasts.total.TotalMyForecast) ? teamForecasts.total.TotalMyForecast / teamForecasts.total.QTRQuota * 100 : 'NA')}}</td>
+                            <td class="number">{{formatDecimal(teamForecasts.total.TotalQTDBooking, displayFormat)}}</td>
+                            <td class="number">{{formatPercentage(isValidDecimals(teamForecasts.total.TotalQTDBooking, teamForecasts.total.TotalMyForecast) ? teamForecasts.total.TotalQTDBooking / teamForecasts.total.TotalMyForecast * 100 : 'NA')}}</td>
+                            <td class="number">{{formatDecimal(teamForecasts.total.TotalMLRollup, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(teamForecasts.total.TotalBCRollup, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(teamForecasts.total.TotalWCRollup, displayFormat)}}</td>
+                            <!-- <td class="number">{{formatDecimal(teamForecasts.total.TotalCommit, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(teamForecasts.total.TotalUpside, displayFormat)}}</td> -->
+                            <td class="number">{{formatDecimal(teamForecasts.total.TotalPipeline, displayFormat)}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </apex:pageBlock>
+            
+            <apex:pageBlock id="ZPA" title="ZPA" html-ng-show="forecastType=='new-upsell' && zpaForecastEnabled">
+
+                <table class="report">
+                    <tr class="header">
+                        <th class="W100">ZPA Plan</th>
+                        <th class="W100">ZPA ML Rollup</th>
+                        <th class="W100">ZPA ML Vs Plan</th>
+                        <th class="W100">ZPA Closed QTD</th>
+                        <th class="W100">1st ML Rollup</th>
+                    </tr>
+                    <tr class="line">
+                        <td class="number">&nbsp;{{formatDecimal(forecastSummaryZPA.data.QTRQuota, displayFormat)}}</td>
+                        <td class="number">&nbsp;{{formatDecimal(forecastSummaryZPA.data.ZPAMLRollup, displayFormat)}}</td>
+                        <td class="number">&nbsp;{{formatPercentage(isValidDecimals(forecastSummaryZPA.data.QTRQuota, forecastSummaryZPA.data.ZPAMLRollup) ? forecastSummaryZPA.data.ZPAMLRollup / forecastSummaryZPA.data.QTRQuota * 100 : 'NA')}}</td>
+                        <td class="number">&nbsp;{{formatDecimal(forecastSummaryZPA.data.ZPAClosedQTD, displayFormat)}}</td>
+                        <td class="number">&nbsp;{{formatDecimal(forecastSummaryZPA.data.FirstMLRollup, displayFormat)}}</td>
+                    </tr>
+                </table>
+                
+                <div class="clearfix"/>
+                
+                <table class="report" style="margin-top: 1%; margin-right: 5%">
+                    <thead>
+                        <tr class="header">
+                            <th colspan="{{monthlyforecastsummaryzpa.data.entries.length + 1}}">ZPA Monthly Forecast</th>
+                            <th colspan="2">Linearity</th>
+                        </tr>
+                        <tr class="header">
+                            <th>&nbsp;</th>
+                            <th class="W80" ng-style="{'background-color': forecast.highlight ? '':'lightgray'}" ng-repeat="forecast in monthlyforecastsummaryzpa.data.entries">&nbsp;
+                                {{forecast.month}}
+                            </th>
+                            <th class="W80" ng-style="{'background-color': 'lightgray'}">M1</th>
+                            <th class="W80" ng-style="{'background-color': 'lightgray'}">M2</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="line">
+                            <td class="center" >Plan ($)<span><img src="/img/s.gif" class="helpOrb" title="Plan for the Quarter cumulatively Distributed across months.
+M1 : 22% M2 : 55% M3 : 100%" style="display: inline; float: right;"
+                                alt="Plan for the Quarter cumulatively Distributed across months.
+M1 : 22% M2 : 55% M3 : 100%" /></span>
+                            </td>
+                            <td class="number" ng-repeat="forecast1 in monthlyforecastsummaryzpa.data.entries">&nbsp;{{formatDecimal(isValidDecimals(forecast1.planSnapshot) ? forecast1.planSnapshot : 0, displayFormat)}}
+                            </td>
+                            <td class="number"> &nbsp;{{formatPercentagerounded((monthlyforecastsummaryzpa.data.entries.length > 2) ? isValidDecimals(monthlyforecastsummaryzpa.data.entries[0].planSnapshot, monthlyforecastsummaryzpa.data.entries[2].planSnapshot) ? monthlyforecastsummaryzpa.data.entries[0].planSnapshot/monthlyforecastsummaryzpa.data.entries[2].planSnapshot *100 : 'NA':'NA')}}
+                            </td>
+                            <td class="number">&nbsp;{{formatPercentagerounded(monthlyforecastsummaryzpa.data.entries.length > 2 ?  isValidDecimals(monthlyforecastsummaryzpa.data.entries[1].planSnapshot, monthlyforecastsummaryzpa.data.entries[2].planSnapshot) ? monthlyforecastsummaryzpa.data.entries[1].planSnapshot/monthlyforecastsummaryzpa.data.entries[2].planSnapshot *100 : 'NA' : 'NA')}}
+                            </td>
+                        </tr>
+                        <tr class="line2" >
+                            <td class="center" >1st ML<span><img src="/img/s.gif" class="helpOrb" title="Snapshots taken first week of the Quarter. M1 and M2 are cumulative  ML deal Rollups. M3 is the first forecast recorded for the quarter. We Use W2 Forecast if the W1 has less than 3 days" style="display: inline; float: right;"
+                                alt="Snapshots taken first week of the Quarter. M1 and M2 are cumulative  ML deal Rollups. M3 is the first forecast recorded for the quarter. We Use W2 Forecast if the W1 has less than 3 days" /></span>
+                            </td>
+                            <td class="number" ng-repeat="forecast1 in monthlyforecastsummaryzpa.data.entries">&nbsp;{{formatDecimal(forecast1.islastmonth == true ? (isValidDecimals(forecastSummaryZPA.data.FirstMLRollup) ? forecastSummaryZPA.data.FirstMLRollup : 0) : (isValidDecimals(forecast1.forecastSnapshot) ? forecast1.forecastSnapshot : 0), displayFormat)}}
+                            </td>
+                            <td class="number">&nbsp;{{formatPercentagerounded(monthlyforecastsummaryzpa.data.entries.length > 2 ? isValidDecimals(monthlyforecastsummaryzpa.data.entries[0].forecastSnapshot, forecastSummaryZPA.data.FirstMLRollup) ? monthlyforecastsummaryzpa.data.entries[0].forecastSnapshot/forecastSummaryZPA.data.FirstMLRollup * 100 : 'NA' : 'NA')}}
+                            </td>
+                            <td class="number">&nbsp;{{formatPercentagerounded(monthlyforecastsummaryzpa.data.entries.length > 2 ? isValidDecimals(monthlyforecastsummaryzpa.data.entries[1].forecastSnapshot, forecastSummaryZPA.data.FirstMLRollup) ? monthlyforecastsummaryzpa.data.entries[1].forecastSnapshot/forecastSummaryZPA.data.FirstMLRollup * 100 : 'NA' : 'NA')}}
+                            </td>
+                        </tr>
+                        <tr class="line" >
+                            <td class="center" >Current ML<span><img src="/img/s.gif" class="helpOrb" title="M1 and M2 are cumulative rollup of ML deals. Only Closed deals considered for past months. M3 is the qtr forecast." style="display: inline; float: right;"
+                                alt="M1 and M2 are cumulative of ML deals. M3 is the ML rollup for the quarter." /></span>
+                            </td>
+                            <td class="number" ng-repeat="forecast1 in monthlyforecastsummaryzpa.data.entries">&nbsp;{{formatDecimal(forecast1.islastmonth == true? (isValidDecimals(forecastSummaryZPA.data.ZPAMLRollup) ? forecastSummaryZPA.data.ZPAMLRollup : 0) : (isValidDecimals(forecast1.forecastRollup)? forecast1.forecastRollup : 0), displayFormat)}}
+                            </td>
+                            <td class="number">&nbsp;{{formatPercentagerounded(monthlyforecastsummaryzpa.data.entries.length > 2 ? isValidDecimals(monthlyforecastsummaryzpa.data.entries[0].forecastRollup, forecastSummaryZPA.data.ZPAMLRollup) ? monthlyforecastsummaryzpa.data.entries[0].forecastRollup/forecastSummaryZPA.data.ZPAMLRollup * 100 : 'NA' : 'NA')}}
+                            </td>
+                            <td class="number">&nbsp;{{formatPercentagerounded(monthlyforecastsummaryzpa.data.entries.length > 2 ?  isValidDecimals(monthlyforecastsummaryzpa.data.entries[1].forecastRollup, forecastSummaryZPA.data.ZPAMLRollup) ? monthlyforecastsummaryzpa.data.entries[1].forecastRollup/forecastSummaryZPA.data.ZPAMLRollup * 100 : 'NA' : 'NA')}}
+                            </td>
+                        </tr>
+                        <tr class="line2 bold">
+                            <td class="center firstcolumn">Current Forecast vs Plan</td>
+                            <td class="number" ng-repeat="forecast in monthlyforecastsummaryzpa.data.entries">&nbsp;{{formatPercentage(forecast.islastmonth == true ?  isValidDecimals(forecastSummaryZPA.data.ZPAMLRollup, forecast.planSnapshot) ? forecastSummaryZPA.data.ZPAMLRollup / forecast.planSnapshot * 100 : 'NA' : isValidDecimals(forecast.forecastRollup, forecast.planSnapshot) ? forecast.forecastRollup / forecast.planSnapshot * 100 : 'NA')}}
+                            </td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr class="line bold">
+                            <td class="center firstcolumn">Current Forecast vs 1st Forecast</td>
+                            <td class="number" ng-repeat="forecast in monthlyforecastsummaryzpa.data.entries">&nbsp;
+                            {{formatPercentage(forecast.islastmonth == true ? isValidDecimals(forecastSummaryZPA.data.ZPAMLRollup, forecastSummaryZPA.data.FirstMLRollup) ? forecastSummaryZPA.data.ZPAMLRollup / forecastSummaryZPA.data.FirstMLRollup * 100 : 'NA' : isValidDecimals(forecast.forecastRollup, forecast.forecastSnapshot) ? forecast.forecastRollup / forecast.forecastSnapshot * 100 : 'NA')}}
+                            </td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </apex:pageBlock>
+
+            <apex:pageBlock id="opportunityListingBlock" title="Opportunity List - Page {{opportunityListing.pageIndex}} / {{opportunityListing.pageCount}}" html-ng-show="forecastType != 'billings'">
+                <div class="listCaption">
+                    <span ng-show="MyUserLevel == 'Exec'"><div style="float:left;padding-right:10px"><div style="float:left;padding: 5px;">Geo </div><!-- <select ng-model="opportunityListing.filter.Geo" ng-options="item for item in geovals" ng-change="opportunityListing.filter.pageIndex=1;opportunityListing.filter.Region='All';loadregvals(opportunityListing.filter.Geo);loadOpportunityListing();">
+                    </select>-->
+                    <multiselect id="geoval" style="float:left;" class="" multiple="true"
+                        ng-model="selectedgeovals"  picklistsrc="geopicklist"
+                        options="c for c in geovals"></multiselect>
+                    </div>&nbsp;&nbsp;</span>
+                    <span ng-show="MyUserLevel == 'Exec' || MyUserLevel == 'VP'"><div class="pipe-filters" style="float:left;"><div style="float:left;padding: 5px;">Region </div><!-- <select ng-model="opportunityListing.filter.Region" ng-options="item for item in regionvals" ng-change="opportunityListing.filter.pageIndex=1;loadOpportunityListing();">
+                    </select>-->
+                    <multiselect id="regval" style="float:left;" class="" multiple="true"
+                        ng-model="selectedregionvals"
+                        options="c for c in regionvals"></multiselect>
+                    </div>
+                    </span>
+                    <span ng-show="forecastType=='new-upsell' && (MyUserLevel == 'Exec' || MyUserLevel == 'VP' || MyUserLevel == 'RVP' || MyUserLevel == 'Manager' || MyUserLevel == 'Director')"><div class="pipe-filters" style="float:left;"><div style="float:left;padding: 5px;">Show ZPA deals </div>
+                         <div class="btn-switch" ng-class="{'btn-switch--on':toggle.switch}" ng-model="toggle.switch" ng-click="toggle.switch = !toggle.switch;loadOpportunityListing();">
+                            <div class="btn-switch-circle" ng-class="{'btn-switch-circle--on':toggle.switch}"></div>
+                         </div>
+                      </div>
+                    </span>
+                </div><div class="clearfix"/><br/>
+                <div class="listCaption">
+                    <div style="float:left;padding-right:10px"><div style="float:left;padding: 5px;">View </div><!-- <select ng-model="opportunityListing.filter.stage" ng-change="opportunityListing.filter.pageIndex=1;loadOpportunityListing();">
+                        <option value="My Forecast vs RSM" ng-if="MyUserLevel != 'Rep' && MyUserLevel != 'Manager'">My Forecast &lt;&gt; RSM</option>
+                        <option value="Level Minus 1 vs RSM" ng-if="MyUserLevel != 'Rep' && MyUserLevel != 'Manager'">Level Minus 1 &lt;&gt; RSM</option>
+                        <option value="My Forecast vs Level Minus 1" ng-if="MyUserLevel != 'Rep'">My Forecast &lt;&gt; Level Minus 1</option>
+                        <option value="Forecast Based Filters" style="background-color: lightgray; font-weight: bold; text-align: center;" disabled="disable">-- Forecast Based Filters --</option>
+                        <option value="ML Forecast">ML Forecast</option>
+                        <option value="BC Forecast">BC Forecast</option>
+                        <option value="WC Forecast">WC Forecast</option>
+                        <option value="Deal Based Filters" disabled="disable" style="background-color: lightgray; font-weight: bold; text-align: center;">-- Deal Based Filters --</option>
+                        <option value="All Open">All Open</option>
+                        <option value="Closed Won">Closed Won</option>
+                        <option value="Stage 10b">Stage 10b</option>
+                        <option value="Commit">Commit</option>
+                        <option value="Most Likely">Most Likely</option>
+                        <option value="Best Case">Best Case</option>
+                        <option value="Pipeline">Pipeline</option>
+                        <option value="Closed Lost">Closed Lost</option>
+                        <option value="Other" disabled="disable" style="background-color: lightgray; font-weight: bold; text-align: center;">-- Other --</option>
+                        <option value="Pushed Deals">Pushed Deals</option>
+                        <option value="Deal Splits">Deal Splits</option>
+                    </select>-->
+                    <multiselect id="viewvalue" style="float:left;" class="" multiple="true"
+                        ng-model="selectedviewvals"
+                        options="c for c in viewvals"></multiselect>
+                    </div>&nbsp;&nbsp;
+                    <div class="pipe-filters"  style="float:left;"><div style="float:left;padding: 5px;">Deal Band </div><!-- <select ng-model="opportunityListing.filter.dealValue" ng-change="opportunityListing.filter.pageIndex=1;loadOpportunityListing();">
+                        <option value="All">All</option>
+                        <option value="Upto25K">&lt; $25K</option>
+                        <option value="25KTo50K">$25K - $50K</option>
+                        <option value="50KTo100K">$50K - $100K</option>
+                        <option value="100KTo250K">$100K - $250K</option>
+                        <option value="250KTo1M">$250K - $1M</option>
+                        <option value="Above1M">&gt; $1M</option>
+                    </select>-->
+                    <multiselect id="dealvalue" style="float:left;" class="" multiple="true"
+                        ng-model="selecteddealbandvals"
+                        options="c for c in dealbandvals"></multiselect>
+                    </div>&nbsp;&nbsp;
+                    <!--<div ng-show="forecastType =='renewal'" class="pipe-filters"  style="float:left;"><div style="float:left;padding: 5px;">Customer Success Stage </div>
+                    <multiselect id="custsucstage" style="float:left;" class="" multiple="true"
+                        ng-model="selectedcssvals"
+                        options="c for c in cssvals"></multiselect>
+                    </div>&nbsp;&nbsp;-->
+                    <div ng-show="forecastType =='renewal'" class="pipe-filters"  style="float:left;"><div style="float:left;padding: 5px;">Customer Sentiment </div>
+                    <multiselect id="custsentiment" style="float:left;" class="" multiple="true"
+                        ng-model="selectedcsvals"
+                        options="c for c in csvals"></multiselect>
+                    </div>&nbsp;&nbsp;
+                    <div ng-show="forecastType!='renewal'" class="pipe-filters"  style="float:left;"><div style="float:left;padding: 5px;">Closing Month </div><!--<select ng-model="opportunityListing.filter.closingMonth" ng-change="opportunityListing.filter.pageIndex=1;opportunityListing.filter.closingWeek='All';loadOpportunityListing();" style="width:80px">
+                        <option value="All">All</option>
+                        <option value="M1">M1</option>
+                        <option value="M2">M2</option>
+                        <option value="M3">M3</option>
+                    </select>-->
+                    <multiselect id="closingmonth" style="float:left;" class="" multiple="true"
+                        ng-model="selectedclosingMonthvals" picklistsrc="closingmonth"
+                        options="c for c in closingMonthvals"></multiselect>
+                    </div>&nbsp;&nbsp;
+                    <div ng-show="forecastType!='renewal'" class="pipe-filters"  style="float:left;"><div style="float:left;padding: 5px;">Closing Week </div><!--<select ng-model="opportunityListing.filter.closingWeek" ng-change="opportunityListing.filter.pageIndex=1;opportunityListing.filter.closingMonth='All';loadOpportunityListing();">
+                        <option value="All">All</option>
+                        <option value="This">This</option>
+                        <option value="Next">Next</option>
+                        <option value="Previous">Previous</option>
+                    </select>-->
+                    <multiselect id="closingweek" style="float:left;" class="" multiple="true"
+                        ng-model="selectedclosingWeekvals" picklistsrc="closingweek"
+                        options="c for c in closingweekvals"></multiselect>
+
+                    </div>
+                    
+                    <div ng-show="forecastType=='renewal'" class="pipe-filters"  style="float:left;"><div style="float:left;padding: 5px;">Contract End Date Month</div>
+                    <multiselect id="contractedmonth" style="float:left;" class="" multiple="true"
+                        ng-model="selectedconedmonthvals" picklistsrc="contractedmonth"
+                        options="c for c in conedmonthvals"></multiselect>
+                    </div>
+                    
+                    <div ng-show="forecastType=='renewal' && viewNOTRA != '' &&  viewNOTRA != null" class="pipe-filters"  style="float:left;"><div style="float:left;padding: 5px;">NOTRA (ML forecast only)</div>
+                    <multiselect id="notrafilter" style="float:left;" class="" multiple="true"
+                        ng-model="selectednotravals" picklistsrc="notrafilter"
+                        options="c for c in notravals"></multiselect>
+                    </div>
+                    
+                    <!--<div ng-show="forecastType=='renewal'" style="float:left;padding: 5px;"><div style="float:left;padding: 5px;">Contract End Date Week</div>
+                    <multiselect id="contractedweek" style="float:left;" class="" multiple="true"
+                        ng-model="selectedconedweekvals" picklistsrc="contractedweek"
+                        options="c for c in conedweekvals"></multiselect>
+
+                    </div>-->
+                    
+                </div><br/>
+                <div class="listCaption">
+                    <div style="float:left;padding: 0px 0px 0px 3px; width:100%">
+                        
+                        <span class="pipe" ng-show="forecastType!='renewal'"> {{opportunityListing.CloseWeekDateRange}}</span>
+                        <span class="pipe">Total :  {{formatDecimal(opportunityListing.totalOppAmount, displayFormat)}}</span>&nbsp;&nbsp;
+                        <span># Deals :  {{opportunityListing.recordCount}}</span>
+                        <img id="loaderimg" src="/img/loading.gif" alt="loading"/>&nbsp;&nbsp;
+                        <span style="float:right" ng-show="opportunityListing.data.length > 0">
+                            <a class="actionLink fa fa-angle-double-left" ng-click="turnPageOppList(opportunityListing.pageIndex-1)" ng-show="opportunityListing.hasPrevious"> Previous Page</a>&nbsp;&nbsp;
+                            <select ng-model="opportunityListing.pageIndex" ng-options="p as p for p in opportunityListing.pagers" ng-show="opportunityListing.pageCount>1" ng-change="turnPageOppList(opportunityListing.pageIndex)"></select>&nbsp;&nbsp;
+                            <a class="actionLink" ng-click="turnPageOppList(opportunityListing.pageIndex+1)" ng-show="opportunityListing.hasNext">Next Page <span class="fa fa-angle-double-right"></span></a>
+                        </span>
+                        <!--<span><a class="export-btn" ng-click="exporttoexcel()">Export to Excel</a></span>-->
+                        <span class="export-btn" ng-click="exporttoexcel()" title="Export to Excel" ng-show="viewExportToExcel == 'true'">
+                            <img src="{!URLFOR($Resource.ZForecasting, 'img/Export_to_Excel.png')}" style="width: 35px; height: 35px; float: left;" />
+                        </span>       
+                    </div>
+                </div><br/>
+                <div class="listCaption" ng-repeat="nd in notradescription">
+                    <a ng-show="forecastType=='renewal'"><b><font color="#BF254D">{{nd}}</font></b></a>
+                </div>
+                <div class="listCaption" style="display:none">
+                    <a ng-show="forecastType=='renewal'"><b><font color="#BF254D">Highlighted opportunity indicates close date in the past or subscription is overdue.</font></b></a>
+                </div>
+                <div ng-hide="oppListV2.enabled || opportunityListing.data.length > 0">No opportunities found.</div>
+                <table class="report borderReport" style="width: 100%" ng-show="!oppListV2.enabled && opportunityListing.data.length > 0">
+                    <thead>
+                        <tr class="header">
+                            <th><a class="actionLink" ng-click="sortOppList('Opportunity.Name')">Opportunity Name</a></th>
+                            <th><a class="actionLink" ng-click="forecastFamily == 'ZPA' ? sortOppList('ZPA_Amount_For_Sorting__c') : sortOppList('Amount__c')">Amount</a></th>
+                            <th ng-if="forecastType == 'renewal'"><a class="actionLink" ng-click="sortOppList('Opportunity.Renewable_ACV__c')">Renewal ACV</a></th>
+                            <th><a class="actionLink" ng-click="sortOppList('Opportunity.StageName')">Sales Stage</a></th>
+                            <th ng-if="forecastType!='renewal'">Technical Stage</th>
+                            <!--<th ng-if="forecastType=='renewal'">Customer Success Stage</th>-->
+                            <th ng-if="forecastType=='renewal'">Customer Sentiment</th>
+                            <!-- <th><a class="actionLink" ng-click="sortOppList('Opportunity.VMO_Play__c')">VMO Play</a></th> -->
+                            <th><a class="actionLink" ng-click="sortOppList('Opportunity.CloseDate')">Close Date</a></th>
+                            <th ng-if="forecastType =='renewal'"><a class="actionLink" ng-click="sortOppList('Opportunity.Contract_End_Date_New__c')">Contract End Date</a></th>
+                            <th class="W100"><a class="actionLink" ng-click="sortOppList('Opportunity.Forecast_Category__c')">FC</a></th>
+                            <th class="W100" ng-if="LevelMinusOne != 'Rep' && MyUserLevel != 'Rep'"><a class="actionLink" ng-click="sortOppList('LevelMinusOneForecastCategory')">{{LevelMinusOne == 'VP' ? 'VP' : LevelMinusOne == 'RVP' ? 'RVP' : LevelMinusOne == 'Director' ? 'AD' : LevelMinusOne == 'Manager' ? 'DM' : 'Level - 1'}}'s FC</a></th>
+                            <th class="W100" ng-if="MyUserLevel != 'Rep'"><a class="actionLink" ng-click="sortOppList('MyForecastCategory')">My FC</a></th>
+                            <!-- <th>Deal Path</th> -->
+                            <th width="30%"><a class="actionLink" ng-click="sortOppList('Opportunity.NextStep')">Next Step</a></th>
+                            <th>Primary Partner</th>
+                            <th width="10%"><a class="actionLink" ng-click="forecastFamily == 'ZPA' ? sortOppList('ZPA_RSM__r.Name') : sortOppList('SplitOwner.Name')">{!IF(ForecastFamily = 'ZPA', 'ZPA Rep', 'Owner')}</a></th>
+                            <th ng-if="forecastType!='renewal'"><a class="actionLink" ng-click="sortOppList('Opportunity.Account.Last_Architecture_Workshop_Date__c')">Last AW SCI</a></th>
+                            <th ng-if="forecastType!='renewal'"><a class="actionLink" ng-click="sortOppList('Opportunity.Account.Last_F2F_Meeting__c')">Last F2F SCI</a></th>
+                            <!-- <th><a class="actionLink" ng-click="sortOppList('Opportunity.Account.F2F_Meetings_In_Last_60_Days__c')" style="whitespace: wrap"># F2F SCIs L60D</a></th> -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-class="{'line': !($index % 2), 'line2': !!($index % 2), 'high': opportunity.Highlight}" ng-repeat="opportunity in opportunityListing.data">
+                            <td><a href="/{{opportunity.OppId}}" target="_blank">{{unescape(opportunity.OppName)}}</a> {{unescape(opportunity.SplitMessage)}}</td>
+                            <td class="number">{{formatDecimal(opportunity.Amount, displayFormat)}}</td>
+                            <td class="number" ng-if="forecastType == 'renewal'">{{formatDecimal(opportunity.RenewalACV , displayFormat)}}</td>
+                            <td class="center">{{unescape(opportunity.Stage)}}</td>
+                            <!--td class="center" ng-if="forecastType=='renewal'">{{unescape(opportunity.CustomerSuccessStage)}}</td>-->
+                            <td class="center" ng-if="forecastType=='renewal'">{{unescape(opportunity.CustomerSentiment)}}</td>
+                            <td class="center" ng-if="forecastType!='renewal'">{{unescape(opportunity.PocStatusPreffix+opportunity.PocStatus)}}</td>
+                            <!-- <td class="center">{{unescape(opportunity.VMOPlay)}}</td> -->
+                            <td class="center">{{opportunity.CloseDate}}</td>
+                            <td class="center" ng-if="forecastType =='renewal'" >{{opportunity.ContractEndDate}}</td>
+                            <td class="center">{{unescape(opportunity.ForecastCategory)}}</td>
+                            <td class="center" ng-if="LevelMinusOne != 'Rep'  && MyUserLevel != 'Rep'">{{unescape(opportunity.LevelMinusOneForecastCategory)}}</td>
+                            <td class="center" ng-if="MyUserLevel != 'Rep'">{{unescape(opportunity.MyForecastCategory)}}</td>
+                            <!-- <td class="center">{{unescape(opportunity.DealPath)}}</td> -->
+                            <td>{{unescape(opportunity.NextStep)}}</td>
+                            <td><a href="/{{opportunity.PrimaryPartnerId}}" target="_blank">{{unescape(opportunity.PrimaryPartnerName)}}</a></td>
+                            <td><a href="/{{opportunity.OwnerId}}" target="_blank">{{unescape(opportunity.OwnerName)}}</a></td>
+                            <td class="center" ng-if="forecastType!='renewal'" ng-style="{color: opportunity.LastArchWorkshopDateCSS ? 'red':'black'}">{{opportunity.LastArchWorkshopDate}}</td>
+                            <td class="center" ng-if="forecastType != 'renewal'" ng-style="{color: opportunity.LastF2FMeetingDateCSS ? 'red':'black'}">{{opportunity.LastF2FMeetingDate}}</td>
+                            
+                            <!-- <td class="center">{{opportunity.F2FMeetingsInLast60Days}}</td> -->
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div ng-show="oppListV2.enabled" id="snapcast_oppList_v2"></div>
+
+                <div id="oppList2ErrorNotify" class="notifiy error" style="display:none" data-fp-dialog="true" data-fp-dialog-title="Errors" data-fq-container-class="jsGrid-error-notify-container">
+                    <div class="content">
+                        <ul class="errors-list">
+                          <li class="errors-item" ng-repeat="error in oppListV2.errors">{{error}}</li>
+                        </ul>
+                    </div>
+                </div>
+            </apex:pageBlock>
+        </div>
+    </apex:form>
+    <form id="exporttoexcel" method="POST" action="Forecast_Export_To_Excel">
+        <input id="payloadId" type="hidden" name="payload"/> 
+        <input id="levelminusonetitle" type="hidden" name="levelminusonetitle"/> 
+        <input id="viewNotra" type="hidden" name="viewNotra"/>
+        <input id="daterange" type="hidden" name="daterange"/>
+    </form> 
+    <script> function sendform() { document.getElementById('exporttoexcel').submit(); } </script>
+    
+</apex:page>

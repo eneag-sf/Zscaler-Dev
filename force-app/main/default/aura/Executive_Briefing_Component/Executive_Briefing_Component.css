@@ -1,0 +1,32 @@
+.THIS .slds-theme_info {
+    background-color: #f2f2f2;
+}
+
+.THIS .slds-custom-pad5{
+    padding-left: 5px;
+} 
+
+.THIS .slds-custom-pad8{
+    padding-left: 8px;
+} 
+
+.THIS .slds-form-element__help{
+    display: block;
+    margin-left: 33%;
+}
+
+.THIS lightning-input-field .slds-form-element__label abbr, .THIS .slds-form-element__label abbr{
+    margin-left: -4.97px;
+}
+
+.THIS .slds-checkbox__label{
+    display:block;
+}
+
+.THIS .error-text-one {
+    display:none;
+}
+
+.THIS .error-text-two {
+    display:none;
+}

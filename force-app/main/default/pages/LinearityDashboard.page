@@ -1,0 +1,911 @@
+<apex:page showheader="true" sidebar="false" controller="LinearityDashboardController" extensions="LinearityDashboardService">
+            <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+            <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.min.js"></script>
+            <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular-animate.min.js"></script>
+            <apex:stylesheet value="{!URLFOR($Resource.Performance, 'css/fq.css')}" />
+            <apex:stylesheet value="{!URLFOR($Resource.Performance, 'css/toggle-switch.css')}" /> 
+            <link href="https://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet" />
+            
+            <script type="text/javascript">
+                var forecastEnabled = {!CurrentViewingUser.ForecastEnabled == true};
+                var currentViewingUserId = "{!CurrentViewingUser.UserId}";
+                var userPath = "{!UserPath}";
+                var forecastType = "{!ForecastType}";
+                var fiscalYear = "{!currentFiscalYear}";
+                var currentQuarter = "{!CurrentFiscalQuarter.FormattedString}";
+                var currentMonth = "{!currentMonth}";
+                var prevmonth = "{!prevMonth}";
+                var nextmonth = "{!nextMonth}";
+                var currentRole = "{!currentRole}";
+                var nextRole = "{!nextRole}";
+                var prevRole = "{!prevRole}";
+                var firstQtr = "{!firstQtr}";
+                var secondQtr = "{!secondQtr}";
+                var thirdQtr = "{!thirdQtr}";
+                var fourthQtr = "{!fourthQtr}";
+                var selectedQtr = "{!selectedQtr}";
+                var myapp = angular.module('linearityApp', ['ngAnimate']);
+                var contrl= myapp.controller('linearityCtrl', function($scope, $q, $timeout) {
+                    $scope.path = userPath;
+                    $scope.currentUser = currentViewingUserId;
+                    $scope.forecastEnabled = forecastEnabled;
+                    $scope.forecastType = forecastType;
+                    $scope.cuurentFiscalQtr = currentQuarter;
+                    $scope.cuurentFiscalYear = fiscalYear;
+                    $scope.currentMonth = currentMonth;
+                    $scope.prevMonth = prevmonth;
+                    $scope.nextMonth = nextmonth;
+                    $scope.currentRole = currentRole;
+                    $scope.nextRole = nextRole;
+                    $scope.prevRole = prevRole;   
+                    $scope.firstQtr = firstQtr;
+                    $scope.secondQtr = secondQtr;               
+                    $scope.thirdQtr = thirdQtr;
+                    $scope.fourthQtr = fourthQtr;
+                    $scope.selectedQtr = selectedQtr;
+                    $scope.directSubUsers = [];
+                    $scope.directAllSubUsers = [];
+                    $scope.requestInProgress = 0;
+                    $scope.errorMessage = null;
+                    $scope.calloutErrorOccured = false;
+                    $scope.displayFormat = "W";
+                    $scope.linearityActuals = [];
+                    $scope.teamLine = { isLoading: false, data: [], collapsed: false };
+                    
+                    $scope.teamLin = { isLoading: false, data: [], total: {}, collapsed: false };
+                    
+                    $scope.teamForecasts = { isLoading: false, data: [], total: {}, collapsed: false };
+                    $scope.teamLinearity = { isLoading: false, data: [], collapsed: false, filter: {
+                                                                Month: 'M1'
+                                                                } };
+                    $scope.linearity = { isLoading: false, data: {}, collapsed: false };
+                    $scope.Qtrlinearity = { isLoading: false, data: {}, collapsed: false };
+                    $scope.monthlyContriLin = { isLoading: false, data: {}, collapsed: false };
+                    $scope.promiseDirectSubUsers = function(userId) {
+                        var deferred = $q.defer();
+                        var serviceIdentifier = "DirectSubUsersListLinearity" + userId;
+                        $scope.callRemoteServiceWithCache(LinearityDashboardController.GetDirectSubordinateUsers, [userId], serviceIdentifier, function(result) {
+                            deferred.resolve({userId: userId, subUsers: result});
+                            });
+                            return deferred.promise;
+                    };
+                    
+                    $scope.promiseDirectAllSubUsers = function(userId, userLevel) {
+                        
+                        var deferred = $q.defer();
+                        var serviceIdentifier = "DirectALLSubUsersListLinearity" + userId + userLevel;
+                        $scope.callRemoteServiceWithCache(LinearityDashboardController.GetAllSubordinateUsers, [userId, userLevel], serviceIdentifier, function(result) {
+                            deferred.resolve({userId: userId, subUsers: result});
+                            });
+                            return deferred.promise;
+                    };
+                    
+                        
+                        $scope.getCacheValue = function(key, defaultValue) {
+                            if(typeof(Storage)!=="undefined") {
+                                key = "SNAPF." + key;
+                                var value = sessionStorage.getItem(key);
+                                if(value == null) {
+                                    return defaultValue;
+                                }
+                                return JSON.parse(value);
+                                } else {
+                                return defaultValue;
+                                }
+                            }
+
+                        $scope.setCacheValue = function(key, value) {
+                            if(typeof(Storage)!=="undefined") {
+                                key = "SNAPF." + key;
+                                try {
+                                    return sessionStorage.setItem(key, JSON.stringify(value));
+                                } catch(err) {
+                                    sessionStorage.removeItem(key);
+                                }
+                            }
+                        }
+                        
+                        $scope.isCalloutSucceeded = function(event) {
+                            if(event.status == true) {
+                                return true;
+                            }
+                            else  {
+                                if($scope.calloutErrorOccured == false && $scope.userCancel == false)  {
+                                    $scope.errorMessage = "Error occured. Please try refreshing the page. ";
+                                    if(event.message) {
+                                        $scope.errorMessage += "The error message is: " + event.message;
+                                    }
+                                }
+                                $scope.calloutErrorOccured = true;
+                                return false;
+                            }
+                        };
+                        
+                        
+                        $scope.callRemoteServiceWithCache = function(serviceName, parameters, identifier, callback, config) {
+                            $scope.requestInProgress++;
+                            var cachedValue = $scope.getCacheValue(identifier, null);
+                            if(cachedValue != null) {
+                                callback.call($scope, cachedValue);
+                            }
+                            if(parameters == null) {
+                                parameters = [];
+                            }
+                            var callbackWrap = function(result, event) {
+                            
+                                $scope.requestInProgress--;
+                                if($scope.isCalloutSucceeded(event)) {
+                                    $scope.setCacheValue(identifier, result);
+                                    callback.call($scope, result);
+                                }
+                            };
+                            parameters.push(callbackWrap);
+                            if(config) {
+                                parameters.push(config);
+                            }
+                            try {
+                                serviceName.apply($scope, parameters);
+                            } catch(e) {
+                                callbackWrap(null, {status: false});
+                            }
+                        };
+                        
+                        
+                        
+                        $scope.loadLinearityMetric = function() {
+                            $scope.linearity.isLoading = true;
+                            var serviceIdentifier = "LinearityMetric" + $scope.selectedQtr + $scope.currentUser;
+                            $scope.callRemoteServiceWithCache(LinearityDashboardService.getLinearityMetric, [$scope.currentUser, $scope.selectedQtr, $scope.forecastType], serviceIdentifier, function(result) {
+                                $scope.linearity.isLoading = false;
+                                $scope.linearity.data = result;
+                                setTimeout(function(){ $scope.$apply($scope.linearity); });
+                            }, { buffer: false, timeout: 60000 });
+                        }
+                        
+                        $scope.loadMonthlyContriLinearity = function() {
+                            $scope.monthlyContriLin.isLoading = true;
+                            var serviceIdentifier = "MonthlyContriLinearity" + $scope.cuurentFiscalQtr + $scope.currentUser;
+                            $scope.callRemoteServiceWithCache(LinearityDashboardService.getMonthlyContriLinearity, [$scope.currentUser, $scope.cuurentFiscalQtr, $scope.forecastType], serviceIdentifier, function(result) {
+                                $scope.monthlyContriLin.isLoading = false;
+                                $scope.monthlyContriLin.data = result;
+                                setTimeout(function(){ $scope.$apply($scope.monthlyContriLin); });
+                            }, { buffer: false, timeout: 60000 });
+                        }
+                        
+                        $scope.loadQuarterlyLinearityMetric = function() {
+                            $scope.Qtrlinearity.isLoading = true;
+                            var serviceIdentifier = "QuarterlyLinearityMetric" + $scope.currentUser;
+                            $scope.callRemoteServiceWithCache(LinearityDashboardService.getQuarterlyLinearityMetric, [$scope.currentUser, $scope.forecastType, $scope.firstQtr, $scope.secondQtr, $scope.thirdQtr, $scope.fourthQtr], serviceIdentifier, function(result) {
+                                $scope.Qtrlinearity.isLoading = false;
+                                $scope.Qtrlinearity.data = result;
+                                setTimeout(function(){ $scope.$apply($scope.Qtrlinearity); });
+                            }, { buffer: false, timeout: 60000 });
+                        }
+                        
+                        $scope.loadTeamForecasts = function() {
+                            for(var i = 0; i < $scope.directSubUsers.length; i++) {
+                                $scope.teamForecasts.isLoading = true;
+                                var uid = $scope.directSubUsers[i].UserId;
+                                var serviceIdentifier = "TeamLinearitySummary" + $scope.cuurentFiscalYear + uid;
+                                $scope.callRemoteServiceWithCache(LinearityDashboardService.getTeamForecast, [uid, $scope.cuurentFiscalYear, $scope.forecastType], serviceIdentifier, function(result) {
+                                    var isExisted = false;
+                                    for(var i = 0; i < $scope.teamForecasts.data.length; i++)  {
+                                        if($scope.teamForecasts.data[i].UserId == result.UserId) {
+                                            $scope.teamForecasts.data[i] = angular.copy(result);
+                                            isExisted = true;
+                                            break;
+                                        }
+                                    }
+                                    if(!isExisted) {
+                                        $scope.teamForecasts.data.push(angular.copy(result));
+                                    }
+                                    
+                                    $scope.teamForecasts.total = {};
+                                    for(var i = 0; i < $scope.teamForecasts.data.length; i++)  {
+                                        if($scope.currentUser == $scope.teamForecasts.data[i].UserId){
+                                            $scope.teamForecasts.total = $scope.teamForecasts.data[i];
+                                            break;
+                                        }
+                                    }
+                                    
+                                    $scope.teamForecasts.isLoading = false;
+                                    setTimeout(function(){ $scope.$apply($scope.teamForecasts); });
+                                }, { buffer: false, timeout: 60000 });
+                            }
+                            
+                        }
+                        
+                        
+                        
+                        $scope.loadTeamLin = function() {
+                            $scope.linearityActuals = [];
+                            $scope.teamLine.data = [];
+                            for(var i = 0; i < $scope.directAllSubUsers.length; i++) {
+                                var request = { userId: $scope.directAllSubUsers[i].UserId,
+                                    currentFiscalQtr: $scope.cuurentFiscalQtr,
+                                    month: $scope.currentMonth,
+                                    forecastType: $scope.forecastType
+                                };
+                                
+                            
+                                $scope.teamLin.isLoading = true;
+                                var uid = $scope.directAllSubUsers[i].UserId;
+                                var serviceIdentifier = "TeamLinearitySummaryASD" + $scope.cuurentFiscalYear + uid + $scope.currentUser;
+                                $scope.callRemoteServiceWithCache(LinearityDashboardService.getLinearityStack, [request], serviceIdentifier, function(result) {
+                                    var isExisted = false;
+                                    for(var i = 0; i < $scope.teamLin.data.length; i++)  {
+                                        if($scope.teamLin.data[i].UserId == result.UserId) {
+                                            $scope.teamLin.data[i] = angular.copy(result);
+                                            isExisted = true;
+                                            break;
+                                        }
+                                    }
+                                    if(!isExisted) {
+                                        $scope.teamLin.data.push(angular.copy(result));
+                                    }
+                                    
+                                    $scope.teamLin.isLoading = false;
+                                    setTimeout(function(){ $scope.$apply($scope.teamLin); });
+                                }, { buffer: false, timeout: 60000 });
+                            }
+                            
+                            var delay=11000;
+                            setTimeout(function() {
+                                var linActual = [];
+                                
+                                for(i = 0; i<$scope.teamLin.data.length ; i++){
+                                    linActual[i] = $scope.teamLin.data[i].linearityActual;
+                                }
+                                linActual.sort();
+                                var uniquelinActual = [];
+                                var k = 0;
+                                for(i= 0; i< linActual.length; i++){
+                                    if(i == 0){
+                                        uniquelinActual[k] = angular.copy(linActual[i]);
+                                        k++;
+                                    }
+                                    if(i>0){
+                                        if(linActual[i] != linActual[i-1]){
+                                            uniquelinActual[k] = angular.copy(linActual[i]);
+                                            k++;
+                                        }
+                                    }                           
+                                }
+                                $scope.linearityActuals = uniquelinActual;
+                                
+                                uniquelinActual.sort(function(a, b) {
+                                  return a - b;
+                                });
+                                for(var i = $scope.linearityActuals.length -1 ; i >= 0; i--){
+                                    for(var j=0; j < $scope.teamLin.data.length; j++){
+                                        if($scope.linearityActuals[i] == $scope.teamLin.data[j].linearityActual){
+                                            $scope.teamLine.data.push(angular.copy($scope.teamLin.data[j]));
+                                        }
+                                    }
+                                }
+                                
+                            },  delay);
+                            setTimeout(function(){ $scope.$apply($scope.teamLine); });
+                        }
+                        
+                        
+                        
+                      
+                     $scope.commaFormatted = function(amount) {
+                        var delimiter = ","; // replace comma if desired
+                        var a = amount.split('.',2)
+                        var d = (a.length > 1)?a[1]:'';
+                        var i = parseInt(a[0]);
+                        if(isNaN(i)) { return ''; }
+                        var minus = '';
+                        if(i < 0) { minus = '-'; }
+                        i = Math.abs(i);
+                        var n = new String(i);
+                        var a = [];
+                        while(n.length > 3)
+                        {
+                            var nn = n.substr(n.length-3);
+                            a.unshift(nn);
+                            n = n.substr(0,n.length-3);
+                        }
+                        if(n.length > 0) { a.unshift(n); }
+                        n = a.join(delimiter);
+                        if(d.length < 1) { amount = n; }
+                        else { amount = n + '.' + d; }
+                        amount = minus + amount;
+                        return amount;
+                    };
+                    
+                    $scope.formatDecimal = function(value, format) {
+                        if(value == null) {
+                            return null;
+                        } else if(value == 0) {
+                            return "0";
+                        } else if(format == "E") {
+                            //exact value, 2 decimals
+                            return "$" + $scope.commaFormatted(((value)/1).toFixed(2));
+                        } else if(format == "W") {
+                            //whole values, 0 decimals
+                            return "$" + $scope.commaFormatted(((value)/1).toFixed(0));
+                        } else if(format == "K") {
+                            //thousand, with 2 decimals
+                            var result = "$" + $scope.commaFormatted(((value)/1000).toFixed(2)) + "K";
+                            return result.replace(".00K", "K");
+                        } else if(format == "M") {
+                            //million, with 2 decimals
+                            var result = "$" + $scope.commaFormatted(((value)/1000/1000).toFixed(2)) + "M";
+                            return result.replace(".00M", "M");
+                        }
+                        return "";
+                    };
+
+                    $scope.formatPercentage = function(value) {
+                        if(isNaN(value)) {
+                            return "";
+                        }
+                        var result = value.toFixed(1) + "%";
+                        return result.replace(".0%", "%");
+                    };
+
+                    $scope.formatCoverage = function(value) {
+                        if(isNaN(value)) {
+                            return "";
+                        }
+                        var result = value.toFixed(1) + "x";
+                        return result.replace(".0x", "x");
+                    };
+                    
+                        
+                        $scope.reloadRoute = function() {
+                               $window.location.reload();
+                            }
+                        
+                        $scope.loadLinearityStack  = function(){
+                        
+                            var directAllsubUserPromise = $scope.promiseDirectAllSubUsers($scope.currentUser, $scope.currentRole);
+                            directAllsubUserPromise.then(function(subUserResult) {
+                                $scope.directAllSubUsers = [];
+                                $scope.directAllSubUsers = subUserResult.subUsers;   
+                                $scope.loadTeamLin();
+                            });
+                            
+                            
+                            
+                        }
+                        $scope.loadAll = function() {
+                            var directsubUserPromise = $scope.promiseDirectSubUsers($scope.currentUser);
+                            directsubUserPromise.then(function(subUserResult) {
+                                $scope.directSubUsers = subUserResult.subUsers;
+                                $scope.loadTeamForecasts();
+                            });
+                            
+                            $scope.loadLinearityStack();
+                            $scope.loadLinearityMetric();
+                            $scope.loadMonthlyContriLinearity();
+                            $scope.loadQuarterlyLinearityMetric();
+                           
+                        }
+                        
+                        if($scope.forecastEnabled) {
+                            $scope.loadAll();
+                        }else {
+                            $scope.errorMessage = "Dashboard isn't enabled.";
+                        }
+                        
+                        $scope.loadAllDelay = function(){
+                        var delay=3000;
+                        setTimeout(function() {
+                            $scope.loadAll();
+                        },  delay);    
+                     }  
+                        
+                });
+            
+            
+            
+            </script>
+            
+            <apex:form >
+                <div id="ngContainer" ng-app="linearityApp" ng-controller="linearityCtrl">
+                    <span>
+                         <div id="wrap2">
+                            <div class="fqTitleCon">
+                                <div class="switch-toggle switch-3 switch-candy switch-candy-blue fqSwitch" style="width:310px">
+                                    <input id="forecastAll" name="view" type="radio" ng-checked="forecastType=='all'" />
+                                    <label for="forecastAll" ng-click="forecastType='all';loadAll();" >N+U</label>
+                                    <input id="forecastNew" name="view" type="radio" ng-checked="forecastType=='new'" />
+                                    
+                                    <label for="forecastNew" ng-click="forecastType='new';loadAll();">New</label>
+                                    <input id="forecastUpsell" name="view" type="radio" ng-checked="forecastType=='upsell'" />
+                                    <label for="forecastUpsell" ng-click="forecastType='upsell';loadAll();">Upsell</label>
+                                    <a></a>
+                                </div>
+                                <span class="displayUnits">
+                                    <input type="radio" name="displayUnits" value="M" ng-click="displayFormat='M'" />Millions
+                                    <input type="radio" name="displayUnits" value="K" ng-click="displayFormat='K'" />Thousands
+                                    <input type="radio" name="displayUnits" value="W" checked="true" ng-click="displayFormat='W'" />Whole
+                                    <input type="radio" name="displayUnits" value="E" ng-click="displayFormat='E'" />Exact
+                                </span>
+                            </div>
+                        </div>
+                    </span>
+                    <br/>
+                    <div class="ptBreadcrumb"><span class="fa fa-user"></span>
+                            <apex:variable var="p" value="" />
+                            <apex:repeat value="{!UserNavPath}" var="usr">
+                                <apex:variable var="p" value="{!p + '/' + usr.UserId}" />
+                                <a href="{!$Page.LinearityDashboard}?path={!p}&type={{forecastType}}&month={{currentMonth}}">{!usr.UserName}</a> &gt;
+                            </apex:repeat>
+                         <!--   <span style="margin-left:30%;color:red;" ng-show="requestInProgress>0">Loading...</span> -->
+                            <span style="color:red;" ng-show="errorMessage != null"></span>
+                    </div>
+                    <br/>
+                   
+                <apex:pageBlock id="teamListingBlock"  html-ng-show="teamForecasts.data.length > 0"  title="Fiscal Year Achieved"  >
+                            <table class="report">
+                                <thead>
+                                    <tr class="header">
+                                        <th class="minW80" style="color: white;background-color: white;">&nbsp;</th>
+                                        <th class="minW80" colspan="3" style="color: white;background-color: #0C0C61;">{!firstQtr}</th>
+                                        <th class="minW80" colspan="3" style="color: white;background-color: #7A7A7F;">{!secondQtr}</th>
+                                        <th class="minW80" colspan="3" style="color: white;background-color: #0C0C61;">{!thirdQtr}</th>
+                                        <th class="minW80" colspan="3" style="color: white;background-color: #7A7A7F;">{!fourthQtr}</th>
+                                        <th class="minW80" colspan="3" style="background-color: black; color: white">Total</th>
+                                     </tr>
+                                     
+                                    <tr class="header">
+                                        <th class="minW80" style="background-color: black; color: white">Team</th>
+                                        
+                                        <th class="minW80">Closed Won+10b</th>
+                                        <th class="minW80">Quota</th>
+                                        <th class="minW80">% Quota</th>
+                                        
+                                        <th class="minW80" style="background-color: #DEDBDB;">Closed Won+10b</th>
+                                        <th class="minW80" style="background-color: #DEDBDB;">Quota</th>
+                                        <th class="minW80" style="background-color: #DEDBDB;">% Quota</th>
+                                        
+                                        <th class="minW80">Closed Won+10b</th>
+                                        <th class="minW80">Quota</th>
+                                        <th class="minW80">% Quota</th>
+                                        
+                                        <th class="minW80" style="background-color: #DEDBDB;">Closed Won +10b</th>
+                                        <th class="minW80" style="background-color: #DEDBDB;">Quota</th>
+                                        <th class="minW80" style="background-color: #DEDBDB;">% Quota</th>
+                                        
+                                        <th class="minW80">Closed Won+10b</th>
+                                        <th class="minW80">Quota</th>
+                                        <th class="minW80">% Quota</th>
+                                        
+                                     </tr> 
+                                </thead>
+                                <tbody>
+                                <br/>
+                                     <tr ng-class="{'line': !($index % 2), 'line2': !!($index % 2) }" ng-repeat="forecast in teamForecasts.data">
+                                        <td ng-show="forecast.UserId != currentUser"><a href="{!$Page.LinearityDashboard}?path={!UserPath}/{{forecast.UserId}}&type={{forecastType}}&month={{currentMonth}}">{{forecast.UserName}}</a></td>
+                                        
+                                        <td class="number" ng-show="forecast.UserId != currentUser">
+                                            {{formatDecimal(forecast.firstQtrClosedWon, displayFormat)}}
+                                        </td>
+                                        <td class="number" ng-show="forecast.UserId != currentUser">{{formatDecimal(forecast.firstQtrQuota, displayFormat)}}</td>
+                                        <td class="number" ng-show="forecast.UserId != currentUser" style="text-align: center;">{{formatPercentage(forecast.firstQtrQuotaPercnt >0 ? forecast.firstQtrQuotaPercnt * 100: 'NA') }}</td>
+                                        
+                                        <td class="number" ng-show="forecast.UserId != currentUser">
+                                            {{formatDecimal(forecast.secondQtrClosedWon, displayFormat) }}
+                                        </td>
+                                        <td class="number" ng-show="forecast.UserId != currentUser">{{formatDecimal(forecast.secondQtrQuota, displayFormat) }}</td>
+                                        <td class="number" ng-show="forecast.UserId != currentUser" style="text-align: center;">{{formatPercentage(forecast.secondQtrQuotaPercnt > 0 ? forecast.secondQtrQuotaPercnt * 100: 'NA')}}</td>
+                                        
+                                        
+                                        <td class="number" ng-show="forecast.UserId != currentUser">
+                                           {{formatDecimal(forecast.thirdQtrClosedWon, displayFormat) }}
+                                        </td>
+                                        <td class="number" ng-show="forecast.UserId != currentUser">{{formatDecimal(forecast.thirdQtrQuota, displayFormat) }}</td>
+                                        <td class="number" ng-show="forecast.UserId != currentUser" style="text-align: center;">{{formatPercentage(forecast.thirdQtrQuotaPercnt >0 ? forecast.thirdQtrQuotaPercnt * 100: 'NA')}}</td>
+                                        
+                                        <td class="number" ng-show="forecast.UserId != currentUser">
+                                           {{formatDecimal(forecast.fourthQtrClosedWon, displayFormat)}}
+                                        </td>
+                                        <td class="number" ng-show="forecast.UserId != currentUser">{{formatDecimal(forecast.fourthQtrQuota, displayFormat) }}</td>
+                                        <td class="number" ng-show="forecast.UserId != currentUser" style="text-align: center;">{{formatPercentage(forecast.fourthQtrQuotaPercnt >0 ? forecast.fourthQtrQuotaPercnt * 100: 'NA')}}</td>
+                                        
+                                        <td class="number" ng-show="forecast.UserId != currentUser">
+                                        {{formatDecimal(forecast.firstQtrClosedWon + forecast.secondQtrClosedWon + forecast.thirdQtrClosedWon + forecast.fourthQtrClosedWon, displayFormat) }}
+                                        
+                                        </td>
+                                        <td class="number" ng-show="forecast.UserId != currentUser">{{formatDecimal(forecast.firstQtrQuota + forecast.secondQtrQuota + forecast.thirdQtrQuota + forecast.fourthQtrQuota, displayFormat) }}</td>
+                                        
+                                        <td class="number" ng-show="forecast.UserId != currentUser" style="text-align: center;">{{formatPercentage((forecast.firstQtrClosedWon + forecast.secondQtrClosedWon + forecast.thirdQtrClosedWon + forecast.fourthQtrClosedWon) > 0 ?  ((forecast.firstQtrClosedWon + forecast.secondQtrClosedWon + forecast.thirdQtrClosedWon + forecast.fourthQtrClosedWon)/(forecast.firstQtrQuota + forecast.secondQtrQuota + forecast.thirdQtrQuota + forecast.fourthQtrQuota))* 100 : 'NA')}}</td>
+                                        
+                                        
+                                        
+                                     </tr>
+                                     
+                                     <tr  ng-class="{'line': !($index % 2), 'line2': !!($index % 2) }">
+                                        <td ><b>{{teamForecasts.total.UserName}}</b></td>
+                                            
+                                        <td class="number"><b>
+                                            {{formatDecimal(teamForecasts.total.firstQtrClosedWon, displayFormat)}}
+                                        </b></td>
+                                        <td class="number"><b>{{formatDecimal(teamForecasts.total.firstQtrQuota, displayFormat)}}</b></td>
+                                        <td class="number" style="text-align: center;"><b>{{formatPercentage(teamForecasts.total.firstQtrQuotaPercnt >0 ? teamForecasts.total.firstQtrQuotaPercnt * 100: 'NA') }}</b></td>
+                                        
+                                        <td class="number"><b>
+                                        {{formatDecimal(teamForecasts.total.secondQtrClosedWon, displayFormat) }}
+                                        </b></td>
+                                        <td class="number"><b>{{formatDecimal(teamForecasts.total.secondQtrQuota, displayFormat) }}</b></td>
+                                        <td class="number" style="text-align: center;"><b>{{formatPercentage(teamForecasts.total.secondQtrQuotaPercnt > 0 ? teamForecasts.total.secondQtrQuotaPercnt * 100: 'NA')}}</b></td>
+                                        
+                                        
+                                        <td class="number"><b>
+                                        {{formatDecimal(teamForecasts.total.thirdQtrClosedWon, displayFormat) }}
+                                        </b></td>
+                                        <td class="number"><b>{{formatDecimal(teamForecasts.total.thirdQtrQuota, displayFormat) }}</b></td>
+                                        <td class="number" style="text-align: center;"><b>{{formatPercentage(teamForecasts.total.thirdQtrQuotaPercnt >0 ? teamForecasts.total.thirdQtrQuotaPercnt * 100: 'NA')}}</b></td>
+                                        
+                                        <td class="number"><b>
+                                       {{formatDecimal(teamForecasts.total.fourthQtrClosedWon, displayFormat) }}
+                                        </b></td>
+                                        <td class="number"><b>{{formatDecimal(teamForecasts.total.fourthQtrQuota, displayFormat) }}</b></td>
+                                        <td class="number" style="text-align: center;"><b>{{formatPercentage(teamForecasts.total.fourthQtrQuotaPercnt >0 ? teamForecasts.total.fourthQtrQuotaPercnt * 100 : 'NA')}}</b></td>
+                                        
+                                        <td class="number" ><b>
+                                        {{formatDecimal(teamForecasts.total.firstQtrClosedWon + teamForecasts.total.secondQtrClosedWon + teamForecasts.total.thirdQtrClosedWon + teamForecasts.total.fourthQtrClosedWon, displayFormat) }}
+                                        
+                                        </b></td>
+                                        <td class="number" ><b>{{formatDecimal(teamForecasts.total.firstQtrQuota + teamForecasts.total.secondQtrQuota + teamForecasts.total.thirdQtrQuota + teamForecasts.total.fourthQtrQuota, displayFormat) }}</b></td>
+                                        <td class="number" style="text-align: center;"><b>{{formatPercentage((teamForecasts.total.firstQtrClosedWon + teamForecasts.total.secondQtrClosedWon + teamForecasts.total.thirdQtrClosedWon + teamForecasts.total.fourthQtrClosedWon) > 0 ?  ((teamForecasts.total.firstQtrClosedWon + teamForecasts.total.secondQtrClosedWon + teamForecasts.total.thirdQtrClosedWon + teamForecasts.total.fourthQtrClosedWon)/(teamForecasts.total.firstQtrQuota + teamForecasts.total.secondQtrQuota + teamForecasts.total.thirdQtrQuota + teamForecasts.total.fourthQtrQuota))*100 : 'NA')}}</b></td>
+                                        
+                                       
+                                    </tr>
+                                     
+                                 </tbody>
+                                 
+                            </table>
+                                    
+                </apex:pageBlock>    
+                <apex:pageBlock title="Quarterly Linearity">
+                
+                                <table class="report">
+                                <thead>
+                                    <tr class="header">
+                                        <th class="minW80" style="color: white;background-color: #37601C;">Metric</th>
+                                        <th class="minW80" style="color: white;background-color: #1F5069;">{{firstQtr}}</th>
+                                        <th class="minW80" style="color: white;background-color: #1F5069;">{{secondQtr}}</th>
+                                        <th class="minW80" style="color: white;background-color: #1F5069;">{{thirdQtr}}</th>
+                                        <th class="minW80" style="color: white;background-color: #1F5069;">{{fourthQtr}}</th>
+                                        <th class="minW80" style="color: white;background-color: #1F5069;">YTD</th>
+                                    </tr> 
+                                </thead>
+                                <tbody>
+                                <br/>
+                                
+                                     <tr ng-class="{'line': !($index % 2), 'line2': !!($index % 2) }" >
+                                        <td style="color: black;background-color: #A8DC85;">% Linearity Target</td>
+                                        <td class="number" >{{formatPercentage(Qtrlinearity.data.linearityTargetQ1 > 0 ? Qtrlinearity.data.linearityTargetQ1 : 'NA') }}</td>
+                                        <td class="number" >{{formatPercentage(Qtrlinearity.data.linearityTargetQ2 > 0 ? Qtrlinearity.data.linearityTargetQ2 : 'NA') }}</td>
+                                        <td class="number" >{{formatPercentage(Qtrlinearity.data.linearityTargetQ3 > 0 ? Qtrlinearity.data.linearityTargetQ3 : 'NA') }}</td>
+                                        <td class="number" >{{formatPercentage(Qtrlinearity.data.linearityTargetQ4 > 0 ? Qtrlinearity.data.linearityTargetQ4 : 'NA') }}</td>
+                                        <td class="number" >{{formatPercentage(100)}}</td>
+                                     </tr>
+                                     <tr ng-class="{'line': !($index % 2), 'line2': !!($index % 2) }" >
+                                        <td style="color: black;background-color: #A8DC85;">% Linearity Attained</td>
+                                        <td class="number" >{{formatPercentage(Qtrlinearity.data.quotaQ1 > 0 ? (Qtrlinearity.data.closedWonQ1/(Qtrlinearity.data.quotaQ1 + Qtrlinearity.data.quotaQ2 + Qtrlinearity.data.quotaQ3 + Qtrlinearity.data.quotaQ4))*100 : 'NA')}}</td>
+                                        <td class="number" >{{formatPercentage(Qtrlinearity.data.quotaQ2 > 0 ? (Qtrlinearity.data.closedWonQ2/(Qtrlinearity.data.quotaQ1 + Qtrlinearity.data.quotaQ2 + Qtrlinearity.data.quotaQ3 + Qtrlinearity.data.quotaQ4))*100 : 'NA')}}</td>
+                                        <td class="number" >{{formatPercentage(Qtrlinearity.data.quotaQ3 > 0 ? (Qtrlinearity.data.closedWonQ3/(Qtrlinearity.data.quotaQ1 + Qtrlinearity.data.quotaQ2 + Qtrlinearity.data.quotaQ3 + Qtrlinearity.data.quotaQ4))*100 : 'NA')}}</td>
+                                        <td class="number" >{{formatPercentage(Qtrlinearity.data.quotaQ4 > 0 ? (Qtrlinearity.data.closedWonQ4/(Qtrlinearity.data.quotaQ1 + Qtrlinearity.data.quotaQ2 + Qtrlinearity.data.quotaQ3 + Qtrlinearity.data.quotaQ4))*100 : 'NA')}}</td>
+                                        <td class="number" >{{formatPercentage((Qtrlinearity.data.quotaQ1 + Qtrlinearity.data.quotaQ2 + Qtrlinearity.data.quotaQ3 + Qtrlinearity.data.quotaQ4) > 0 ? ((Qtrlinearity.data.closedWonQ1 + Qtrlinearity.data.closedWonQ2 + Qtrlinearity.data.closedWonQ3 + Qtrlinearity.data.closedWonQ4)/(Qtrlinearity.data.quotaQ1 + Qtrlinearity.data.quotaQ2 + Qtrlinearity.data.quotaQ3 + Qtrlinearity.data.quotaQ4))*100 : 'NA')}}</td>
+                                     </tr>
+                                     <tr ng-class="{'line': !($index % 2), 'line2': !!($index % 2) }" >
+                                        <td style="color: black;background-color: #A8DC85;">Quarter Quota</td>
+                                        <td class="number" >{{formatDecimal(Qtrlinearity.data.quotaQ1, displayFormat)}}</td>
+                                        <td class="number" >{{formatDecimal(Qtrlinearity.data.quotaQ2, displayFormat)}}</td>
+                                        <td class="number" >{{formatDecimal(Qtrlinearity.data.quotaQ3, displayFormat)}}</td>
+                                        <td class="number" >{{formatDecimal(Qtrlinearity.data.quotaQ4, displayFormat)}}</td>
+                                        <td class="number" >{{formatDecimal(Qtrlinearity.data.quotaQ1 + Qtrlinearity.data.quotaQ2 + Qtrlinearity.data.quotaQ3 + Qtrlinearity.data.quotaQ4, displayFormat)}}</td>
+                                     </tr>
+                                     <tr ng-class="{'line': !($index % 2), 'line2': !!($index % 2) }" >
+                                        <td style="color: black;background-color: #A8DC85;">Closed Won + 10b</td>
+                                        <td class="number" >{{formatDecimal(Qtrlinearity.data.closedWonQ1, displayFormat)}}</td>
+                                        <td class="number" >{{formatDecimal(Qtrlinearity.data.closedWonQ2, displayFormat)}}</td>
+                                        <td class="number" >{{formatDecimal(Qtrlinearity.data.closedWonQ3, displayFormat)}}</td>
+                                        <td class="number" >{{formatDecimal(Qtrlinearity.data.closedWonQ4, displayFormat)}}</td>
+                                        <td class="number" >{{formatDecimal(Qtrlinearity.data.closedWonQ1 + Qtrlinearity.data.closedWonQ2 + Qtrlinearity.data.closedWonQ3 + Qtrlinearity.data.closedWonQ4, displayFormat)}}</td>
+                                     </tr>
+                                 </tbody>
+                            </table>
+                            
+                    
+                </apex:pageBlock>
+                
+                
+                <apex:pageBlock title="Monthly Linearity">
+                
+                <span style="margin-left:200px">
+                        <a  style="color: #0064FF;font-size: 18px;text-decoration: none;" href="{!$Page.LinearityDashboard}?path={!UserPath}&type={{forecastType}}&month={{currentMonth}}&qtr={{firstQtr}}" ng-hide="selectedQtr == firstQtr">
+                        <span style="color: #0064FF;font-size: 15px;font-weight: bold;">
+                        {{firstQtr}} 
+                        </span>
+                        </a>
+                        <a  style="color: #0064FF;font-size: 18px;text-decoration: none;" href="{!$Page.LinearityDashboard}?path={!UserPath}&type={{forecastType}}&month={{currentMonth}}&qtr={{firstQtr}}" ng-show="selectedQtr == firstQtr">
+                        <span style="color: #D01515;font-size: 15px;font-weight: bold;">
+                        {{firstQtr}}
+                        </span>
+                        </a>
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                        <a  style="color: #0064FF;font-size: 18px;text-decoration: none;" href="{!$Page.LinearityDashboard}?path={!UserPath}&type={{forecastType}}&month={{currentMonth}}&qtr={{secondQtr}}" ng-hide="selectedQtr == secondQtr">
+                        <span style="color: #0064FF;font-size: 15px;font-weight: bold;">
+                        {{secondQtr}}
+                        </span>
+                        </a>
+                        <a  style="color: #0064FF;font-size: 18px;text-decoration: none;" href="{!$Page.LinearityDashboard}?path={!UserPath}&type={{forecastType}}&month={{currentMonth}}&qtr={{secondQtr}}" ng-show="selectedQtr == secondQtr">
+                        <span style="color: #D01515;font-size: 15px;font-weight: bold;">
+                        {{secondQtr}}
+                        </span>
+                        </a>
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                        <a  style="color: #0064FF;font-size: 18px;text-decoration: none;" href="{!$Page.LinearityDashboard}?path={!UserPath}&type={{forecastType}}&month={{currentMonth}}&qtr={{thirdQtr}}" ng-hide="selectedQtr == thirdQtr">
+                        <span style="color: #0064FF;font-size: 15px;font-weight: bold;">
+                        {{thirdQtr}}
+                        </span>
+                        </a>
+                        
+                        <a  style="color: #0064FF;font-size: 18px;text-decoration: none;" href="{!$Page.LinearityDashboard}?path={!UserPath}&type={{forecastType}}&month={{currentMonth}}&qtr={{thirdQtr}}" ng-show="selectedQtr == thirdQtr">
+                        <span style="color: #D01515;font-size: 15px;font-weight: bold;">
+                        {{thirdQtr}}
+                        </span>
+                        </a>
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                        <a  style="color: #0064FF;font-size: 18px;text-decoration: none;" href="{!$Page.LinearityDashboard}?path={!UserPath}&type={{forecastType}}&month={{currentMonth}}&qtr={{fourthQtr}}" ng-hide="selectedQtr == fourthQtr">
+                        <span style="color: #0064FF;font-size: 15px;font-weight: bold;">
+                        {{fourthQtr}}
+                        </span>
+                        </a>
+                        
+                        <a  style="color: #0064FF;font-size: 18px;text-decoration: none;" href="{!$Page.LinearityDashboard}?path={!UserPath}&type={{forecastType}}&month={{currentMonth}}&qtr={{fourthQtr}}" ng-show="selectedQtr == fourthQtr">
+                        <span style="color: #D01515;font-size: 15px;font-weight: bold;">
+                        {{fourthQtr}}
+                        </span>
+                        </a>
+                        </span>
+                <br/>
+                    <table class="report">
+                                <thead>
+                                    <tr class="header">
+                                        <th class="minW80" style="color: white;background-color: #37601C;">Metric</th>
+                                        <th class="minW80" style="color: white;background-color: #1F5069;">Month 1</th>
+                                        <th class="minW80" style="color: white;background-color: #1F5069;">Month 2</th>
+                                        <th class="minW80" style="color: white;background-color: #1F5069;">Month 3</th>
+                                        <th class="minW80" style="color: white;background-color: #1F5069;">QTD</th>
+                                    </tr> 
+                                </thead>
+                                <tbody>
+                                <br/>
+                                
+                                     <tr ng-class="{'line': !($index % 2), 'line2': !!($index % 2) }" >
+                                        <td style="color: black;background-color: #A8DC85;">% Linearity Target</td>
+                                        <td class="number" >{{formatPercentage(linearity.data.linearityTargetM1 > 0 ? linearity.data.linearityTargetM1 : 'NA') }}</td>
+                                        <td class="number" >{{formatPercentage(linearity.data.linearityTargetM2 > 0 ? linearity.data.linearityTargetM2 : 'NA') }}</td>
+                                        <td class="number" >{{formatPercentage(linearity.data.linearityTargetM3 > 0 ? linearity.data.linearityTargetM3 : 'NA') }}</td>
+                                        <td class="number" >{{formatPercentage(100)}}</td>
+                                     </tr>
+                                     
+                                      <tr ng-class="{'line': !($index % 2), 'line2': !!($index % 2) }" >
+                                        <td style="color: black;background-color: #A8DC85;">% of Linearity Attained</td>
+                                        <td class="number" >{{formatPercentage(linearity.data.qtrQuota > 0 ? (linearity.data.closedWonM1/linearity.data.qtrQuota)*100 : 'NA')}}</td>
+                                        <td class="number" >{{formatPercentage(linearity.data.qtrQuota > 0 ? (linearity.data.closedWonM2/linearity.data.qtrQuota)*100 : 'NA')}}</td>
+                                        <td class="number" >{{formatPercentage(linearity.data.qtrQuota > 0 ? (linearity.data.closedWonM3/linearity.data.qtrQuota)*100 : 'NA')}}</td>
+                                        <td class="number" >{{formatPercentage(linearity.data.qtrQuota > 0 ? ((linearity.data.closedWonM1+linearity.data.closedWonM2+linearity.data.closedWonM3)/linearity.data.qtrQuota)*100 : 'NA')}}</td>
+                                     </tr>
+                                      <tr ng-class="{'line': !($index % 2), 'line2': !!($index % 2) }" >
+                                        <td style="color: black;background-color: #A8DC85;">Closed Won + 10b</td>
+                                        <td class="number" >{{formatDecimal(linearity.data.closedWonM1, displayFormat)}}</td>
+                                        <td class="number" >{{formatDecimal(linearity.data.closedWonM2, displayFormat)}}</td>
+                                        <td class="number" >{{formatDecimal(linearity.data.closedWonM3, displayFormat)}}</td>
+                                        <td class="number" >{{formatDecimal(linearity.data.closedWonM1 + linearity.data.closedWonM2 + linearity.data.closedWonM3, displayFormat)}}</td>
+                                     </tr>
+                                      
+                                     <tr ng-class="{'line': !($index % 2), 'line2': !!($index % 2) }" >
+                                        <td style="color: black;background-color: #A8DC85;">Monthly difference to go</td>
+                                        <td class="number" >{{formatDecimal(linearity.data.monthlyQuotaM1 - linearity.data.closedWonM1, displayFormat)}}</td>
+                                        <td class="number" >{{formatDecimal(linearity.data.monthlyQuotaM2 - linearity.data.closedWonM2, displayFormat)}}</td>
+                                        <td class="number" >{{formatDecimal(linearity.data.monthlyQuotaM3 - linearity.data.closedWonM3, displayFormat)}}</td>
+                                        <td class="number" >{{formatDecimal(linearity.data.monthlyQuotaM1 - linearity.data.closedWonM1 + linearity.data.monthlyQuotaM2 - linearity.data.closedWonM2 + linearity.data.monthlyQuotaM3 - linearity.data.closedWonM3, displayFormat)}}</td>
+                                     </tr>
+                                     
+                                     
+                                      <tr ng-class="{'line': !($index % 2), 'line2': !!($index % 2) }" >
+                                        <td style="color: black;background-color: #A8DC85;">Open Deals</td>
+                                        <td class="number" >{{formatDecimal(linearity.data.openDealsM1, displayFormat)}}</td>
+                                        <td class="number" >{{formatDecimal(linearity.data.openDealsM2, displayFormat)}}</td>
+                                        <td class="number" >{{formatDecimal(linearity.data.openDealsM3, displayFormat)}}</td>
+                                        <td class="number" >{{formatDecimal(linearity.data.openDealsM1 + linearity.data.openDealsM2 + linearity.data.openDealsM3, displayFormat)}}</td>
+                                     </tr>
+                                     
+                                     <tr ng-class="{'line': !($index % 2), 'line2': !!($index % 2) }" >
+                                        <td style="color: black;background-color: #A8DC85;">% Coverage</td>
+                                        <td class="number" >{{formatCoverage((linearity.data.monthlyQuotaM1 - linearity.data.closedWonM1) != 0 ? linearity.data.openDealsM1/(linearity.data.monthlyQuotaM1 - linearity.data.closedWonM1) : 'NA')}}</td>
+                                        <td class="number" >{{formatCoverage((linearity.data.monthlyQuotaM2 - linearity.data.closedWonM2) != 0 ? linearity.data.openDealsM2/(linearity.data.monthlyQuotaM2 - linearity.data.closedWonM2) : 'NA')}}</td>
+                                        <td class="number" >{{formatCoverage((linearity.data.monthlyQuotaM3 - linearity.data.closedWonM3) != 0 ? linearity.data.openDealsM3/(linearity.data.monthlyQuotaM3 - linearity.data.closedWonM3) : 'NA')}}</td>
+                                        <td class="number" >{{formatCoverage((linearity.data.monthlyQuotaM1 - linearity.data.closedWonM1 + linearity.data.monthlyQuotaM2 - linearity.data.closedWonM2 + linearity.data.monthlyQuotaM3 - linearity.data.closedWonM3) != 0 ? (linearity.data.openDealsM1 + linearity.data.openDealsM2 + linearity.data.openDealsM3)/((linearity.data.monthlyQuotaM1 - linearity.data.closedWonM1 + linearity.data.monthlyQuotaM2 - linearity.data.closedWonM2 + linearity.data.monthlyQuotaM3 - linearity.data.closedWonM3)) : 'NA')}}</td>
+                                     </tr>
+                                 </tbody>
+                            </table>
+                </apex:pageBlock>
+                
+                <apex:pageBlock title="Monthly Contribution">
+                <span style="color: #0064FF;font-size: 13px;font-weight: bold;">Most Likely : </span>{{formatDecimal(monthlyContriLin.data.mostLikely, displayFormat)}}
+                <span style="color: red;font-size: 13px;font-weight: bold;"> || </span>
+                <span style="color: #0064FF;font-size: 13px;font-weight: bold;">Plan : </span>{{formatDecimal(monthlyContriLin.data.plan, displayFormat)}}
+                        
+                <br/>
+                <table class="report">
+                                <thead>
+                                    <tr class="header">
+                                        <th class="minW80" style="color: white;background-color: #37601C;">Metric</th>
+                                        <th class="minW80" style="color: white;background-color: #1F5069;">Month 1</th>
+                                        <th class="minW80" style="color: white;background-color: #1F5069;">Month 2</th>
+                                        <th class="minW80" style="color: white;background-color: #1F5069;">Month 3</th>
+                                        <th class="minW80" style="color: white;background-color: #1F5069;">QTD</th>
+                                    </tr> 
+                                </thead>
+                                <tbody>
+                                <br/>
+                                
+                                     <tr ng-class="{'line': !($index % 2), 'line2': !!($index % 2) }" >
+                                        <td style="color: black;background-color: #A8DC85;">Closed Won + 10b</td>
+                                        <td class="number" >{{formatDecimal(monthlyContriLin.data.closedWonM1, displayFormat)}}</td>
+                                        <td class="number" >{{formatDecimal(monthlyContriLin.data.closedWonM2, displayFormat)}}</td>
+                                        <td class="number" >{{formatDecimal(monthlyContriLin.data.closedWonM3, displayFormat)}}</td>
+                                        <td class="number" >{{formatDecimal(monthlyContriLin.data.closedWonM2 +monthlyContriLin.data.closedWonM1+monthlyContriLin.data.closedWonM3, displayFormat)}}</td>
+                                     </tr>
+                                     
+                                      <tr ng-class="{'line': !($index % 2), 'line2': !!($index % 2) }" >
+                                        <td style="color: black;background-color: #A8DC85;">% of Plan</td>
+                                        <td class="number" >{{formatPercentage(monthlyContriLin.data.plan > 0 ? (monthlyContriLin.data.closedWonM1/monthlyContriLin.data.plan)*100 : 'NA') }}</td>
+                                        <td class="number" >{{formatPercentage(monthlyContriLin.data.plan > 0 ? (monthlyContriLin.data.closedWonM2/monthlyContriLin.data.plan)*100 : 'NA') }}</td>
+                                        <td class="number" >{{formatPercentage(monthlyContriLin.data.plan > 0 ? (monthlyContriLin.data.closedWonM3/monthlyContriLin.data.plan)*100 : 'NA') }}</td>
+                                        <td class="number" >{{formatPercentage(monthlyContriLin.data.plan > 0 ? ((monthlyContriLin.data.closedWonM1 + monthlyContriLin.data.closedWonM2 + monthlyContriLin.data.closedWonM3)/monthlyContriLin.data.plan)*100 : 'NA') }}</td>
+                                     </tr>
+                                      <tr ng-class="{'line': !($index % 2), 'line2': !!($index % 2) }" >
+                                        <td style="color: black;background-color: #A8DC85;">% of ML</td>
+                                        <td class="number" >{{formatPercentage(monthlyContriLin.data.mostLikely > 0 ? (monthlyContriLin.data.closedWonM1/monthlyContriLin.data.mostLikely)*100 : 'NA') }}</td>
+                                        <td class="number" >{{formatPercentage(monthlyContriLin.data.mostLikely > 0 ? (monthlyContriLin.data.closedWonM2/monthlyContriLin.data.mostLikely)*100 : 'NA') }}</td>
+                                        <td class="number" >{{formatPercentage(monthlyContriLin.data.mostLikely > 0 ? (monthlyContriLin.data.closedWonM3/monthlyContriLin.data.mostLikely)*100 : 'NA') }}</td>
+                                        <td class="number" >{{formatPercentage(monthlyContriLin.data.mostLikely > 0 ? ((monthlyContriLin.data.closedWonM1 + monthlyContriLin.data.closedWonM2 + monthlyContriLin.data.closedWonM3)/monthlyContriLin.data.mostLikely)*100 : 'NA') }}</td>
+                                     </tr>
+                                 </tbody>
+                            </table>
+                
+                
+                </apex:pageBlock>           
+                
+                <apex:pageBlock title="Team Performance: Monthly Linearity" >
+                <span style="float:left">
+                        <a  style="color: #0064FF;font-size: 18px;text-decoration: none;" href="{!$Page.LinearityDashboard}?path={!UserPath}&type={{forecastType}}&month=Month 1&role={{currentRole}}" title="Month 1" ng-hide="currentMonth == 'Month 1'">
+                        <span style="color: #0064FF;font-size: 15px;font-weight: bold;">
+                        Month 1
+                        </span>
+                        </a>
+                        <a  style="color: #0064FF;font-size: 18px;text-decoration: none;" href="{!$Page.LinearityDashboard}?path={!UserPath}&type={{forecastType}}&month=Month 1&role={{currentRole}}" title="Month 1" ng-show="currentMonth == 'Month 1'">
+                        <span style="color: #D01515;font-size: 15px;font-weight: bold;">
+                        Month 1 
+                        </span>
+                        </a>
+                        &nbsp;&nbsp;
+                        <a  style="color: #0064FF;font-size: 18px;text-decoration: none;" href="{!$Page.LinearityDashboard}?path={!UserPath}&type={{forecastType}}&month=Month 2&role={{currentRole}}" title="Month 2" ng-hide="currentMonth == 'Month 2'">
+                        <span style="color: #0064FF;font-size: 15px;font-weight: bold;">
+                        Month 2
+                        </span>
+                        </a>
+                        <a  style="color: #0064FF;font-size: 18px;text-decoration: none;" href="{!$Page.LinearityDashboard}?path={!UserPath}&type={{forecastType}}&month=Month 2&role={{currentRole}}" title="Month 2" ng-show="currentMonth == 'Month 2'">
+                        <span style="color: #D01515;font-size: 15px;font-weight: bold;">
+                        Month 2
+                        </span>
+                        </a>
+                        &nbsp;&nbsp;
+                        <a  style="color: #0064FF;font-size: 18px;text-decoration: none;" href="{!$Page.LinearityDashboard}?path={!UserPath}&type={{forecastType}}&month=Month 3&role={{currentRole}}" title="Month 3" ng-hide="currentMonth == 'Month 3'">
+                        <span style="color: #0064FF;font-size: 15px;font-weight: bold;">
+                        Month 3
+                        </span>
+                        </a>
+                        
+                        <a  style="color: #0064FF;font-size: 18px;text-decoration: none;" href="{!$Page.LinearityDashboard}?path={!UserPath}&type={{forecastType}}&month=Month 3&role={{currentRole}}" title="Month 3" ng-show="currentMonth == 'Month 3'">
+                        <span style="color: #D01515;font-size: 15px;font-weight: bold;">
+                        Month 3
+                        </span>
+                        </a>
+                        &nbsp;&nbsp;
+                        
+                </span>
+                        
+                        
+                <span style="margin-left:350px">
+                        <a  style="color: #0064FF;font-size: 18px;text-decoration: none;" href="{!$Page.LinearityDashboard}?path={!UserPath}&type={{forecastType}}&month={{currentMonth}}&role=All" title="All" ng-hide="currentRole == 'All'">
+                        <span style="color: #0064FF;font-size: 15px;font-weight: bold;">
+                        All 
+                        </span>
+                        </a>
+                        <a  style="color: #0064FF;font-size: 18px;text-decoration: none;" href="{!$Page.LinearityDashboard}?path={!UserPath}&type={{forecastType}}&month={{currentMonth}}&role=All" title="All" ng-show="currentRole == 'All'">
+                        <span style="color: #D01515;font-size: 15px;font-weight: bold;">
+                        All 
+                        </span>
+                        </a>
+                        &nbsp;&nbsp;
+                        <a  style="color: #0064FF;font-size: 18px;text-decoration: none;" href="{!$Page.LinearityDashboard}?path={!UserPath}&type={{forecastType}}&month={{currentMonth}}&role=VP" title="VP" ng-hide="currentRole == 'VP'">
+                        <span style="color: #0064FF;font-size: 15px;font-weight: bold;">
+                        VP
+                        </span>
+                        </a>
+                        <a  style="color: #0064FF;font-size: 18px;text-decoration: none;" href="{!$Page.LinearityDashboard}?path={!UserPath}&type={{forecastType}}&month={{currentMonth}}&role=VP" title="VP" ng-show="currentRole == 'VP'">
+                        <span style="color: #D01515;font-size: 15px;font-weight: bold;">
+                        VP
+                        </span>
+                        </a>
+                        &nbsp;&nbsp;
+                        <a  style="color: #0064FF;font-size: 18px;text-decoration: none;" href="{!$Page.LinearityDashboard}?path={!UserPath}&type={{forecastType}}&month={{currentMonth}}&role=Manager" title="Manager" ng-hide="currentRole == 'Manager'">
+                        <span style="color: #0064FF;font-size: 15px;font-weight: bold;">
+                        Manager
+                        </span>
+                        </a>
+                        
+                        <a  style="color: #0064FF;font-size: 18px;text-decoration: none;" href="{!$Page.LinearityDashboard}?path={!UserPath}&type={{forecastType}}&month={{currentMonth}}&role=Manager" title="Manager" ng-show="currentRole == 'Manager'">
+                        <span style="color: #D01515;font-size: 15px;font-weight: bold;">
+                        Manager
+                        </span>
+                        </a>
+                        &nbsp;&nbsp;
+                        <a  style="color: #0064FF;font-size: 18px;text-decoration: none;" href="{!$Page.LinearityDashboard}?path={!UserPath}&type={{forecastType}}&month={{currentMonth}}&role=Rep" title="Rep" ng-hide="currentRole == 'Rep'">
+                        <span style="color: #0064FF;font-size: 15px;font-weight: bold;">
+                        Rep
+                        </span>
+                        </a>
+                        
+                        <a  style="color: #0064FF;font-size: 18px;text-decoration: none;" href="{!$Page.LinearityDashboard}?path={!UserPath}&type={{forecastType}}&month={{currentMonth}}&role=Rep" title="Rep" ng-show="currentRole == 'Rep'">
+                        <span style="color: #D01515;font-size: 15px;font-weight: bold;">
+                        Rep
+                        </span>
+                        </a>
+                        </span>
+                
+                <apex:pageBlockSection columns="1" >
+                    
+                    <table class="report">
+                                <thead>
+                                    <tr class="header">
+                                        <th class="minW80" style="color: white;background-color: #37601C;">Name</th>
+                                        <th class="minW80" style="color: white;background-color: #1F5069;">% of Linearity Attained</th>
+                                        <th class="minW80" style="color: white;background-color: #1F5069;">Quota</th>
+                                        <th class="minW80" style="color: white;background-color: #1F5069;">Closed Won + 10b</th>
+                                        <th class="minW80" style="color: white;background-color: #1F5069;">% To Go</th>
+                                        <th class="minW80" style="color: white;background-color: #1F5069;">Open Deals</th>
+                                        <th class="minW80" style="color: white;background-color: #1F5069;">% Coverage</th>
+                                    </tr> 
+                                </thead>
+                                <tbody>
+                                <br/>
+                                
+                                     <tr ng-class="{'line': !($index % 2), 'line2': !!($index % 2) }"  ng-repeat="linearity in teamLin.data">
+                                        <td >{{linearity.userName}}</td>
+                                        <td class="number" ng-show="linearity.linearityActual >= 100 " style="color: white;background-color: green;">{{formatPercentage(linearity.linearityActual)}}</td>
+                                        <td class="number" ng-show="linearity.linearityActual  <= 0" style="color: white;background-color: red;">{{formatPercentage(linearity.linearityActual)}}</td>
+                                        <td class="number" ng-show="linearity.linearityActual  > 0 && linearity.linearityActual < 100" style="color: black;background-color: yellow;">{{formatPercentage(linearity.linearityActual)}}</td>
+                                        <td class="number" >{{formatDecimal(linearity.monthlyQuota, displayFormat)}}</td>
+                                        <td class="number" >{{formatDecimal(linearity.closedWon, displayFormat)}}</td>
+                                        <td class="number" >{{formatPercentage((linearity.monthlyQuota - linearity.closedWon  > 0) ? ((linearity.monthlyQuota - linearity.closedWon)/linearity.monthlyQuota)*100 : 0) }}</td>
+                                        <td class="number" >{{formatDecimal(linearity.openDeals, displayFormat)}}</td>
+                                        <td class="number" >{{formatCoverage((linearity.monthlyQuota - linearity.closedWon) != 0 ? linearity.openDeals/(linearity.monthlyQuota - linearity.closedWon) : 'NA')}}</td>
+                                     </tr>
+                                 </tbody>
+                            </table>
+                            
+                    </apex:pageBlockSection>        
+                
+                </apex:pageBlock>    
+                
+                
+            </div>          
+            
+            </apex:form>
+            
+                
+        </apex:page>

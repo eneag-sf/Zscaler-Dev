@@ -1,0 +1,31 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader,lightning:actionOverride" access="global" >
+    
+    <aura:attribute name="record" type="Account"/>
+    <aura:attribute name="error" type="String"/>
+    <aura:attribute name="showSpinner" type="boolean" default="true"/>
+    
+    <aura:handler name="change" value="{!v.record}" action="{!c.doinit}" />
+    
+    <!-- This is equivalent of Standard Constroller -->
+    <force:recordData aura:id="forceRecordCmp"
+                      recordId="{!v.recordId}"
+                      fields="Id"
+                      mode="VIEW"
+                      targetRecord="{!v.record}"
+                      targetError="{!v.error}" />
+    
+    
+    <aura:if isTrue="{!v.showSpinner}">
+        <!-- Display error message -->
+        <div>
+            <aura:if isTrue="{!not(empty(v.error))}">
+                <div class="error">
+                    {!v.error}
+                </div>
+            </aura:if>
+        </div>
+        <div class="spinnerHolder">
+            <lightning:spinner variant="brand" size="medium" />
+        </div>
+    </aura:if>
+</aura:component>

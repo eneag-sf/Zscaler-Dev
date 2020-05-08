@@ -1,0 +1,41 @@
+<template>
+    <div class="zs-case-details">
+        <div class="zs-case-header-comp">
+            <lightning-card>
+                <h3 slot="title">
+                    <lightning-icon icon-name="standard:case" size="medium"></lightning-icon> &nbsp;&nbsp;
+                    <div style="display:inline-block">
+                        <ul class="slds-list_horizontal slds-has-dividers_right">
+                            <li class="slds-item">
+                                {caseHeader}
+                            </li>
+                            <li class="slds-item">
+                                {caseSubject}
+                            </li>
+                            <li class="slds-item">
+                                <div class={statuscss}>{caseStatus}</div>
+                            </li>
+
+                            <li class="slds-item" if:true={escalatedCase}>
+                                <div class='zs-closed-status'>Escalated</div>
+                            </li>
+                        </ul>
+                    </div>
+                </h3>
+                <template if:true={showclosedetails}>
+                    <lightning-button label="Reopen Case" onclick={reOpenCase} slot="actions"></lightning-button>
+                </template>
+                <template if:false={isClosed}>
+                    <template if:false={escalatedCase}>
+                        <lightning-button class="slds-p-right_xx-small" label="Escalate Case" onclick={escalateCase}
+                            slot="actions" variant="destructive"></lightning-button>
+                    </template>
+                    <lightning-button label="Close Case" onclick={closeCase} slot="actions"></lightning-button>
+                </template>
+            </lightning-card>
+        </div>
+        <c-customer-escalation-l-w-c case-id={recordId}></c-customer-escalation-l-w-c>
+        <c-case-close-customer-component case-id={recordId}></c-case-close-customer-component>
+        <c-customer-case-reopen-component case-id={recordId}></c-customer-case-reopen-component>
+    </div>
+</template>

@@ -1,0 +1,41 @@
+<aura:component
+    implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction"
+    access="global">
+    <aura:attribute name="header" type="string" required="true" default="Selected Attendees"/>
+    <aura:attribute name="cardbodyfields" type="string" />
+    <aura:attribute name="showcards" type="boolean" />
+    <aura:attribute name="cardbodylist" type="List" />
+    <aura:attribute name="listofrecords" type="Object[]" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:handler name="change" value="{!v.listofrecords}" action="{!c.doInit}" />
+    <aura:if isTrue="{!v.showcards}">
+        <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_info"
+            role="alert">
+            <h2>{!v.header}</h2>
+        </div>
+        <lightning:layout pullToBoundary="medium" multipleRows="true">
+            <aura:iteration items="{!v.listofrecords}" var="item" indexVar="i">
+
+                <lightning:layoutItem size="3" padding="around-medium">
+                    <lightning:card variant="Narrow" iconName="standard:user">
+                        <aura:set attribute="title">
+                            <c:RecordFieldDetail record="{!item}" field="name" />
+                        </aura:set>
+                        <aura:set attribute="actions">
+                            <lightning:buttonIcon iconName="utility:close" variant="border-filled"
+                                alternativeText="Remove" title="{!i}" onclick="{!c.removecard}"/>
+                        </aura:set>
+                        <aura:iteration items="{!v.cardbodylist}" var="field">
+                            <p class="slds-p-horizontal_small">
+                                <c:RecordFieldDetail record="{!item}" field="{!field}" />
+                            </p>
+                        </aura:iteration>
+
+                    </lightning:card>
+                </lightning:layoutItem>
+            </aura:iteration>
+        </lightning:layout>
+    </aura:if>
+
+
+</aura:component>

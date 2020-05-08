@@ -1,0 +1,80 @@
+<template>
+    <div class="slds-p-around_x-large">
+        <h1 class="slds-text-heading_large">Welcome to Zscaler Customer Support Portal</h1>
+    <div class="slds-grid" style="padding: 15px;">
+        
+        <div class="slds-col slds-size_6-of-12 rectangle case-summary">
+            
+           <!-- <div class="slds-grid">
+                <div class="slds-col">
+                    <h3 style="font-size: 2rem;">Case Contact Details</h3>
+                </div>
+            </div>
+            <div class="slds-grid">
+                <div class="slds-col">
+                    <label for="" style="font-size: 1rem;">Support Email</label>
+                </div>
+                <div class="slds-col">
+                    <label for="" style="font-size: 1rem;">Phone</label>
+                </div>
+            </div>
+            <div class="slds-grid">
+                <div class="slds-col">
+                    <label for="">Support@zscaler.com</label>
+                </div>
+                <div class="slds-col">
+                    <label for="">9899665588</label>
+                </div>
+            </div>
+            <div class="slds-grid">
+                <div class="slds-col">
+                    <label for="">Support1@zscaler.com</label>
+                </div>
+                <div class="slds-col">
+                    <label for="">7898564523</label>
+                </div>
+            </div> -->
+        </div>
+        <div class="slds-col slds-size_6-of-12 rectangle" >
+            <div class="slds-grid">
+                <div class="slds-col">
+                    <h3 style="font-size: 1.5rem;color: rgb(0, 112, 210);">My Team</h3>
+                </div>
+            </div>
+            <table class="slds-table" style="border: 1px solid rgb(209, 212, 209); border-radius: 5px;">
+                <thead>
+                    <tr class="slds-text-title_caps">
+                        <th scope="col">
+                            <div title="Key">Team Member</div>
+                        </th>
+                        <th scope="col">
+                            <div title="Value">Team Role</div>
+                        </th>
+                        <th scope="col">
+                            <div title="Value">Email</div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template for:each={accountTeamMembers} for:item="am">
+                        <tr key={am.key}>
+                            <th scope="col">
+                                <div>
+                                    <!--{am.User.Name}-->
+                                    {am.User.Name}
+                                </div>
+                            </th>
+                            <th scope="col">
+                                <div> {am.TeamMemberRole}</div>
+                            </th>
+                            <th scope="col">
+                                <div> {am.User.Email}</div>
+                            </th>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</template>

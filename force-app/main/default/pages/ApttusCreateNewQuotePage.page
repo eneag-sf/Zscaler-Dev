@@ -1,0 +1,102 @@
+<!-- 
+    Apttus Config & Pricing
+    ApttusSyncOppWithProposal
+     
+    @2012 Apttus Inc. All rights reserved.
+ -->
+<apex:page standardController="Opportunity" 
+           extensions="ApttusNewOppToQuoteController" >
+    
+    <apex:stylesheet value="{!URLFOR($Resource.Apttus_Proposal__YUILibrary, '/yui/build/assets/skins/sam/skin.css')}" />
+ 
+    <apex:includescript value="{!URLFOR($Resource.Apttus_Proposal__YUILibrary, '/yui/build/yahoo-dom-event/yahoo-dom-event.js')}" />
+    <apex:includescript value="{!URLFOR($Resource.Apttus_Proposal__YUILibrary, '/yui/build/dragdrop/dragdrop-min.js')}" />
+    <apex:includescript value="{!URLFOR($Resource.Apttus_Proposal__YUILibrary, '/yui/build/container/container-min.js')}" />
+    <apex:includescript value="{!URLFOR($Resource.Apttus_Proposal__YUILibrary, '/yui/build/animation/animation-min.js')}" />
+    
+    <script type="text/javascript">
+            
+        // Create a namespace for our custom functions
+        YAHOO.namespace("force.com");
+        
+        // wait panel
+        
+        /**
+         * Builds the wait panel.
+         */
+        YAHOO.force.com.buildWaitPanel = function() {
+            document.body.className = document.body.className + " yui-skin-sam";
+            YAHOO.force.com.waitPanel = new YAHOO.widget.Panel(
+                "waitPanel",  // The id of our dialog container
+                { 
+                        width           :   "300px", // You can play with this until it's right
+                        visible         :   false,   // Should be invisible when rendered
+                        draggable       :   false,   // Make the dialog draggable
+                        close           :   false,   // Don't include a close title button
+                        modal           :   true,    // Make it modal
+                        fixedCenter     :   true,    // Keep centered if window is scrolled
+                        zindex          :   40,      // Make sure it's on top of everything
+                        constraintoviewport: true,
+                        
+                        // This line adds the appear/disapper fade effect
+                        effect          :   {effect:YAHOO.widget.ContainerEffect.FADE,duration:0.25}
+                                    
+                }
+            );
+            
+            // header
+            YAHOO.force.com.waitPanel.setHeader("{!$Label.Apttus_Proposal__CreatingProposal}");
+            // set image
+            YAHOO.force.com.waitPanel.setBody('<center><img src="{!URLFOR($Resource.Apttus_Config2__Image_LoadingPage)}" /></center>');
+            // Render the dialog to the document.body level of the DOM
+            YAHOO.force.com.waitPanel.render(document.body);
+            
+        }
+        
+        // Function called when the DOM is ready to create the dialog,
+        // render the dialog into the document body, add our dialog skin
+        // css to the body tag, and wire up the buttons on our dialog   
+        YAHOO.force.com.onDOMReady = function() {
+            
+            // build the wait panel
+            YAHOO.force.com.buildWaitPanel();
+            // show modal panel
+            YAHOO.force.com.waitPanel.show();
+            // invoke onload function
+            onLoad();   
+            
+        }
+        
+        // build the tree as soon as the DOM is in a usable state
+        YAHOO.util.Event.onDOMReady(YAHOO.force.com.onDOMReady);    
+        
+    </script>
+        
+    <apex:form >
+    
+        <!--  required fields -->
+        <apex:outputText value="{!Opportunity.Name}" rendered="false"/>
+        <apex:outputText value="{!Opportunity.AccountId}" rendered="false"/>
+        <apex:outputText value="{!Opportunity.Description}" rendered="false"/>
+        <apex:outputText value="{!Opportunity.OwnerId}" rendered="false"/>
+        <apex:outputText value="{!Opportunity.Amount}" rendered="false"/>
+        <apex:outputText value="{!Opportunity.CloseDate}" rendered="false"/>
+        
+        <apex:outputPanel id="idOutputPanel" >
+            <apex:pageBlock mode="edit" rendered="{!hasErrors}" >
+                <apex:pageMessages />
+                <apex:pageBlockButtons location="bottom" >
+                    <apex:commandButton action="{!doCancel}" value="{!$Label.Apttus_Proposal__Cancel}" immediate="true"/>
+                </apex:pageBlockButtons>
+            </apex:pageBlock>
+        </apex:outputPanel>
+        
+        <apex:actionFunction name="onLoad" 
+                             action="{!onLoad}"
+                             reRender="idOutputPanel" 
+                             oncomplete="YAHOO.force.com.waitPanel.hide();">
+        </apex:actionFunction>
+        
+    </apex:form>
+    
+</apex:page>

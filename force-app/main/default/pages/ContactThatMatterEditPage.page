@@ -1,0 +1,222 @@
+<apex:page controller="ContactThatMatterEditController" lightningStylesheets="true">
+  <apex:form >
+    <!-- <apex:pageMessages /> -->
+        <apex:pageBlock title="Current CTM" id="block1"> <!-- title="Contacts That Matter" -->
+            <apex:pageMessages rendered="{!CurrentCTMTableErrorMessage}"/>  
+            <apex:pageBlockButtons location="top"> 
+                    <apex:commandButton value="Remove CTM" action="{!RemoveCTM}" /><!-- oncomplete="refreshPage(); return false;" -->
+                    <apex:commandButton value="Update CTM" action="{!UpdateCTM}" />  <!-- oncomplete="refreshPage(); return false;" -->
+                    <apex:commandButton value="Go back to Account" action="{!GotoAccount}"/>
+            </apex:pageBlockButtons> 
+            <apex:pageBlockSection columns="1" rendered="{!CTMWContactList.size > 0}">              
+                <apex:pageBlockSectionItem >
+                    <apex:pageBlockTable value="{!CTMWContactList}" var="con" >
+                    <apex:column headerValue="Remove">
+                        <apex:inputCheckbox value="{!con.isSelected}"/>
+                    </apex:column>
+                    <apex:column headerValue="Name">
+                        <a href="/{!con.ContactDetails.Id}" target="_blank">{!con.ContactDetails.Name}</a>
+                    </apex:column>
+                    <apex:column value="{!con.ContactDetails.Title}" headerValue="Title"/>
+                    <!-- <apex:column value="{!con.ContactDetails.Key_Exec__c}" headerValue="Key Exec"/> -->                 
+                    <apex:column headerValue="Level From CIO">
+                        <apex:selectList value="{!con.ContactDetails.Level_From_CIO__c}" size="1">
+                        <!--<apex:selectOptions value="{!CurrencyValue}"/> -->
+                        <apex:selectOption itemLabel="None" itemValue=""></apex:selectOption>
+                        <apex:selectOption itemLabel="0" itemValue="0"></apex:selectOption>
+                        <apex:selectOption itemLabel="1" itemValue="1"></apex:selectOption>
+                        <apex:selectOption itemLabel="2" itemValue="2"></apex:selectOption>
+                        <apex:selectOption itemLabel="3" itemValue="3"></apex:selectOption>
+                        <apex:selectOption itemLabel="4" itemValue="4"></apex:selectOption>
+                        </apex:selectList>
+                    </apex:column>
+                    
+                    <apex:column headerValue="Head of IT">
+                        <apex:inputCheckbox value="{!con.ContactDetails.Head_of_IT__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Head of Security">
+                        <apex:inputCheckbox value="{!con.ContactDetails.Head_of_Security__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Head of Networking">
+                        <apex:inputCheckbox value="{!con.ContactDetails.Head_of_Networking__c}"/>
+                    </apex:column>
+                    
+                    <apex:column headerValue="Security">
+                        <apex:inputCheckbox value="{!con.ContactDetails.Security__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Network">
+                        <apex:inputCheckbox value="{!con.ContactDetails.Network__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Desktop">
+                        <apex:inputCheckbox value="{!con.ContactDetails.Desktop__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Application">
+                        <apex:inputCheckbox value="{!con.ContactDetails.Application__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Architecture">
+                        <apex:inputCheckbox value="{!con.ContactDetails.Architecture__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Operations">
+                        <apex:inputCheckbox value="{!con.ContactDetails.Operations__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Budget Authority">
+                        <apex:inputCheckbox value="{!con.ContactDetails.Budget_Authority__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Influencer">
+                        <apex:inputCheckbox value="{!con.ContactDetails.Influencer__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Champion">
+                        <apex:inputCheckbox value="{!con.ContactDetails.Champion__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Distractor">
+                        <apex:inputCheckbox value="{!con.ContactDetails.Distractor__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Service Owner">
+                        <apex:inputCheckbox value="{!con.ContactDetails.Service_Owner__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Send CIO Report">
+                        <apex:selectList value="{!con.ContactDetails.Send_CIO_Report__c}" size="1">
+                        <!--<apex:selectOptions value="{!CurrencyValue}"/> -->
+                            <apex:selectOption itemLabel="None" itemValue=""></apex:selectOption>
+                            <apex:selectOption itemLabel="Send" itemValue="Send"></apex:selectOption>
+                            <apex:selectOption itemLabel="Send delayed" itemValue="Send delayed"></apex:selectOption>
+                            <apex:selectOption itemLabel="Do not send" itemValue="Do not send"></apex:selectOption>
+                            <apex:selectOption itemLabel="Unsubscribed" itemValue="Unsubscribed"></apex:selectOption>
+                        </apex:selectList>
+                    </apex:column>
+                    <apex:column headerValue="Key Contact Status">
+                        <apex:selectList value="{!con.ContactDetails.Key_Contact_Status__c}" size="1">
+                        <!--<apex:selectOptions value="{!CurrencyValue}"/> -->
+                        <apex:selectOption itemLabel="None" itemValue=""></apex:selectOption>
+                        <apex:selectOption itemLabel="Marketing Validated" itemValue="Marketing Validated"></apex:selectOption>
+                        <apex:selectOption itemLabel="Sales Accepted" itemValue="Sales Accepted"></apex:selectOption>
+                        <apex:selectOption itemLabel="CSM Accepted" itemValue="CSM Accepted"></apex:selectOption>
+                        <apex:selectOption itemLabel="Not a Key Contact" itemValue="Not a Key Contact"></apex:selectOption>
+                        <apex:selectOption itemLabel="Validated Key Contact" itemValue="Validated Key Contact"></apex:selectOption>
+                        </apex:selectList>
+                    </apex:column>
+                    <!-- <apex:column value="{!con.ContactDetails.Title}" headerValue="Title"/>
+                    <apex:column value="{!con.ContactDetails.Head_of_IT__c}" headerValue="Head Of IT"/> 
+                    <apex:column value="{!con.ContactDetails.Head_of_Security__c}" headerValue="Head Of Security"/> 
+                    <apex:column value="{!con.ContactDetails.Head_of_Networking__c}" headerValue="Head Of Networking/CTO"/> 
+                    <apex:column value="{!con.ContactDetails.Send_CIO_Report__c}" headerValue="Email ZIA Executive Insights report"/> -->
+                </apex:pageBlockTable>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            <!-- <apex:pageBlockSection rendered="{!NOT(contactList.size > 0)}" columns="1">
+                No records to display 
+            </apex:pageBlockSection>-->
+        </apex:pageBlock>
+        
+        <apex:pageBlock title="Add CTM" id="block2"> <!-- title="Contacts That Matter" -->      
+            <apex:pageBlockButtons location="top">
+                    <apex:commandButton value="Add CTM" action="{!AddCTM}" /> <!-- oncomplete="refreshPage(); return false;" -->
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection columns="1" rendered="{!AvailableWContactList.size > 0}" >
+            <apex:pageMessages rendered="{!AddCTMTableErrorMessage}"/>              
+            <apex:pageBlockSectionItem >
+                <apex:pageBlockTable value="{!AvailableWContactList}" var="con" >
+                <apex:column headerValue="Add">
+                    <apex:inputCheckbox value="{!con.isSelected}"/>
+                </apex:column>
+                <apex:column headerValue="Name">
+                        <a href="/{!con.ContactDetails.Id}" target="_blank">{!con.ContactDetails.Name}</a>
+                    </apex:column>
+                    <apex:column value="{!con.ContactDetails.Title}" headerValue="Title"/>
+                    <!-- <apex:column value="{!con.ContactDetails.Key_Exec__c}" headerValue="Key Exec"/>  -->               
+                    <apex:column headerValue="Level From CIO">
+                        <apex:selectList value="{!con.ContactDetails.Level_From_CIO__c}" size="1">
+                        <!--<apex:selectOptions value="{!CurrencyValue}"/> -->
+                        <apex:selectOption itemLabel="None" itemValue=""></apex:selectOption>
+                        <apex:selectOption itemLabel="0" itemValue="0"></apex:selectOption>
+                        <apex:selectOption itemLabel="1" itemValue="1"></apex:selectOption>
+                        <apex:selectOption itemLabel="2" itemValue="2"></apex:selectOption>
+                        <apex:selectOption itemLabel="3" itemValue="3"></apex:selectOption>
+                        <apex:selectOption itemLabel="4" itemValue="4"></apex:selectOption>
+                        </apex:selectList>
+                    </apex:column>
+                    
+                    <apex:column headerValue="Head of IT">
+                        <apex:inputCheckbox value="{!con.ContactDetails.Head_of_IT__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Head of Security">
+                        <apex:inputCheckbox value="{!con.ContactDetails.Head_of_Security__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Head of Networking">
+                        <apex:inputCheckbox value="{!con.ContactDetails.Head_of_Networking__c}"/>
+                    </apex:column>
+                    
+                    <apex:column headerValue="Security">
+                        <apex:inputCheckbox value="{!con.ContactDetails.Security__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Network">
+                        <apex:inputCheckbox value="{!con.ContactDetails.Network__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Desktop">
+                        <apex:inputCheckbox value="{!con.ContactDetails.Desktop__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Application">
+                        <apex:inputCheckbox value="{!con.ContactDetails.Application__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Architecture">
+                        <apex:inputCheckbox value="{!con.ContactDetails.Architecture__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Operations">
+                        <apex:inputCheckbox value="{!con.ContactDetails.Operations__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Budget Authority">
+                        <apex:inputCheckbox value="{!con.ContactDetails.Budget_Authority__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Influencer">
+                        <apex:inputCheckbox value="{!con.ContactDetails.Influencer__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Champion">
+                        <apex:inputCheckbox value="{!con.ContactDetails.Champion__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Distractor">
+                        <apex:inputCheckbox value="{!con.ContactDetails.Distractor__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Service Owner">
+                        <apex:inputCheckbox value="{!con.ContactDetails.Service_Owner__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Send CIO Report">
+                        <apex:selectList value="{!con.ContactDetails.Send_CIO_Report__c}" size="1">
+                        <!--<apex:selectOptions value="{!CurrencyValue}"/> -->
+                            <apex:selectOption itemLabel="None" itemValue=""></apex:selectOption>
+                            <apex:selectOption itemLabel="Send" itemValue="Send"></apex:selectOption>
+                            <apex:selectOption itemLabel="Send delayed" itemValue="Send delayed"></apex:selectOption>
+                            <apex:selectOption itemLabel="Do not send" itemValue="Do not send"></apex:selectOption>
+                            <apex:selectOption itemLabel="Unsubscribed" itemValue="Unsubscribed"></apex:selectOption>
+                        </apex:selectList>
+                    </apex:column>
+                    <apex:column headerValue="Key Contact Status">
+                        <apex:selectList value="{!con.ContactDetails.Key_Contact_Status__c}" size="1">
+                        <!--<apex:selectOptions value="{!CurrencyValue}"/> -->
+                        <apex:selectOption itemLabel="None" itemValue=""></apex:selectOption>
+                        <apex:selectOption itemLabel="Marketing Validated" itemValue="Marketing Validated"></apex:selectOption>
+                        <apex:selectOption itemLabel="Sales Accepted" itemValue="Sales Accepted"></apex:selectOption>
+                        <apex:selectOption itemLabel="CSM Accepted" itemValue="CSM Accepted"></apex:selectOption>
+                        <apex:selectOption itemLabel="Not a Key Contact" itemValue="Not a Key Contact"></apex:selectOption>
+                        <apex:selectOption itemLabel="Validated Key Contact" itemValue="Validated Key Contact"></apex:selectOption>
+                        </apex:selectList>
+                    </apex:column>
+                    <!-- <apex:column value="{!con.ContactDetails.Title}" headerValue="Title"/>
+                    <apex:column value="{!con.ContactDetails.Head_of_IT__c}" headerValue="Head Of IT"/> 
+                    <apex:column value="{!con.ContactDetails.Head_of_Security__c}" headerValue="Head Of Security"/> 
+                    <apex:column value="{!con.ContactDetails.Head_of_Networking__c}" headerValue="Head Of Networking/CTO"/> 
+                    <apex:column value="{!con.ContactDetails.Send_CIO_Report__c}" headerValue="Email ZIA Executive Insights report"/> -->
+            </apex:pageBlockTable>
+            </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            <!-- <apex:pageBlockSection rendered="{!NOT(contactList.size > 0)}" columns="1">
+                No records to display 
+            </apex:pageBlockSection>-->
+        </apex:pageBlock>
+    </apex:form>
+    <script>
+        function refreshPage()
+        {
+            window.location.reload(true);
+        }
+    </script>
+</apex:page>

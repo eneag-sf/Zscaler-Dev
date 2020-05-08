@@ -1,0 +1,103 @@
+<template>
+    <div class="slds-page-header">
+        <div class="slds-page-header__row">
+            <div class="slds-page-header__col-title">
+                <div class="slds-media">
+                    <div class="slds-media__figure">
+                        <span class="slds-icon_container">
+                            <lightning-icon icon-name="standard:case" alternative-text="Case"></lightning-icon>
+                        </span>
+                    </div>
+                    <div class="slds-media__body">
+                        <div class="slds-page-header__name">
+                            <div class="slds-page-header__name-title">
+                                <h1>
+                                    <span>Cases</span>
+                                    <span class="slds-page-header__title slds-truncate" title="Recently Viewed">Recently
+                                        Viewed</span>
+                                </h1>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-page-header__col-actions">
+                <div class="slds-page-header__controls">
+                    <div class="slds-page-header__control">
+                        <ul class="slds-button-group-list">
+                            <li>
+                                <button class="slds-button slds-button_neutral" onclick={showModal}>New</button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <template if:true={showMod}>
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+            aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                        title="Close" onclick={cancelCase}>
+                        <lightning-icon icon-name="utility:close" alternative-text="Close"></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">New Case</h2>
+
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <lightning-record-edit-form object-api-name="Case" onsuccess={handleSuccess}
+                        onsubmit={handleSubmit} record-type-id={recordTypeId}>
+                        <lightning-messages></lightning-messages>
+                        <div class="slds-m-around_medium">
+                            <div class="slds-m-around_medium">
+                                <lightning-layout pull-to-boundary="medium" multiple-rows="true">
+                                    <lightning-layout-item size="6" padding="around-medium">
+                                        <lightning-input-field field-name='Product_New__c' required>
+                                        </lightning-input-field>
+                                    </lightning-layout-item>
+                                    <lightning-layout-item size="6" padding="around-medium">
+                                        <lightning-input-field field-name='Case_Category__c' required>
+                                        </lightning-input-field>
+                                    </lightning-layout-item>
+                                    <lightning-layout-item size="6" padding="around-medium">
+                                        <lightning-input-field field-name='Priority' required></lightning-input-field>
+                                    </lightning-layout-item>
+                                    <lightning-layout-item size="6" padding="around-medium">
+                                        <lightning-input-field field-name='Subject' required></lightning-input-field>
+                                    </lightning-layout-item>
+                                    <lightning-layout-item size="6" padding="around-medium">
+                                        <lightning-input-field field-name='Description' required>
+                                        </lightning-input-field>
+                                    </lightning-layout-item>
+                                </lightning-layout>
+                                <div class="slds-m-top_medium">
+
+                                </div>
+                            </div>
+                        </div>
+                        <footer class="slds-modal__footer">
+                            <template if:false={loading}>
+                                <lightning-button variant="brand" type="submit" name="save" label="Create Case">
+                                </lightning-button>
+                                <lightning-button variant="neutral" name="cancel" label="Cancel" onclick={cancelCase}>
+                                </lightning-button>
+                            </template>
+                            <template if:true={loading}>
+                                <div class="slds-spinner_container">
+                                    <lightning-spinner variant="brand" size="medium"></lightning-spinner>
+                                </div>
+                            </template>
+                        </footer>
+                    </lightning-record-edit-form>
+                </div>
+
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+
+    </template>
+</template>

@@ -1,0 +1,372 @@
+<apex:page showHeader="true" sidebar="false" controller="ForecastingController" extensions="ForecastingStatsService" tabStyle="Forecasting__tab" action="{!init}">
+
+    <apex:includeScript value="{!URLFOR($Resource.Forecasting, 'js/jquery-1.11.3.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.Forecasting, 'js/jquery-ui.min.js')}"/>
+    <!--script src="https://code.jquery.com/jquery-1.11.1.min.js"></script-->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular-animate.min.js"></script>
+    <!--apex:includeScript value="{!URLFOR($Resource.Forecasting, 'js/angular.min.js')}"/-->
+    <!--apex:includeScript value="{!URLFOR($Resource.Forecasting, 'js/angular-animate.min.js')}"/-->
+    <apex:includeScript value="{!URLFOR($Resource.Forecasting, 'js/jsgrid.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.Forecasting, 'js/oppListV2GlobalConfigs.js')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.Forecasting, 'css/jquery-ui.min.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.Forecasting, 'css/jsgrid.min.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.Forecasting, 'css/jsgrid-theme.min.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.Forecasting, 'css/fq.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.Forecasting, 'css/toggle-switch.css')}" />
+    <link href="https://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet" />
+    <script type="text/javascript">
+        var forecastEditable = {!AND(CurrentViewingUser.UserId == $User.Id, impersonateViewAsUser == false)};
+        var forecastEnabled = {!CurrentViewingUser.ForecastEnabled == true};
+        var fiscalQtr = "{!CurrentFiscalQuarter.FormattedString}";
+        var week = "{!CurrentWeek.FormattedString}";
+        var startDate = "{!CurrentFiscalQuarter.StartDate}";
+        var endDate = "{!CurrentFiscalQuarter.EndDate}";
+        var currentViewingUserId = "{!CurrentViewingUser.UserId}";
+    	var CurrentLoginUserId = "{!$User.Id}";
+        var userPath = "{!UserPath}";
+        var forecastType = "{!ForecastType}";
+        var forecastFamily = "{!ForecastFamily}";
+        var canEditPlan = {!canEditPlan};
+        var isViewingHistory = {!IsViewingHistory};
+        var zpaForecastEnabled = {!CurrentViewingUser.ZPAForecastEnabled == true};
+        var zpaForecastEditable = {!AND(CurrentViewingUser.UserId == $User.Id, impersonateViewAsUser == false)};
+        var showForecastFamilySwitch = {!showForecastFamilySwitch};
+        var showAsManagerInZPAForecasting = {!CurrentViewingUser.ShowAsManagerInZPAForecasting == true};
+    	var inlineEditingState = '{!InlineEditingState}';
+        var oppListEditPicklist = {!OppListEditingPicklists};
+        var oppListEditPicklistValues = JSON.parse( '{!OpportunityPicklistFieldsValues}' );
+    	var oppListPageSize = 50;
+    
+    </script>
+    <script src="{!URLFOR($Resource.Forecasting, 'js/forecast.js')}"></script>
+    <script src="{!URLFOR($Resource.Forecasting, 'js/dialog.js')}"></script>
+
+    <apex:sectionHeader title="Forecasting" subTitle="{!CurrentFiscalQuarter.FormattedString} - {!IF(CurrentViewingUser.ForecastEnabled == true || CurrentViewingUser.ZPAForecastEnabled == true, CurrentViewingUser.UserName, '')}" />
+    <apex:PageMessages id="pageMessage" escape="true" />
+
+    <apex:form id="form">
+        <div id="ngContainer" ng-app="forecastingApp" ng-controller="forecastingCtrl">
+            <div class="ptBreadcrumb"><span class="fa fa-user"></span>
+                <apex:variable var="p" value="" />
+                <apex:repeat value="{!UserNavPath}" var="usr">
+                    <apex:variable var="p" value="{!p + '/' + usr.UserId}" />
+                    <a href="{!$Page.Forecasting}?path={!p}&type={{forecastType}}&family={{forecastFamily}}&impersonate={!impersonateViewAsUser}">{!usr.UserName}</a> &gt;
+                </apex:repeat>
+                <span style="margin-left:30%;color:red;" ng-show="requestInProgress>0">Loading...</span>
+                <span style="color:red;" ng-show="errorMessage != null">{{errorMessage}}</span>
+                <span style="float:right" ng-show="canEditPlan"><a href="/apex/ForecastingQuota?type={{forecastType}}&quarter={{fiscalQtr}}&family={{forecastFamily}}">Update Plans</a></span>
+                <apex:outputPanel rendered="{!canImpersonate}">
+                    <span style="float:right" ng-show="canEditPlan">&nbsp;|&nbsp;</span>
+                    <apex:commandLink id="impersonateUserLink" style="float: right;" action="{!toggleImpersonation}">View forecast as {!viewAsUserName}</apex:commandLink>
+                </apex:outputPanel>
+            </div>
+            <br/>
+            <div id="wrap">
+                <div class="fqTitleCon">
+                    <span class="fqTitle">Fiscal Quarter</span>
+                    <span class="fqNum">{!CurrentFiscalQuarter.FormattedString}</span>
+                    <a class="fqBtn" href="{!$Page.Forecasting}?path={!$currentPage.parameters.path}&quarter={!CurrentFiscalQuarter.Previous.FormattedString}&type={{forecastType}}&family={{forecastFamily}}&impersonate={!impersonateViewAsUser}" title="Previous quarter"><img src="{!URLFOR($Resource.Forecasting, 'img/fqBtnLeft.gif')}" /></a>
+                    <a class="fqBtn" href="{!$Page.Forecasting}?path={!$currentPage.parameters.path}&quarter={!CurrentFiscalQuarter.Next.FormattedString}&type={{forecastType}}&family={{forecastFamily}}&impersonate={!impersonateViewAsUser}" title="Next quarter"><img src="{!URLFOR($Resource.Forecasting, 'img/fqBtnRight.gif')}" /></a>
+                    <div class="switch-toggle switch-4 switch-candy switch-candy-blue fqSwitch" style="width:310px">
+                      <input id="forecastAll" name="view" type="radio" ng-checked="forecastType=='all'" />
+                      <label for="forecastAll" ng-click="forecastType='all';loadAll();cancelForecast();">All</label>
+                      <input id="forecastNew" name="view" type="radio" ng-checked="forecastType=='new'" />
+                      <label for="forecastNew" ng-click="forecastType='new';loadAll();cancelForecast();">New</label>
+                      <input id="forecastUpsell" name="view" type="radio" ng-checked="forecastType=='upsell'" />
+                      <label for="forecastUpsell" ng-click="forecastType='upsell';loadAll();cancelForecast();">Upsell</label>
+                      <input id="forecastRenewal" name="view" type="radio" ng-checked="forecastType=='renewal'" />
+                      <label for="forecastRenewal" ng-click="forecastType='renewal';loadAll();cancelForecast();">Renewal</label>
+                      <a></a>
+                    </div>
+                    <div class="ffSwitch" ng-if="showForecastFamilySwitch">
+                        <div class="switch-toggle switch-2 switch-candy" style="width: 150px;">
+                            <input id="forecastZIA" name="family" type="radio" checked="checked" ng-checked="forecastFamily=='ZIA'" />
+                            <label for="forecastZIA" onclick="window.location.href='{!$Page.Forecasting}?quarter={!CurrentFiscalQuarter.FormattedString}&type={!ForecastType}&family=ZIA&impersonate=false'">Primary</label>
+                            <input id="forecastZPA" name="family" type="radio" ng-checked="forecastFamily=='ZPA'" />
+                            <label for="forecastZPA" onclick="window.location.href='{!$Page.Forecasting}?quarter={!CurrentFiscalQuarter.FormattedString}&type={!ForecastType}&family=ZPA&impersonate=false'">ZPA</label>
+                            <a></a>
+                        </div>
+                    </div>
+                    <span class="displayUnits">
+                        <input type="radio" name="displayUnits" value="M" ng-click="displayFormat='M'" />Millions
+                        <input type="radio" name="displayUnits" value="K" ng-click="displayFormat='K'" />Thousands
+                        <input type="radio" name="displayUnits" value="W" checked="true" ng-click="displayFormat='W'" />Whole
+                        <input type="radio" name="displayUnits" value="E" ng-click="displayFormat='E'" />Exact
+                    </span>
+                </div>
+            </div>
+
+            <apex:pageBlock id="summaryBlock">
+                <table class="report" style="float:left">
+                    <tr class="header">
+                        <th class="W100">My Plan</th>
+                    </tr>
+                    <tr class="line">
+                        <td class="number">&nbsp;{{formatDecimal(forecastSummary.data.QTRQuota, displayFormat)}}</td>
+                    </tr>
+                </table>
+                <table class="report" style="float:left;margin-left:5%;" ng-hide="isViewingHistory">
+                    <thead>
+                        <tr class="header">
+                            <th style="width:140px">
+                                My Forecast
+                            </th>
+                            <th class="W100">This Week</th>
+                            <th class="W80">Last Week</th>
+                            <th class="W80">Prior Week</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="line">
+                            <td class="center">Most Likely</td>
+                            <td class="number" ng-repeat="entry in forecastSummary.data.RecentForecasts">
+                                <span class="fa fa-edit editBtn" ng-click="editForecast()" ng-show="$index==0 && !forecastSummary.isEditing && forecastEditable && forecastType!='all'" title="Edit"></span>
+                                <span class="fa fa-check saveBtn" ng-click="saveForecast()" title="Save" ng-show="$index==0 && forecastSummary.isEditing"></span>
+                                <span class="fa fa-times undoBtn" ng-click="cancelForecast()" title="Undo" ng-show="$index==0 && forecastSummary.isEditing"></span>
+                                <input ng-show="$index==0 && forecastSummary.isEditing" type="text" class="edit" ng-model="forecastSummary.editingModal.QtrCommit" />
+                                <span ng-hide="$index==0 && forecastSummary.isEditing">{{formatDecimal(entry.QtrCommit, displayFormat)}}</span>
+                            </td>
+                        </tr>
+                        <tr class="line2">
+                            <td class="center">Best Case</td>
+                            <td class="number" ng-repeat="entry in forecastSummary.data.RecentForecasts">
+                                <span class="fa fa-edit editBtn" ng-click="editForecast()" ng-show="$index==0 && !forecastSummary.isEditing && forecastEditable && forecastType!='all'" title="Edit"></span>
+                                <span class="fa fa-check saveBtn" ng-click="saveForecast()" title="Save" ng-show="$index==0 && forecastSummary.isEditing"></span>
+                                <span class="fa fa-times undoBtn" ng-click="cancelForecast()" title="Undo" ng-show="$index==0 && forecastSummary.isEditing"></span>
+                                <input ng-show="$index==0 && forecastSummary.isEditing" type="text" class="edit" ng-model="forecastSummary.editingModal.QtrUpside" />
+                                <span ng-hide="$index==0 && forecastSummary.isEditing">{{formatDecimal(entry.QtrUpside, displayFormat)}}</span>
+                            </td>
+                        </tr>
+                        <tr class="line">
+                            <td class="center">Worst Case</td>
+                            <td class="number" ng-repeat="entry in forecastSummary.data.RecentForecasts">
+                                <span class="fa fa-edit editBtn" ng-click="editForecast()" ng-show="$index==0 && !forecastSummary.isEditing && forecastEditable && forecastType!='all'" title="Edit"></span>
+                                <span class="fa fa-check saveBtn" ng-click="saveForecast()" title="Save" ng-show="$index==0 && forecastSummary.isEditing"></span>
+                                <span class="fa fa-times undoBtn" ng-click="cancelForecast()" title="Undo" ng-show="$index==0 && forecastSummary.isEditing"></span>
+                                <input ng-show="$index==0 && forecastSummary.isEditing" type="text" class="edit" ng-model="forecastSummary.editingModal.QtrPipeline" />
+                                <span ng-hide="$index==0 && forecastSummary.isEditing">{{formatDecimal(entry.QtrPipeline, displayFormat)}}</span>
+                            </td>
+                        </tr>
+
+                        <tr class="line">
+
+                        <td colspan="4" class="center" ng-show="forecastSummary.data.MostLikelyGap >= 0 && forecastSummary.data.BestCaseGap >= 0">
+                        Most Likely Gap : {{formatDecimal(forecastSummary.data.MostLikelyGap, displayFormat)}} | Best Case Gap : {{formatDecimal(forecastSummary.data.BestCaseGap, displayFormat)}}
+                        </td>
+
+                        <td colspan="4" class="center" ng-show="forecastSummary.data.MostLikelyGap < 0 && forecastSummary.data.BestCaseGap >= 0">
+                        Most Likely Gap : <font color="red">{{formatDecimal(forecastSummary.data.MostLikelyGap, displayFormat)}}</font> | Best Case Gap : {{formatDecimal(forecastSummary.data.BestCaseGap, displayFormat)}}
+                        </td>
+
+
+                        <td colspan="4" class="center" ng-show="forecastSummary.data.MostLikelyGap < 0 && forecastSummary.data.BestCaseGap < 0">
+                        Most Likely Gap : <font color="red">{{formatDecimal(forecastSummary.data.MostLikelyGap, displayFormat)}}</font> | Best Case Gap : <font color="red">{{formatDecimal(forecastSummary.data.BestCaseGap, displayFormat)}}</font>
+                        </td>
+
+
+                        <td colspan="4" class="center" ng-show="forecastSummary.data.MostLikelyGap >= 0 && forecastSummary.data.BestCaseGap < 0">
+                        Most Likely Gap : {{formatDecimal(forecastSummary.data.MostLikelyGap, displayFormat)}} | Best Case Gap : <font color="red">{{formatDecimal(forecastSummary.data.BestCaseGap, displayFormat)}}</font>
+                        </td>
+
+                        </tr>
+                    </tbody>
+                </table>
+
+
+                <table class="report" style="float:left; margin-left: 5%;">
+                    <tr class="header">
+                        <th>Funnel Information</th>
+                        <th class="W100">Amount</th>
+                        <th class="W100">% of Plan</th>
+                        <th class="W100">% of Most Likely</th>
+                    </tr>
+                    <tr class="line">
+                        <td>QTD Closed Won</td>
+                        <td class="number">{{formatDecimal(forecastSummary.data.QTDBooking, displayFormat)}}</td>
+                        <td class="number">{{formatPercentage(forecastSummary.data.QTRQuota ? forecastSummary.data.QTDBooking / forecastSummary.data.QTRQuota * 100 : 'NA')}}</td>
+                        <td class="number">{{formatPercentage(forecastSummary.data.RecentForecasts.length > 0 ? forecastSummary.data.QTDBooking / forecastSummary.data.RecentForecasts[0].QtrCommit * 100: 'NA')}}</td>
+                    </tr>
+                    <tr class="line2">
+                        <td>Total Open Commit</td>
+                        <td class="number">{{formatDecimal(forecastSummary.data.TotalCommit, displayFormat)}}</td>
+                        <td class="number">{{formatPercentage(forecastSummary.data.QTRQuota ? forecastSummary.data.TotalCommit / forecastSummary.data.QTRQuota * 100: 'NA')}}</td>
+                        <td class="number">{{formatPercentage(forecastSummary.data.RecentForecasts.length > 0 ? forecastSummary.data.TotalCommit / forecastSummary.data.RecentForecasts[0].QtrCommit * 100: 'NA')}}</td>
+                    </tr>
+
+                    <tr class="line">
+
+                        <td><b>QTD Won + Commit</b></td>
+                        <td class="number"><b>{{formatDecimal(forecastSummary.data.QTDBooking+forecastSummary.data.TotalCommit, displayFormat)}}</b></td>
+                        <td class="number"><b>{{formatPercentage(forecastSummary.data.QTRQuota ? (forecastSummary.data.QTDBooking+forecastSummary.data.TotalCommit) / forecastSummary.data.QTRQuota * 100: 'NA')}}</b></td>
+                        <td class="number"><b>{{formatPercentage(forecastSummary.data.RecentForecasts.length > 0 ? (forecastSummary.data.QTDBooking+forecastSummary.data.TotalCommit) / forecastSummary.data.RecentForecasts[0].QtrCommit * 100: 'NA')}}</b></td>
+
+                    </tr>
+
+                    <tr class="line2">
+                        <td>Total Open Upside</td>
+                        <td class="number">{{formatDecimal(forecastSummary.data.TotalUpside, displayFormat)}}</td>
+                        <td class="number">{{formatPercentage(forecastSummary.data.QTRQuota ? forecastSummary.data.TotalUpside / forecastSummary.data.QTRQuota * 100: 'NA')}}</td>
+                        <td class="number">{{formatPercentage(forecastSummary.data.RecentForecasts.length > 0 ? forecastSummary.data.TotalUpside / forecastSummary.data.RecentForecasts[0].QtrCommit * 100: 'NA')}}</td>
+                    </tr>
+                    <tr class="line">
+                        <td>Total Open Pipeline</td>
+                        <td class="number">{{formatDecimal(forecastSummary.data.TotalPipeline, displayFormat)}}</td>
+                        <td class="number">{{formatPercentage(forecastSummary.data.QTRQuota ? forecastSummary.data.TotalPipeline / forecastSummary.data.QTRQuota * 100: 'NA')}}</td>
+                        <td class="number">{{formatPercentage(forecastSummary.data.RecentForecasts.length > 0 ? forecastSummary.data.TotalPipeline / forecastSummary.data.RecentForecasts[0].QtrCommit * 100: 'NA')}}</td>
+                    </tr>
+
+                    <tr class="line2">
+
+                        <td><b>Total Open</b></td>
+                        <td class="number"><b>{{formatDecimal(forecastSummary.data.TotalCommit+forecastSummary.data.TotalUpside+forecastSummary.data.TotalPipeline, displayFormat)}}</b></td>
+                        <td class="number"><b>{{formatPercentage(forecastSummary.data.QTRQuota ? (forecastSummary.data.TotalCommit+forecastSummary.data.TotalUpside+forecastSummary.data.TotalPipeline) / forecastSummary.data.QTRQuota * 100: 'NA')}}</b></td>
+                        <td class="number"><b>{{formatPercentage(forecastSummary.data.RecentForecasts.length > 0 ? (forecastSummary.data.TotalCommit+forecastSummary.data.TotalUpside+forecastSummary.data.TotalPipeline) / forecastSummary.data.RecentForecasts[0].QtrCommit * 100: 'NA')}}</b></td>
+                    </tr>
+
+
+
+                </table>
+
+
+                <div class="clearfix"></div>
+                <table class="report" style="float:left;margin-top:20px;" ng-show="teamForecasts.data.length > 0 && (forecastSummary.data.MyTotalCommit > 0 || forecastSummary.data.MyTotalUpside > 0 || forecastSummary.data.MyTotalPipeline > 0 || forecastSummary.data.MyQTDBooking > 0)">
+                    <thead>
+                        <tr class="header">
+                            <th class="W80">&nbsp;</th>
+                            <th class="W80">Commit</th>
+                            <th class="W80">Upside</th>
+                            <th class="W80">Pipeline</th>
+                            <th class="W80">QTD Closed Won</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="line">
+                            <td class="center"><strong>My Pipeline</strong></td>
+                            <td class="number">{{formatDecimal(forecastSummary.data.MyTotalCommit, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(forecastSummary.data.MyTotalUpside, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(forecastSummary.data.MyTotalPipeline, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(forecastSummary.data.MyQTDBooking, displayFormat)}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="clearfix"></div>
+            </apex:pageBlock>
+
+            <apex:pageBlock id="teamListingBlock" title="Team Forecast" html-ng-show="teamForecasts.data.length > 0">
+                <table class="report">
+                    <thead>
+                        <tr class="header">
+                            <th class="minW100">Team</th>
+                            <th class="W100">Plan</th>
+                            <th class="W100">Most Likely</th>
+                            <th class="W100">Best Case</th>
+                           <th class="W100">Worst Case</th>
+                            <th class="W100">Closed QTD</th>
+                            <th class="W100">Total Commit</th>
+                            <th class="W100">Total Upside</th>
+                            <th class="W100">Total Pipeline</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-class="{'line': !($index % 2), 'line2': !!($index % 2) }" ng-repeat="forecast in teamForecasts.data">
+                            <td><a href="{!$Page.Forecasting}?path={!UserPath}/{{forecast.UserId}}&type={{forecastType}}&family={{forecastFamily}}&impersonate={!impersonateViewAsUser}">{{forecast.UserName}}</a></td>
+                            <td class="number">{{formatDecimal(forecast.QTRQuota, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(forecast.RecentForecasts[0].QtrCommit, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(forecast.RecentForecasts[0].QtrUpside, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(forecast.RecentForecasts[0].QtrPipeline, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(forecast.QTDBooking, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(forecast.TotalCommit, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(forecast.TotalUpside, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(forecast.TotalPipeline, displayFormat)}}</td>
+                        </tr>
+                        <tr class="footer">
+                            <td>Team Total</td>
+                            <td class="number">{{formatDecimal(teamForecasts.total.QTRQuota, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(teamForecasts.total.QtrCommit, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(teamForecasts.total.QtrUpside, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(teamForecasts.total.QtrPipeline, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(teamForecasts.total.QTDBooking, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(teamForecasts.total.TotalCommit, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(teamForecasts.total.TotalUpside, displayFormat)}}</td>
+                            <td class="number">{{formatDecimal(teamForecasts.total.TotalPipeline, displayFormat)}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </apex:pageBlock>
+
+            <apex:pageBlock id="opportunityListingBlock" title="Opportunity List - Page {{opportunityListing.pageIndex}} / {{opportunityListing.pageCount}}">
+                <div class="listCaption">
+                    View <select ng-model="opportunityListing.filter.stage" ng-change="opportunityListing.filter.pageIndex=1;loadOpportunityListing();">
+                        <option value="Closed Won">Closed Won</option>
+                        <option value="Stage 10b">Stage 10b</option>
+                        <option value="Commit">Commit</option>
+                        <option value="Upside">Upside</option>
+                        <option value="Pipeline">Pipeline</option>
+                        <option value="All Open">All Open</option>
+                       <!-- <option value="Bridge Ops">Bridge Ops</option> -->
+                        <option value="Bridge to ML">Bridge to ML</option>
+                        <option value="Bridge to BC">Bridge to BC</option>
+                        <option value="Pushed Deals">Pushed Deals</option>
+                        <option value="Deal Splits">Deal Splits</option>
+                        <option value="Closed Lost">Closed Lost</option>
+                    </select>&nbsp;&nbsp;
+                    Total :  {{formatDecimal(opportunityListing.totalOppAmount, displayFormat)}}&nbsp;
+
+                    <img src="/img/loading.gif" alt="loading" ng-show="opportunityListing.isLoading" />
+                    &nbsp;&nbsp;&nbsp;
+                    <a ng-show="forecastType=='renewal'"><b><font color="#BF254D">Highlighted opportunity indicates close date in the past or subscription is overdue.</font></b></a>
+                    <span style="float:right" ng-show="opportunityListing.data.length > 0">
+                        <a class="actionLink fa fa-angle-double-left" ng-click="turnPageOppList(opportunityListing.pageIndex-1)" ng-show="opportunityListing.hasPrevious"> Previous Page</a>
+                        <select ng-model="opportunityListing.pageIndex" ng-options="p as p for p in opportunityListing.pagers" ng-show="opportunityListing.pageCount>1" ng-change="turnPageOppList(opportunityListing.pageIndex)"></select>
+                        <a class="actionLink" ng-click="turnPageOppList(opportunityListing.pageIndex+1)" ng-show="opportunityListing.hasNext">Next Page <span class="fa fa-angle-double-right"></span></a>
+                    </span>
+                </div>
+
+                <div ng-hide="oppListV2.enabled || opportunityListing.data.length > 0">No opportunities found.</div>
+                <table class="report borderReport" style="width: 100%" ng-show="!oppListV2.enabled && opportunityListing.data.length > 0">
+                    <thead>
+                        <tr class="header">
+                            <th><a class="actionLink" ng-click="sortOppList('Opportunity.Name')">Opportunity Name</a></th>
+                            <th><a class="actionLink" ng-click="forecastFamily == 'ZPA' ? sortOppList('ZPA_Amount_For_Sorting__c') : sortOppList('Amount__c')">Amount</a></th>
+                            <th><a class="actionLink" ng-click="sortOppList('Opportunity.StageName')">Sales Stage</a></th>
+                            <th>Technical Stage</th>
+                            <th><a class="actionLink" ng-click="sortOppList('Opportunity.VMO_Play__c')">VMO Play</a></th>
+                            <th><a class="actionLink" ng-click="sortOppList('Opportunity.CloseDate')">Close Date</a></th>
+                            <th><a class="actionLink" ng-click="sortOppList('Opportunity.ForecastCategoryName')">Forecast Category</a></th>
+                            <th>Deal Path</th>
+                            <th width="30%"><a class="actionLink" ng-click="sortOppList('Opportunity.NextStep')">Next Step</a></th>
+                            <th>Primary Partner</th>
+                            <th width="10%"><a class="actionLink" ng-click="forecastFamily == 'ZPA' ? sortOppList('ZPA_RSM__r.Name') : sortOppList('SplitOwner.Name')">{!IF(ForecastFamily = 'ZPA', 'ZPA Rep', 'Owner')}</a></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-class="{'line': !($index % 2), 'line2': !!($index % 2), 'high': opportunity.Highlight}" ng-repeat="opportunity in opportunityListing.data">
+                            <td><a href="/{{opportunity.OppId}}" target="_blank">{{unescape(opportunity.OppName)}}</a> {{unescape(opportunity.SplitMessage)}}</td>
+                            <td class="number">{{formatDecimal(opportunity.Amount, displayFormat)}}</td>
+                            <td class="center">{{unescape(opportunity.Stage)}}</td>
+                            <td class="center">{{unescape(opportunity.PocStatusPreffix+opportunity.PocStatus)}}</td>
+                            <td class="center">{{unescape(opportunity.VMOPlay)}}</td>
+                            <td class="center">{{opportunity.CloseDate}}</td>
+                            <td class="center">{{unescape(opportunity.ForecastCategory)}}</td>
+                            <td class="center">{{unescape(opportunity.DealPath)}}</td>
+                            <td>{{unescape(opportunity.NextStep)}}</td>
+                            <td><a href="/{{opportunity.PrimaryPartnerId}}" target="_blank">{{unescape(opportunity.PrimaryPartnerName)}}</a></td>
+                            <td><a href="/{{opportunity.OwnerId}}" target="_blank">{{unescape(opportunity.OwnerName)}}</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div ng-show="oppListV2.enabled" id="snapcast_oppList_v2"></div>
+
+                <div id="oppList2ErrorNotify" class="notifiy error" style="display:none" data-fp-dialog="true" data-fp-dialog-title="Errors" data-fq-container-class="jsGrid-error-notify-container">
+                    <div class="content">
+                        <ul class="errors-list">
+                          <li class="errors-item" ng-repeat="error in oppListV2.errors">{{error}}</li>
+                        </ul>
+                    </div>
+                </div>
+            </apex:pageBlock>
+        </div>
+    </apex:form>
+</apex:page>

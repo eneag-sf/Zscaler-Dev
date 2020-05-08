@@ -1,0 +1,38 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome" access="global" controller="ExecutiveBriefingApprovalController" >
+	
+    <aura:attribute name="ExecutiveBriefId" type="string" />
+    <aura:attribute name="Message" type="string" />
+    <aura:attribute name="IsSubmitError" type="boolean" default="false" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <!-- SHOW LOADING SPINNER--> 
+    <lightning:spinner variant="brand" size="large" aura:id="Id_spinner" class="slds-hide" />
+    
+    <aura:if isTrue="{!v.IsSubmitError}">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon iconName="utility:close"
+                                          onclick="{! c.closeModel }"
+                                          alternativeText="close"
+                                          variant="bare-inverse"
+                                          class="slds-modal__close"/>
+                    <h2 class="slds-section-title--divider" style="background-color: white;"><b>Approval</b></h2> 
+                </header>
+                <!--###### MODAL BOX BODY Part Start######-->
+                <div class="slds-modal__content slds-p-around_large" id="modal-content-id-1">
+                    <!-- Show the message to ui -->
+                    <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error" role="alert">
+                        <span class="slds-assistive-text">Error</span>
+                        <h2>{!v.Message}</h2>
+                    </div>
+                    <div class="slds-p-bottom_small"></div>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning:button onclick="{!c.closeModel}" variant="neutral">Cancel</lightning:button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </aura:if>
+</aura:component>

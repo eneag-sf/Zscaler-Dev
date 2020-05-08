@@ -1,0 +1,5 @@
+<apex:page standardController="Focus_Accounts__c" extensions="ZendeskTicketsListForFAController" showHeader="false" sidebar="false" Readonly="true">
+    <apex:outputPanel rendered="{!accountId <> null}">
+        <c:ZendeskTicketsList InputAccountId="{!accountId}" />
+    </apex:outputPanel>
+</apex:page>

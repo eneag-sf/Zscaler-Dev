@@ -1,0 +1,81 @@
+<template>
+    <div class="zs-case-details">
+        <div class="zs-case-comment-display-comp">
+            <lightning-card>
+                <h3 slot="title">
+                    <lightning-icon icon-name="utility:comments" size="small"></lightning-icon> &nbsp;&nbsp;
+                    Case Comments
+                </h3>
+                <template if:true={putlimit}>
+                    <lightning-button-icon class="slds-p-right_xx-small" onclick={loadmore} icon-name="utility:expand"
+                        slot="actions" alternative-text="Expand"></lightning-button-icon>
+                </template>
+                <template if:false={putlimit}>
+                    <lightning-button-icon class="slds-p-right_xx-small" onclick={contract} icon-name="utility:contract"
+                        slot="actions" alternative-text="Collapse"></lightning-button-icon>
+                </template>
+                <lightning-button-icon class="slds-p-right_xx-small" onclick={refreshdata} icon-name="utility:refresh"
+                    slot="actions" alternative-text="Refresh"></lightning-button-icon>
+                <lightning-button-icon onclick={sortdata} icon-name="utility:sort" slot="actions"
+                    alternative-text="Sort">
+                </lightning-button-icon>
+                <div slot="footer">
+                    <template if:true={putlimit}>
+                        <lightning-button variant="base" label="View All" title="View All" onclick={loadmore}
+                            class="slds-m-left_x-small"></lightning-button>
+                    </template>
+                    <template if:false={putlimit}>
+                        <lightning-button variant="base" label="Collapse" title="Collapse" onclick={contract}
+                            class="slds-m-left_x-small"></lightning-button>
+                    </template>
+                </div>
+                <div class="slds-p-horizontal_small">
+                    <template for:each={records} for:item="comment">
+                        <div key={comment.Id} class="slds-m-around_small slds-p-around_small lgc-bg">
+                            <ul>
+                                <li class="slds-item">
+                                    <lightning-tile label={comment.creatorname} href="#" type="media">
+                                        <lightning-avatar size="large" src="#" slot="media" initials=""
+                                            fallback-icon-name="standard:avatar" alternative-text={comment.creatorname}
+                                            class="slds-m-right_small">
+                                        </lightning-avatar>
+                                        <ul class="slds-list_horizontal slds-has-dividers_right">
+                                            <li class="slds-item">
+                                                <lightning-relative-date-time value={comment.createddate}>
+                                                </lightning-relative-date-time>
+                                            </li>
+                                            <li class="slds-item">
+                                                <lightning-formatted-rich-text value={comment.ispublic}>
+                                                </lightning-formatted-rich-text>
+                                            </li>
+                                        </ul>
+                                        <br>
+                                        <div class="zs-rich-text-content">
+                                            <div class="slds-box">
+                                                <div class="zs-rich-text-value">
+                                                    <lightning-formatted-rich-text value={comment.comment}>
+                                                    </lightning-formatted-rich-text>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <br>
+                                        <template if:true={comment.attachlst}>
+                                            <template for:each={comment.attachlst} for:item="att">
+                                                <lightning-pill key={att.Id} label={att.filename} href={att.urltodownload}>
+                                                    <lightning-icon icon-name="utility:attach" variant="circle"
+                                                        alternative-text="file"></lightning-icon>
+                                                </lightning-pill>
+                                            </template>
+                                        </template>
+                                    </lightning-tile>
+                                </li>
+                            </ul>
+                        </div>
+
+
+                    </template>
+                </div>
+            </lightning-card>
+        </div>
+    </div>
+</template>

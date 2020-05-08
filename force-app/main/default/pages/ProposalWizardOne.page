@@ -1,0 +1,107 @@
+<apex:page standardController="Apttus_Proposal__Proposal__c" extensions="ProposalWizardController" sidebar="false" docType="html-5.0">
+    <apex:sectionHeader title="Executive Proposal Wizard" subtitle="Page 1 of 2"/>
+    <apex:form id="errorMsgForm" rendered="false">
+        <apex:pageBlock id="pageOne">
+            <apex:pagemessages ></apex:pagemessages>
+        </apex:pageBlock>
+    </apex:form>
+
+    <apex:form id="form1">
+        <apex:pageblock title="Executive Proposal will work properly for newly created proposals or recently finalized." >
+             <label style="font-weight:bold;">Executive Proposal </label>
+             <label style="font-weight:bold;position: relative; left: 41.5%" >Detailed Objectives and Requirements </label>
+               <table><tr><td valign="top" style="padding-right:20px;">
+                 <apex:pageblocksection columns="1" >
+                     <!--<apex:inputTextarea rows="6" cols="60" richtext="true" label="Detailed Objectives and Requirements" value="{!proposal.Objective_and_Requirements__c}"/>-->
+                 <!--    <apex:pageblockSectionItem >
+                        <apex:outputLabel value="Company Buisness Drivers" for="es">
+                            <br/>
+                            <apex:outputText style="color:red;" id="esText" rendered="{!ShowESNote}">Please enter text</apex:outputText>
+                        </apex:outputLabel>
+                        <apex:inputTextarea rows="6" cols="60" richtext="true"  value="{!proposal.Company_Business_Drivers__c}" html-placeholder="please enter the text" id="es">
+                            <apex:actionSupport event="onchange" action="{!togglenote}" reRender="es" immediate="true"/>
+                        </apex:inputTextarea>
+                    </apex:pageblockSectionItem> -->
+                   <apex:inputTextarea rows="30" cols="60" richtext="true" label="Company Buisness Drivers"  value="{!proposal.Company_Business_Drivers__c}"/>
+                <!--   <apex:inputTextarea rows="6" cols="60" richtext="true" label="Solution Summary"  value="{!proposal.Solution_Summary__c}"/>
+                    <apex:inputTextarea rows="6" cols="60" richtext="true" label="Benefit Impact Summary" value="{!proposal.Benefit_Impact_Summary__c}"/>
+                    <apex:inputTextarea rows="6" cols="60" richtext="true" label="Problem Identification"  value="{!proposal.Problem_Identification__c}"/>
+                    <apex:inputTextarea rows="6" cols="60" richtext="true" label="Solution Details" value="{!proposal.Solution_Details__c }"/>-->
+                </apex:pageblocksection>
+
+            </td><td valign="top" width="50%" style="border: 1px solid #ececec;">
+                <apex:pageblocksection columns="1" title="Up-level security through:">
+                    <apex:pageblockSectionItem >
+                        <apex:inputField value="{!proposal.Adding_Security_layers__c}" label=""/>
+                        <apex:outputLabel value="Adding security layers"></apex:outputLabel>
+                    </apex:pageblockSectionItem>
+                    <apex:pageblockSectionItem >
+                        <apex:inputField value="{!proposal.Decrypting_SSL_and_finding_hidden_threat__c}" label=""/>
+                        <apex:outputLabel value="Decrypting SSL and finding hidden threats"></apex:outputLabel>
+                    </apex:pageblockSectionItem>
+                    <apex:pageblockSectionItem >
+                        <apex:inputField value="{!proposal.Extending_protection_to_mobile_users__c}" label=""/>
+                        <apex:outputLabel value="Extending protection to mobile users"></apex:outputLabel>
+                    </apex:pageblockSectionItem>
+                    <apex:pageblockSectionItem >
+                        <apex:inputField value="{!proposal.Having_equal_security_for_all_branches__c}" label=""/>
+                        <apex:outputLabel value="Having equal security for all branches"></apex:outputLabel>
+                    </apex:pageblockSectionItem>
+                </apex:pageblocksection>
+                <apex:pageblocksection columns="1" title="Improve user experience through:">
+                    <apex:pageblockSectionItem >
+                        <apex:inputField value="{!proposal.Removing_latency_and_congestion__c}" label=""/>
+                        <apex:outputLabel value="Removing latency and congestion associated with backhauling traffic"></apex:outputLabel>
+                    </apex:pageblockSectionItem>
+                    <apex:pageblockSectionItem >
+                        <apex:inputField value="{!proposal.Directly_connecting_user_to_internet__c}" label=""/>
+                        <apex:outputLabel value="Directly connecting users to the Internet"></apex:outputLabel>
+                    </apex:pageblockSectionItem>
+                    <apex:pageblockSectionItem >
+                        <apex:inputField value="{!proposal.Prioritizing_business_apps__c}" label=""/>
+                        <apex:outputLabel value="Prioritizing business apps while containing recreational apps"></apex:outputLabel>
+                    </apex:pageblockSectionItem>
+                </apex:pageblocksection>
+                <apex:pageblocksection columns="1" title="Save money through:">
+                    <apex:pageblockSectionItem >
+                        <apex:inputField value="{!proposal.Avoiding_costly_appliance_purchase__c}" label=""/>
+                        <apex:outputLabel value="Avoiding costly appliance purchases"></apex:outputLabel>
+                    </apex:pageblockSectionItem>
+                    <apex:pageblockSectionItem >
+                        <apex:inputField value="{!proposal.Better_utilization_of_network_infrastruc__c}" label=""/>
+                        <apex:outputLabel value="Better utilization of network infrastructure"></apex:outputLabel>
+                    </apex:pageblockSectionItem>
+                    <apex:pageblockSectionItem >
+                        <apex:inputField value="{!proposal.Reducing_ongoing_effort_of_configuration__c}" label=""/>
+                        <apex:outputLabel value="Reducing ongoing effort of configuring, managing and troubleshooting appliances"></apex:outputLabel>
+                    </apex:pageblockSectionItem>
+                </apex:pageblocksection>
+                <apex:pageblocksection columns="1" title="Improve architecture through:">
+                    <apex:pageblockSectionItem >
+                        <apex:inputField value="{!proposal.Reducing_MPLS_backhaul_expenses__c}" label=""/>
+                        <apex:outputLabel value="Reducing MPLS backhaul expenses"></apex:outputLabel>
+                    </apex:pageblockSectionItem>
+                    <apex:pageblockSectionItem >
+                        <apex:inputField value="{!proposal.Simplifying_the_connectivity_and_trouble__c}" label=""/>
+                        <apex:outputLabel value="Simplifying the connectivity and troubleshooting"></apex:outputLabel>
+                    </apex:pageblockSectionItem>
+                    <apex:pageblockSectionItem >
+                        <apex:inputField value="{!proposal.Easily_adding_new_functionality__c}" label=""/>
+                        <apex:outputLabel value="Easily adding new functionality"></apex:outputLabel>
+                    </apex:pageblockSectionItem>
+                    <apex:pageblockSectionItem >
+                        <apex:inputField value="{!proposal.Delivering_elastic_scale_of_cloud__c}" label=""/>
+                        <apex:outputLabel value="Delivering elastic scale of the cloud"></apex:outputLabel>
+                    </apex:pageblockSectionItem>
+                </apex:pageblocksection>
+            </td></tr></table>
+            <div align="center" draggable="false" >
+                <apex:commandbutton value="Next >>" action="{!goToNextWizard}"/>
+                <apex:commandbutton value="Cancel" action="{!cancel}"/>
+             </div>
+           <!-- <apex:outputtext >Page 1 of 2</apex:outputtext> -->
+        </apex:pageblock>
+
+    </apex:form>
+
+</apex:page>

@@ -1,0 +1,46 @@
+<apex:page controller="DealRegToConvert" lightningStylesheets="true">
+    <style>
+        body{
+            margin: 0px 0px!important;
+        }
+        .message .messageText a {
+            margin: 0 0 0 0 !important;
+            
+        }
+    </style>
+    <apex:pageMessages id="pgmsg" escape="false"></apex:pageMessages>
+    <apex:form id="frmId">
+        <apex:pageBlock id="pgBlk" title="Deal Registration to Convert">
+             <apex:pageBlockSection id="dealregsection" columns="1" collapsible="false" >
+                <apex:outputPanel id="dealregtoconvert" rendered="{!dealregmap.size > 0}">
+                    <apex:pageBlockTable value="{!dealregmap}" var="var">
+                        <apex:column headerValue="Action" width="60px">
+                            <b><apex:commandLink value="Convert" action="{!checkconvert}" reRender="pgmsg" oncomplete="navigatetourl('{!urltonavigate}');">
+                                <apex:param name="dealid" value="{!var.id}" assignTo="{!dealtoconvert}"/>
+                            </apex:commandLink></b>
+                         </apex:column>
+                        <apex:column headerValue="Deal Registration Number">
+                            <apex:outputLink value="{!'/'+var.Id}" target="_blank">{!var.Name}</apex:outputLink>
+                        </apex:column>
+                        <apex:column value="{!var.Status__c}"/>
+                        <!--<apex:column value="{!var.Estimated_Amount__c}"/>
+                        <apex:column value="{!var.Expected_Close_Date__c}"/>-->
+                        <apex:column value="{!var.Approved_Date__c}"/> <!-- //Added Approved_Date__c as a part of CR# 289 :Gurjinder -->
+                        <apex:column value="{!var.End_Customer_Name__c}"/>
+                        <apex:column headerValue="Partner" value="{!var.Partner_Account__r.Name}"/>
+                    </apex:pageBlockTable>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{!dealregmap.size < 1}">
+                    <apex:outputText value="No records to display"></apex:outputText> 
+                </apex:outputPanel>
+             </apex:pageBlockSection>
+        </apex:pageBlock>
+    </apex:form>
+    <script>
+        function navigatetourl(urltonav){
+            if(urltonav != '') {
+                window.top.location.href = urltonav;
+            }
+        }
+    </script>
+</apex:page>

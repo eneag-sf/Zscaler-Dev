@@ -1,0 +1,730 @@
+<apex:page standardController="Equipment_Request__c" extensions="CreateEquipmentRequestwithLocation" showHeader="false"
+    sidebar="false" action="{!pageLoad}" docType="html-5.0" standardStylesheets="true">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" lang="en">
+
+    <head>
+        <apex:includeScript id="jQuery" value="https://code.jquery.com/jquery-3.1.1.min.js" />
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+            integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+            crossorigin="anonymous" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.2/css/all.min.css"/>
+        <style>
+            label{
+                font-family: Salesforce Sans,Arial,sans-serif !important;
+                font-size: .75rem;
+                font-weight: 700;
+            }
+            
+            .form-control:disabled, .form-control[readonly] {
+                background-color: lightgrey;
+                border: 0px !important;
+                color:#8c8c8c !important;
+            }
+            .form-control{
+                font-family: Salesforce Sans,Arial,sans-serif !important;
+                font-size: .75rem;
+                border: 0px;
+                border-bottom: 1px solid grey !important;
+                background: none;
+                line-height: 1.875rem;
+                min-height: calc(1.875rem + 2px);
+                font-size: .75rem;
+            }
+            
+            .slds-theme--alert-texture {
+                background-image: linear-gradient(45deg,rgba(0,0,0,.035) 25%,transparent 25%,transparent 50%,rgba(0,0,0,.035) 50%,rgba(0,0,0,.035) 75%,transparent 75%,transparent);
+                background-size: 64px 64px;
+            }
+            .slds-theme--warning {
+                background-color: #ffb75d;
+                color: #16325c;
+                border-radius: 0.25rem;
+            }
+            
+            .message {
+                overflow-y: scroll;
+                max-height: 100px;
+                
+                background-color: #c23934;
+                background-image: linear-gradient(45deg,rgba(0,0,0,.035) 25%,transparent 25%,transparent 50%,rgba(0,0,0,.035) 50%,rgba(0,0,0,.035) 75%,transparent 75%,transparent);
+                background-size: 64px 64px;
+            }
+            .message .messageText, .message h4, .message li {
+                color: #fff;
+            }
+            .errorM3 .msgIcon{
+                display: none;
+            }
+            .remove-locations{
+                background: #84132c;
+                color: white;
+                text-align: center;
+                width: 0;
+                display: inline-block;
+                transition: 0.2s linear;
+                opacity: 0;
+                cursor:pointer;
+            }
+            #locations .card-header:hover .remove-locations{
+                width: 40px;
+                opacity: 1;
+            }
+            .btn {
+                display: inline-block;
+                font-weight: 400;
+                color: #212529;
+                text-align: center;
+                vertical-align: middle;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+                background-color: transparent;
+                border: 0 solid #000000 !important;
+                border-bottom-color: rgba(0, 0, 0, 0);
+                background-image: none;
+                background: none !important;
+                padding: .5rem .75rem !important;
+                font-size: 1rem;
+                line-height: 1.5;
+                border-radius: .25rem;
+                transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+            }
+
+            #mainHeader {
+                position: fixed;
+                top: 0;
+                width: 100%;
+                z-index: 100;
+                background-color: rgba(0, 0, 0, 0.5);
+                color: white;
+            }
+
+            .container a, .customer-contact a {
+                display: inline-flex;
+                margin-left: -25px;
+            }
+
+            .form-control {
+                padding: 0.2rem 0.3rem;
+                height: 50%;
+                width: 97%;
+                display: inline-flex;
+            }
+
+            .jumbotron {
+                padding: 0rem 0rem !important;
+                margin-bottom: 0rem !important;
+                background: #ADA996;
+                /* fallback for old browsers */
+                background: -webkit-linear-gradient(to right, #EAEAEA, #DBDBDB, #F2F2F2, #ADA996);
+                /* Chrome 10-25, Safari 5.1-6 */
+                background: linear-gradient(to right, #EAEAEA, #DBDBDB, #F2F2F2, #ADA996);
+                /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
+            }
+
+            .container {
+                max-width: 99% !important;
+                padding: 0 !important;
+                margin-top: 4%;
+            }
+
+            .card {
+                border: 0px !important;
+            }
+
+            .card-header {
+                padding: 0.3rem 0.75rem;
+                border: 0px solid rgba(0, 0, 0, .125);
+                background: #bdc3c7;
+                /* fallback for old browsers */
+                background: -webkit-linear-gradient(to right, #2c3e50, #bdc3c7);
+                /* Chrome 10-25, Safari 5.1-6 */
+                background: linear-gradient(to right, #2c3e50, #bdc3c7);
+                /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
+                color: white;
+                
+            }
+
+            #accordion .card-header {
+                padding: 0.3rem 0.75rem;
+                border: 1px solid rgba(0, 0, 0, .125);
+                background: #000428;
+                /* fallback for old browsers */
+                background: -webkit-linear-gradient(to left, #004e92, #000428);
+                /* Chrome 10-25, Safari 5.1-6 */
+                background: linear-gradient(to left, #004e92, #000428);
+                /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
+                color: white;
+            }
+
+            #mainHeader svg {
+                width: 4%;
+                margin-top: -5px;
+                fill: white;
+            }
+
+            .card-header svg {
+                width: 2%;
+                margin-top: -5px;
+                fill: white;
+                cursor: pointer;
+            }
+
+            body,
+            .card-body {
+                background-color: rgba(158, 158, 158, 0.1);
+
+            }
+
+            .hide {
+                display: none;
+            }
+
+            .show {
+                display: block;
+            }
+
+            .btn-primary {
+                color: white !important;
+                background-color: #004e92 !important;
+                border-color: #253f5a !important;
+            }
+
+            label {
+                display: inline-block;
+                margin-bottom: 0rem;
+            }
+            input:invalid, select:invalid, textarea:invalid, .errorbox {
+                box-shadow: 2px 2px 10px rgba(200, 0, 0, 0.85);
+                border: 1px solid red;
+                outline: none;
+            }
+            .pull-right{
+                float: right;
+            }
+            
+        </style>
+
+    </head>
+
+    <body>
+        <apex:form >
+            <div id="mainHeader">
+                <span>
+                    <span class="slds-icon_container" title="description of icon when needed">
+                        <svg viewBox="0 0 220 180" aria-hidden="true">
+                            <use
+                                xlink:href="{!URLFOR($Asset.SLDS, 'assets/icons/standard-sprite/svg/symbols.svg#contract')}">
+                            </use>
+                        </svg>
+                    </span> <span id="erBanner">{!erBanner}</span>
+                </span>
+                <div class="pull-right">
+                    <button onclick="save();return false;" class="btn btn-primary">Save</button>
+                    <button onclick="cancel();return false;" class="btn btn-primary">Cancel</button>
+                </div>
+                <div class="mt-2 mb-2 ml-4 mr-4 p-2 slds-theme--warning" role="alert">
+                    Please ensure availability of 10GE interfaces for connectivity. Supported optics are mentioned <a
+                        target="_blank"
+                        href="https://www.intel.com/content/www/us/en/support/articles/000007045/network-and-i-o/ethernet-products.html">here.</a>
+                </div>
+                <div>
+                    <apex:pagemessages id="pgmsg" escape="false"/>
+                </div>
+            </div>
+
+            <!--apex:pagemessages id="pgmsg"/>-->
+
+
+
+            <div class="container">
+                <div class="card">
+                    <div class="card-header">
+                        Equipment Request Details
+                    </div>
+                    <div class="card-body">
+                        <div>
+                            <div class="form-row">
+                                <div class="col-sm-6 mb-1">
+                                    <label>{!$ObjectType.Equipment_Request__c.fields.Name.Label} * 
+                                        <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="{!$ObjectType.Equipment_Request__c.fields.Name.inlineHelpText}"></i>
+                                    </label>
+                                    <apex:inputField styleClass="form-control er-field" value="{!Equipment_Request__c.Name}"
+                                        required="{!!isinApproval}" />
+                                </div>
+                                <div class="col-sm-6 mb-1">
+                                    <label>{!$ObjectType.Equipment_Request__c.fields.Equipment_Use__c.Label} * <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="{!$ObjectType.Equipment_Request__c.fields.Equipment_Use__c.inlineHelpText}"></i></label>
+                                    <apex:inputField styleClass="form-control er-field"
+                                        value="{!Equipment_Request__c.Equipment_Use__c}" required="{!!isinApproval}" />
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-sm-6 mb-1">
+                                    <label>{!$ObjectType.Equipment_Request__c.fields.Equipment_Type__c.Label} * <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="{!$ObjectType.Equipment_Request__c.fields.Equipment_Type__c.inlineHelpText}"></i></label>
+                                    <apex:inputField styleClass="form-control er-field"
+                                        value="{!Equipment_Request__c.Equipment_Type__c}" required="{!!isinApproval}" />
+                                </div>
+                                <div class="col-sm-6 mb-1">
+                                    <label>{!$ObjectType.Equipment_Request__c.fields.Opportunity__c.Label} * <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="{!$ObjectType.Equipment_Request__c.fields.Opportunity__c.inlineHelpText}"></i></label>
+                                    <apex:inputField styleClass="form-control er-opp"
+                                        value="{!Equipment_Request__c.Opportunity__c}" required="true" rendered="{!!isinApproval}"/>
+                                    <apex:outputPanel rendered="{!isinApproval}">
+                                        <br/>
+                                        <span>{!Equipment_Request__c.Opportunity__r.Name}</span>
+                                        <!--apex:inputField value="{!Equipment_Request__c.Opportunity__c}" rendered="{!isEdit}"/-->
+                                    </apex:outputPanel>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-sm-6 mb-1">
+                                    <label>{!$ObjectType.Equipment_Request__c.fields.Owner_s_Manager__c.Label} <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="{!$ObjectType.Equipment_Request__c.fields.Owner_s_Manager__c.inlineHelpText}"></i></label>
+                                    <apex:inputField styleClass="form-control er-field"
+                                        value="{!Equipment_Request__c.Owner_s_Manager__c}" html-disabled="disabled"/>
+                                </div>
+                                <div class="col-sm-6 mb-1">
+                                    <label>{!$ObjectType.Equipment_Request__c.fields.GEO_SE_Leadership_Alias__c.Label} <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="{!$ObjectType.Equipment_Request__c.fields.GEO_SE_Leadership_Alias__c.inlineHelpText}"></i></label>
+                                    <apex:inputField styleClass="form-control er-field"
+                                        value="{!Equipment_Request__c.GEO_SE_Leadership_Alias__c}"  html-disabled="disabled"/>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-sm-6 mb-1">
+                                    <label>{!$ObjectType.Equipment_Request__c.fields.Reason_for_Equipment__c.Label}
+                                        * <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="{!$ObjectType.Equipment_Request__c.fields.Reason_for_Equipment__c.inlineHelpText}"></i></label>
+                                    <apex:inputField styleClass="form-control er-field"
+                                        value="{!Equipment_Request__c.Reason_for_Equipment__c}" required="{!!isinApproval}" />
+                                </div>
+                                <div class="col-sm-6 mb-1">
+                                    <label>{!$ObjectType.Equipment_Request__c.fields.Additional_Information__c.Label}
+                                        <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="{!$ObjectType.Equipment_Request__c.fields.Additional_Information__c.inlineHelpText}"></i>
+                                    </label>
+                                    <apex:inputField styleClass="form-control er-field"
+                                        value="{!Equipment_Request__c.Additional_Information__c}"/>
+
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-sm-6 mb-1">
+                                    <label>{!$ObjectType.Equipment_Request__c.fields.PZen_Access_Requirements_Provided__c.Label} <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="{!$ObjectType.Equipment_Request__c.fields.PZen_Access_Requirements_Provided__c.inlineHelpText}"></i>
+                                    </label>
+                                    <apex:inputField styleClass="form-control er-field access-req-provided"
+                                        value="{!Equipment_Request__c.PZen_Access_Requirements_Provided__c}"/>
+
+                                </div>
+                            </div>
+                            
+                            
+                        </div>
+                    </div>
+                    <apex:inputField styleClass="form-control er-field"
+                                        value="{!Equipment_Request__c.Approval_Status__c}" style="display:none;"/>
+                    <apex:outputField value="{!Equipment_Request__c.Createddate}" rendered="false"/>                    
+                </div>
+                <div class="card" id="locations">
+                    <div class="card-header">
+                        <apex:outputPanel rendered="{!!isinApproval}">
+                            <span class="slds-icon_container slds-current-color"
+                                data-toggle="modal" data-target="#DCRTModal">
+                                <svg viewBox="0 0 100 80" class="slds-icon slds-icon-text-default" aria-hidden="true">
+                                    <use
+                                        xlink:href="{!URLFOR($Asset.SLDS, 'assets/icons/utility-sprite/svg/symbols.svg#add')}">
+                                    </use>
+                                </svg>
+                            </span>
+                        </apex:outputPanel>
+                        Sites
+                    </div>
+                    <div class="card-body">
+                        <div id="accordion">
+                            <apex:outputPanel id="locations">
+                                <apex:variable var="count" value="1" />
+                                <apex:repeat value="{!datacenterlst}" var="datacenter">
+
+                                    <div class="card">
+                                        <div class="card-header">
+                                            
+                                            <h5 class="mb-0">
+                                                <i class="fas fa-chevron-circle-up" onclick="togglecard('id_{!count}',this);"></i> <span id="header_{!count}">Site #{!count}</span>
+                                            </h5>
+                                            <apex:outputPanel rendered="{!ISNULL(datacenter.Id)}">
+                                                <span onclick="event.stopPropagation();remove('{!count}');" class="slds-icon_container slds-current-color remove-locations pull-right"
+                                                    title="Description of icon when needed">X</span>
+                                            </apex:outputPanel>
+                                        </div>
+
+                                        <div id="id_{!count}"
+                                            class="collapse show">
+                                            <div class="card-body">
+                                                <div>
+                                                    <div class="form-row">
+                                                        <div class="col-sm-6 mb-1">
+                                                            <label>{!$ObjectType.Datacenter__c.fields.Name.Label}
+                                                                * <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="{!$ObjectType.Datacenter__c.fields.Name.inlineHelpText}"></i></label>
+                                                            <apex:inputField styleClass="form-control datacenterName"
+                                                                value="{!datacenter.Name}" required="true" />
+                                                        </div>
+                                                        <div class="col-sm-6 mb-1">
+                                                            <label>{!$ObjectType.Datacenter__c.fields.Facility_Country__c.Label}
+                                                                * <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="{!$ObjectType.Datacenter__c.fields.Facility_Country__c.inlineHelpText}"></i></label>
+                                                            <apex:inputField styleClass="form-control"
+                                                                value="{!datacenter.Facility_Country__c}"
+                                                                required="true" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-row">
+                                                        <div class="col-sm-6 mb-1">
+                                                            <label>{!$ObjectType.Datacenter__c.fields.Facility_City__c.Label} *
+                                                             <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="{!$ObjectType.Datacenter__c.fields.Facility_City__c.inlineHelpText}"></i></label>
+                                                            <apex:inputField styleClass="form-control"
+                                                                value="{!datacenter.Facility_City__c}" required="true"/>
+                                                        </div>
+                                                        <div class="col-sm-6 mb-1">
+                                                            <label>{!$ObjectType.Datacenter__c.fields.Requested_Hardware_Model__c.Label}
+                                                                * <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="{!$ObjectType.Datacenter__c.fields.Requested_Hardware_Model__c.inlineHelpText}"></i></label>
+                                                            <!--<apex:inputField styleClass="form-control requested-hardware-model"
+                                                                value="{!datacenter.Requested_Hardware_Model__c}"
+                                                                required="true" />-->
+                                                            <apex:selectList styleClass="form-control requested-hardware-model er-field" value="{!datacenter.Requested_Hardware_Model__c}" multiselect="false" size="1">
+                                                                <apex:selectOptions value="{!reqHWmodel}"/>
+                                                            </apex:selectList>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-row">
+                                                        <div class="col-sm-6 mb-1">
+                                                            <div>
+                                                                <label>{!$ObjectType.Datacenter__c.fields.Quantity_Requested__c.Label} * <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="{!$ObjectType.Datacenter__c.fields.Quantity_Requested__c.inlineHelpText}"></i></label>
+                                                                <apex:inputField styleClass="form-control er-field qty-requested"
+                                                                value="{!datacenter.Quantity_Requested__c}" required="{!!isinApproval || ISNULL(datacenter.Id)}"/>
+                                                            </div>
+                                                            <div>
+                                                                <label>{!$ObjectType.Datacenter__c.fields.Quantity_Requested_for_LB__c.Label} <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="{!$ObjectType.Datacenter__c.fields.Quantity_Requested_for_LB__c.inlineHelpText}"></i></label>
+                                                            <apex:inputField styleClass="form-control er-field qty-requested-lb"
+                                                                value="{!datacenter.Quantity_Requested_for_LB__c}"/>
+                                                            </div>
+                                                            
+                                                        </div>
+                                                        <div class="col-sm-6 mb-1">
+                                                            <label>{!$ObjectType.Datacenter__c.fields.Link_to_Architecture_Workshop__c.Label} <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="{!$ObjectType.Datacenter__c.fields.Link_to_Architecture_Workshop__c.inlineHelpText}"></i>
+                                                            </label>
+                                                            <apex:inputField styleClass="form-control link-to-arch er-field" value="{!datacenter.Link_to_Architecture_Workshop__c}" />
+                                                            
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-row">
+                                                        <div class="col-sm-6 mb-1">
+                                                            <label>{!$ObjectType.Datacenter__c.fields.Number_of_Users_at_location__c.Label} <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="{!$ObjectType.Datacenter__c.fields.Number_of_Users_at_location__c.inlineHelpText}"></i>
+                                                            </label>
+                                                            <apex:inputField styleClass="form-control er-field"
+                                                                value="{!datacenter.Number_of_Users_at_location__c}" />
+                                                        </div>
+                                                        <div class="col-sm-6 mb-1">
+                                                            <label>{!$ObjectType.Datacenter__c.fields.Is_latency_less_than_300_milliseconds__c.Label} <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="{!$ObjectType.Datacenter__c.fields.Is_latency_less_than_300_milliseconds__c.inlineHelpText}"></i></label>
+                                                            <apex:inputField styleClass="form-control er-field"
+                                                                value="{!datacenter.Is_latency_less_than_300_milliseconds__c}"/>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-row">
+                                                        <div class="col-sm-6 mb-1">
+                                                            <label>{!$ObjectType.Datacenter__c.fields.Reason_for_Pitching_PZEN__c.Label}
+                                                                * <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="{!$ObjectType.Datacenter__c.fields.Reason_for_Pitching_PZEN__c.inlineHelpText}"></i></label>
+                                                            <apex:inputField styleClass="form-control er-field"
+                                                                value="{!datacenter.Reason_for_Pitching_PZEN__c}"
+                                                                required="{!!isinApproval || ISNULL(datacenter.Id)}" />
+                                                        </div>
+                                                        <div class="col-sm-6 mb-1">
+                                                            <label>{!$ObjectType.Datacenter__c.fields.Available_Bandwidth_MBPS__c.Label} * <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="{!$ObjectType.Datacenter__c.fields.Available_Bandwidth_MBPS__c.inlineHelpText}"></i></label>
+                                                            <apex:inputField styleClass="form-control er-field"
+                                                                value="{!datacenter.Available_Bandwidth_MBPS__c}"
+                                                                required="{!!isinApproval || ISNULL(datacenter.Id)}" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-row">
+                                                        
+                                                        <div class="col-sm-6 mb-1">
+                                                            <label>{!$ObjectType.Datacenter__c.fields.Shipment_Receiving_Contact_Name__c.Label} <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="{!$ObjectType.Datacenter__c.fields.Shipment_Receiving_Contact_Name__c.inlineHelpText}"></i>
+                                                            </label>
+                                                            <apex:inputField styleClass="form-control"
+                                                                value="{!datacenter.Shipment_Receiving_Contact_Name__c}" />
+                                                        </div>
+                                                        <div class="col-sm-6 mb-1">
+                                                            <label>{!$ObjectType.Datacenter__c.fields.Project_Manager_Name__c.Label} <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="{!$ObjectType.Datacenter__c.fields.Project_Manager_Name__c.inlineHelpText}"></i>
+                                                            </label>
+                                                            <apex:inputField styleClass="form-control"
+                                                                value="{!datacenter.Project_Manager_Name__c}"/>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-row">
+                                                        <div class="col-sm-6 mb-1">
+                                                            <label>{!$ObjectType.Datacenter__c.fields.Shipment_Receiving_contact_Email__c.Label} <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="{!$ObjectType.Datacenter__c.fields.Shipment_Receiving_contact_Email__c.inlineHelpText}"></i></label>
+                                                            <apex:inputField styleClass="form-control"
+                                                                value="{!datacenter.Shipment_Receiving_contact_Email__c}"/>
+                                                        </div>
+                                                        <div class="col-sm-6 mb-1">
+                                                            <label>{!$ObjectType.Datacenter__c.fields.Projet_Manager_Email_Address__c.Label} <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="{!$ObjectType.Datacenter__c.fields.Projet_Manager_Email_Address__c.inlineHelpText}"></i>
+                                                            </label>
+                                                            <apex:inputField styleClass="form-control"
+                                                                value="{!datacenter.Projet_Manager_Email_Address__c}" />
+                                                        </div>
+                                                        
+                                                    </div>
+                                                    <div class="form-row">
+                                                        <div class="col-sm-6 mb-1">
+                                                            <label>{!$ObjectType.Datacenter__c.fields.Shipment_Receiving_Contact_Ph_No__c.Label} <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="{!$ObjectType.Datacenter__c.fields.Shipment_Receiving_Contact_Ph_No__c.inlineHelpText}"></i></label>
+                                                            <apex:inputField styleClass="form-control"
+                                                                value="{!datacenter.Shipment_Receiving_Contact_Ph_No__c}"/>
+                                                        </div>
+                                                        <div class="col-sm-6 mb-1">
+                                                            <label>{!$ObjectType.Datacenter__c.fields.Project_Manager_Phone_No__c.Label} <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="{!$ObjectType.Datacenter__c.fields.Project_Manager_Phone_No__c.inlineHelpText}"></i></label>
+                                                            <apex:inputField styleClass="form-control"
+                                                                value="{!datacenter.Project_Manager_Phone_No__c}" />
+                                                        </div>
+                                                        
+                                                    </div>
+                                                    <div class="form-row">
+                                                        <div class="col-sm-6 mb-1">
+                                                            <label>{!$ObjectType.Datacenter__c.fields.Shipping_Address__c.Label} <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="{!$ObjectType.Datacenter__c.fields.Shipping_Address__c.inlineHelpText}"></i></label>
+                                                            <apex:inputField styleClass="form-control"
+                                                                value="{!datacenter.Shipping_Address__c}"/>
+                                                        </div>
+                                                        <div class="col-sm-6 mb-1">
+                                                            <label>{!$ObjectType.Datacenter__c.fields.Facility_Address__c.Label} <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="{!$ObjectType.Datacenter__c.fields.Facility_Address__c.inlineHelpText}"></i></label>
+                                                            <apex:inputField styleClass="form-control"
+                                                                value="{!datacenter.Facility_Address__c}" />
+                                                        </div>
+                                                        
+                                                    </div>
+                                                    <div class="form-row">
+                                                        <div class="col-sm-6 mb-1 customer-contact">
+                                                            <label>{!$ObjectType.Datacenter__c.fields.Customer_Contact__c.Label} <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="{!$ObjectType.Datacenter__c.fields.Customer_Contact__c.inlineHelpText}"></i></label>
+                                                            <apex:inputField styleClass="form-control"
+                                                                value="{!datacenter.Customer_Contact__c}"/>
+                                                        </div>
+                                                        
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <apex:variable var="count" value="{!VALUE(count) + 1}" />
+                                </apex:repeat>
+                            </apex:outputPanel>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <apex:actionFunction id="cancel" name="cancel" immediate="true" action="{!onCancel}" rerender="" />
+            <apex:actionFunction id="savedetails" name="savedetails" action="{!onSave}" rerender="pgmsg">
+                <apex:param assignTo="{!GEvalue}" value="" name="geval"/>
+            </apex:actionFunction>
+            <apex:actionFunction id="addLocation" name="addLocation" immediate="true" action="{!addLocation}"
+                rerender="locations" oncomplete="changeHeaderonrerender();disablefields();removeanchor();enabletooltips();hidetootltips();">
+                <apex:param name="dcRT"
+                                        value=""
+                                        assignTo="{!rectypeDC}"/>
+            </apex:actionFunction>
+            <apex:actionFunction id="removeLocation" name="removeLocation" immediate="true" action="{!removeLocation}"
+                rerender="locations" oncomplete="changeHeaderonrerender();disablefields();removeanchor();enabletooltips();hidetootltips();">
+                <apex:param name="indextoRemove"
+                                        value=""
+                                        assignTo="{!indextoRemove}"/>
+            </apex:actionFunction>
+            <div class="modal fade" id="DCRTModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Select Record Type for New Site</h5>
+                  </div>
+                  <div class="modal-body">
+                    <apex:selectList styleClass="form-control dcrectype" value="{!rectypeDC}" multiselect="false" size="1">
+                        <apex:selectOptions value="{!dcRecTypeOptions}"/>
+                    </apex:selectList>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="locationAddition();" data-dismiss="modal">Create Site</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+        </apex:form>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+        <script>
+            var margintop = $(".container").css("marginTop");
+            var containsservedge5 = false;
+            function remove(i){
+                removeLocation(i);
+            }
+            function locationAddition(){
+                console.log($('.dcrectype').val());
+                addLocation($('.dcrectype').val())
+            }
+            function save(){
+                $(".collapse").addClass("show");
+                $(".requested-hardware-model").each(function (index) {
+                    let value = $(this).val();
+                    if (value == 'ZIA Service Edge-5 + LB (>5Gbps only)' && ($(".link-to-arch").eq(index).val() == '' || $(".link-to-arch").eq(index).val() == null)) {
+                        $(".link-to-arch").eq(index).addClass("errorbox");
+                    }else{
+                        $(".link-to-arch").eq(index).removeClass("errorbox");
+                    }
+                    if (value == 'ZIA Service Edge-5 + LB (>5Gbps only)' && ($(".qty-requested-lb").eq(index).val() == 0 || $(".qty-requested-lb").eq(index).val() == null || $(".qty-requested-lb").eq(index).val() == '' )) {
+                        $(".qty-requested-lb").eq(index).addClass("errorbox");
+                    }else{
+                        $(".qty-requested-lb").eq(index).removeClass("errorbox");
+                    }
+                    if ((value == 'ZIA – Service Edge 5' || value == 'ZIA – Service Edge 3') && ($(".qty-requested").eq(index).val() > 3)) {
+                        $(this).addClass("errorbox");
+                    }else{
+                        $(this).removeClass("errorbox");
+                    }
+                });
+                console.log('value is');
+                console.log($('.access-req-provided').val());
+                var GEval = $('.access-req-provided').val();
+                savedetails(GEval);
+                var checkExist = setInterval(function() {
+                   setmargintop();
+                   clearInterval(checkExist);
+                }, 1000); // check every 100ms
+                
+            }
+            $("a").removeClass("form-control");
+            $("#locations").on("change", ".requested-hardware-model", function () {
+                let containsservedge5 = false;
+                $(".requested-hardware-model").each(function (index) {
+                    let value = $(this).val();
+                    console.log(value);
+                    if (value == 'ZIA – Service Edge 5' || value == 'ZIA Service Edge-5 + LB (>5Gbps only)') {
+                        containsservedge5 = true;
+                    } 
+                });
+                renderWarning(containsservedge5);
+
+            });
+            $("#locations").on("change", ".datacenterName", function () {
+                let value = $(this).val();
+                    console.log(value);
+                    changeLocationHeader($(".datacenterName").index(this) + 1, value);
+            });
+            $(".er-opp").on("change", function () {
+                let value = $(this).val();
+                console.log(value);
+                if($(this).val() == '' || $(this).val() == null || $(this).val() == undefined){
+                    applyclass(".er-opp", "errorbox");
+                }else{
+                    rmvclass(".er-opp", "errorbox");
+                    $("#erBanner").text('Equipment Request Form for ' + value);
+                }
+                
+            });
+            $(document).ready(function(){
+                disablefields();
+                let containsservedge5 = false;
+                $(".requested-hardware-model").each(function (index) {
+                    let value = $(this).val();
+                    console.log(value);
+                    if (value == 'ZIA – Service Edge 5' || value == 'ZIA Service Edge-5 + LB (>5Gbps only)') {
+                        containsservedge5 = true;
+                    } 
+                });
+                renderWarning(containsservedge5);
+                $(".datacenterName").each(function (index) {
+                    let value = $(this).val();
+                    console.log(value);
+                    changeLocationHeader(index+1, value);
+                });
+                if($(".er-opp").val() == '' || $(".er-opp").val() == null || $(".er-opp").val() == undefined){
+                    applyclass(".er-opp", "errorbox");
+                }
+                enabletooltips();
+                hidetootltips();
+            });
+            
+            function applyclass(sel, classname){
+                $(sel).addClass(classname);
+            }
+            
+            function rmvclass(sel, classname){
+                $(sel).removeClass(classname);
+            }
+            
+            function renderWarning(render){
+                if (render) {
+                    $(".slds-theme--warning").removeClass("hide");
+                    $(".slds-theme--warning").addClass("show");
+                    $(".container").css("marginTop", "8%");
+                    margintop = $(".container").css("marginTop");
+                    setmargintop();
+                } else {
+                    $(".slds-theme--warning").removeClass("show");
+                    $(".slds-theme--warning").addClass("hide");
+                    $(".container").css("marginTop", "4%");
+                    margintop = $(".container").css("marginTop");
+                    setmargintop();
+                }
+            }
+            function setmargintop(){
+                if ($(".errorM3").length) {
+                  console.log("Exists!");
+                  var errorlength = $(".errorM3").height();
+                  var newmgtop = Number(margintop.replace("px",'')) + errorlength;
+                  newmgtop *= 1.2;
+                  newmgtop += 'px';
+                  console.log(errorlength);
+                  console.log(margintop );
+                  console.log(newmgtop );
+                  $(".container").css("marginTop", newmgtop);
+                  
+               }else{
+                   $(".container").css("marginTop", margintop);
+               }
+            }
+            function changeLocationHeader(index, name){
+                $("#header_"+index).text(name);
+            }
+            function changeHeaderonrerender(){
+                $(".datacenterName").each(function(index){
+                    if($(this).val() != null && $(this).val() != "" && $(this).val() != undefined){
+                        changeLocationHeader(index + 1, $(this).val());
+                    }
+                });
+            }
+            function disablefields(){
+                if({!isinApproval} == true){
+                    $('.er-field').attr("disabled","disabled");
+                    /*$('.container .lookupIcon').css('display','none');*/
+                }
+            }
+            function togglecard(id, currel){
+            
+                $(currel).toggleClass('fa-chevron-circle-up');
+                $(currel).toggleClass('fa-chevron-circle-down');
+                $('#'+id).toggleClass('show');
+            }
+            function removeanchor(){
+                $("a").removeClass("form-control");
+            }
+            function enabletooltips(){
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+            function hidetootltips(){
+                $('i[data-toggle="tooltip"]').each(function(){
+                    if($(this).attr('data-original-title') == null || $(this).attr('data-original-title') == undefined || $(this).attr('data-original-title') == ''){
+                        $(this).css('display','none');
+                    }
+                });
+            }
+        </script>
+    </body>
+
+    </html>
+</apex:page>

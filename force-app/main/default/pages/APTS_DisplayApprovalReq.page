@@ -1,0 +1,123 @@
+<apex:page controller="APTS_DisplayApprovalReqController">
+    <style type="text/css">
+        .aptRoundedDiv {
+            padding-bottom: 5px;
+            background-color: white;
+            border: 1px solid #DDD;
+            margin-top: 5px;
+            -webkit-border-radius: 3px; /* Safari 3-4, iOS 1-3.2, Android ?1.6 */
+            border-radius: 3px;         /* Opera 10.5, IE9+, Safari 5, Chrome, Firefox 4+, iOS 4, Android 2.1+ */
+            
+            /* useful if you dont want a bg color from leaking outside the border: */
+            /* -moz-background-clip: padding; -webkit-background-clip: padding-box; background-clip: padding-box; */
+            /*-webkit-box-shadow: 0px 0px 4px 0px #000;  Safari 3-4, iOS 4.0.2 - 4.2, Android 2.3+ */
+            /*box-shadow: 0px 0px 4px 0px #000; /* Opera 10.5, IE9+, Firefox 4+, Chrome 6+, iOS 5 */
+            
+            /* IE Stuff */      
+            zoom: 1; 
+            width:100%;
+            filter: 
+              progid:DXImageTransform.Microsoft.Shadow(color=#000000,direction=0,strength=2),
+              progid:DXImageTransform.Microsoft.Shadow(color=#000000,direction=45,strength=2),
+              progid:DXImageTransform.Microsoft.Shadow(color=#000000,direction=90,strength=2),
+              progid:DXImageTransform.Microsoft.Shadow(color=#000000,direction=135,strength=2),
+              progid:DXImageTransform.Microsoft.Shadow(color=#000000,direction=180,strength=2),
+              progid:DXImageTransform.Microsoft.Shadow(color=#000000,direction=225,strength=2),
+              progid:DXImageTransform.Microsoft.Shadow(color=#000000,direction=270,strength=2),
+              progid:DXImageTransform.Microsoft.Shadow(color=#000000,direction=315,strength=2); 
+        }
+                
+        .aptGroupHeader {
+            background: -moz-linear-gradient(top, rgba(211,211,211,0.65) 0%, rgba(255,255,255,0) 100%);
+            background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(211,211,211,0.65)), color-stop(100%,rgba(255,255,255,0)));
+            background: -webkit-linear-gradient(top, rgba(211,211,211,0.65) 0%,rgba(255,255,255,0) 100%);
+            background: -o-linear-gradient(top, rgba(211,211,211,0.65) 0%,rgba(255,255,255,0) 100%);
+            background: -ms-linear-gradient(top, rgba(211,211,211,0.65) 0%,rgba(255,255,255,0) 100%);
+            background: linear-gradient(to bottom, rgba(211,211,211,0.65) 0%,rgba(255,255,255,0) 100%);
+            filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#a6d3d3d3', endColorstr='#00ffffff',GradientType=0 );
+            height: 40px;
+            padding-left: 10px;
+        }
+            
+        tr.border_bottom td {
+            border-bottom:1pt solid #f2f3f3;
+        }
+        
+        .sidebarCollapsible {
+            padding: 0px 0px 0px 0px !important
+        }
+         
+        .secondaryPalette {
+            margin-left: -10px !important
+        }
+        
+        .pbBody {
+            margin: 0px 0px 0px !important
+        }
+        
+        .aptGroupHeaderSmall{
+            height: 20px;
+        }
+        
+    </style>
+    <apex:form >
+        <apex:pageBlock >
+            
+            <div class="aptRoundedDiv" style="width:auto;">
+                <div class="aptGroupHeader">
+                    <br />
+                    <h2>
+                        <apex:outputtext value="Items to Approve" style="font-size: 16px;"/>
+                    </h2>
+                </div>        
+                <table style="margin-left: 6px; width: 100%;">
+                    
+                    <tr style="background-color: #f2f3f3;height: 25px;">
+                        
+                        <th style="width:11%">Approval Action</th>
+                        <th style="width:11%">Quote Number</th>
+                        <th style="width:11%">Opportunity</th>
+                        <th style="width:15%">Close date of opportunity</th>
+                        <th style="width:11%">Submitted on</th>
+                        <th style="width:8%">ACV</th>
+                        <th style="width:8%">TCV</th>
+                        <th style="width:5%">Term</th>
+                        <th style="width:11%">Approval Request</th>                       
+                    </tr>
+                    
+                    <tbody>
+                        
+                        <apex:repeat value="{!approvalReqList}" var="approvalReq">
+                            <tr style="border: solid; border-width: 1px 0;" class="border_bottom">
+                                
+                                <td><apex:outputField value="{!approvalReq.APTSC_Approval_Action__c}" /></td>
+                                <td>
+                                    <a href="/{!approvalReq.Apttus_QPApprov__ProposalId__c}" target="blank">
+                                        <apex:outputField value="{!approvalReq.Apttus_QPApprov__ProposalId__r.Name}" />
+                                    </a>
+                                </td>
+                                <td>
+                                    <a href="/{!approvalReq.Apttus_QPApprov__ProposalId__r.Apttus_Proposal__Opportunity__c}" target="blank">
+                                        <apex:outputField value="{!approvalReq.Apttus_QPApprov__ProposalId__r.Apttus_Proposal__Opportunity__r.Name}" />
+                                    </a></td>
+                                <td><apex:outputField value="{!approvalReq.Apttus_QPApprov__ProposalId__r.Apttus_Proposal__Opportunity__r.CloseDate}" /></td>
+                                <td><apex:outputField value="{!approvalReq.Apttus_Approval__DateAssigned__c}" /></td>
+                                <td><apex:outputField value="{!approvalReq.Apttus_QPApprov__ProposalId__r.APTS_ACV__c}" /></td>
+                                <td><apex:outputField value="{!approvalReq.Apttus_QPApprov__ProposalId__r.APTS_Proposal_Net_Price__c}" /></td>
+                                <td><apex:outputField value="{!approvalReq.Apttus_QPApprov__ProposalId__r.APTS_Subscription_Term__c}" /></td>
+                                <td>
+                                    <a href="/{!approvalReq.ID}" target="blank">
+                                        <apex:outputField value="{!approvalReq.Name}" />
+                                    </a>
+                                </td>
+                                <!--<td><apex:outputlink value="{!URLFOR('/'+If(NOT(ISBLANK(approvalReq.Apttus_QPApprov__ProposalId__c)),approvalReq.Apttus_QPApprov__ProposalId__c,approvalReq.Apttus_Approval__Related_Agreement__c))}" target="_blank">
+                                            {!If(NOT(ISBLANK(approvalReq.Apttus_QPApprov__ProposalId__c)),approvalReq.Apttus_QPApprov__ProposalId__r.name,approvalReq.Apttus_Approval__Related_Agreement__r.Name)}
+                                        </apex:outputlink></td>-->
+                            </tr>
+                        </apex:repeat>
+                    </tbody>
+                </table>
+            </div>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

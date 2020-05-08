@@ -1,0 +1,222 @@
+<template>
+    <div class="zs-case-details">
+        <div class="slds-grid" style="padding: 10px;">
+            <div class="slds-col slds-size_12-of-12">
+                <lightning-button label="Add/Remove Collaborator" class="addRemoveButton" variant="brand" onclick={openCollaborator} ></lightning-button>
+            </div>
+        </div>
+        <div class="slds-grid">
+            <div class="slds-col slds-size_9-of-12">
+                <span>Name</span>
+            </div>
+            <div class="slds-col slds-size_3-of-12">
+                <span>Role</span>
+            </div>
+        </div>
+        <template for:each={emailList} for:item="email">
+            <div key={email.key}>
+                <div class="slds-grid" style="padding-top: 10px;">
+                    <div class="slds-col slds-size_9-of-12">
+                        <div class="slds-grid slds-gutters">
+                            <div class="slds-col contact-name-label">
+                                <span>{email.FirstName}&nbsp;{email.LastName}</span>
+                            </div>
+                        </div>
+                        <div class="slds-grid slds-gutters">
+                            <div class="slds-col contact-email-label">
+                                <span>{email.Email}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="slds-col slds-size_3-of-12" if:true={email.Id}>
+                        <span>Customer</span>
+                    </div>
+                    <div class="slds-col slds-size_3-of-12" if:false={email.Id}>
+                        <span>Internal</span>
+                    </div>
+                </div>
+            </div>
+        </template>
+        <template if:true={openmodel}>
+            <div class="demo-only" style="height: 640px;">
+                <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+                    aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                    <div class="slds-modal__container">
+                        <template if:true={loading}>
+                            <div class="slds-spinner_container">
+                                <lightning-spinner variant="brand" size="medium"></lightning-spinner>
+                            </div>
+                        </template>
+                        <header class="slds-modal__header">
+                            <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                                title="Close" onclick={closeModal}>
+                                <lightning-icon icon-name="utility:close" size="medium">
+                                </lightning-icon>
+                                <span class="slds-assistive-text">Close</span>
+                            </button>
+                            <h2 style="font-weight:bold;" class="slds-text-heading_medium slds-hyphenate">
+                                <span if:true={addMode}>Create new Contact</span>
+                                <span if:true={editMode}>Edit Email</span>
+                            </h2>
+                        </header>
+                        <div class="slds-modal__content" style="padding:25px;">
+                            <template if:true={showcommentmandatorymessage}>
+                                <div class="slds-box slds-theme_error" style="margin-bottom:5px;">
+                                    {errormsg}
+                                </div>
+                            </template>
+                            <div class="slds-grid slds-gutters">
+                                <div class="slds-col slds-size_3-of-12" style="margin-top: 25px;">
+                                    <label class="First Name">First Name</label>
+                                </div>
+                                <div class="slds-col slds-size_5-of-12">
+                                    <lightning-input type="text" value={ctRecord.FirstName}
+                                        onchange={handleFirstNameChange}></lightning-input>
+                                </div>
+                                <div class="slds-col slds-size_4-of-12">
+                                </div>
+                            </div>
+                            <div class="slds-grid slds-gutters">
+                                <div class="slds-col slds-size_3-of-12" style="margin-top: 25px;">
+                                    <label class="First Name">Last Name</label>
+                                </div>
+                                <div class="slds-col slds-size_5-of-12" >
+                                    <lightning-input type="text" value={ctRecord.LastName} onchange={handleLastNameChange}></lightning-input>
+                                </div>
+                                <div class="slds-col slds-size_4-of-12">
+                                </div>
+                            </div>
+                            <div class="slds-grid slds-gutters">
+                                <div class="slds-col slds-size_3-of-12" style="margin-top: 25px;">
+                                    <label class="First Name">Email</label>
+                                </div>
+                                <div class="slds-col slds-size_5-of-12">
+                                    <lightning-input type="text" value={ctRecord.Email} onchange={handleEmailChange}></lightning-input>
+                                </div>
+                                <div class="slds-col slds-size_4-of-12">
+                                </div>
+                            </div>
+                            <div class="slds-grid slds-gutters" if:false={isUserLicense} >
+                                <div class="slds-col slds-size_3-of-12" style="margin-top: 25px;">
+                                    <label class="First Name">Contact Type</label>
+                                </div>
+                                <div class="slds-col slds-size_5-of-12">
+                                    <template if:true={contactTypeValues.data}>
+                                        <lightning-combobox
+                                                            value={ctRecord.Contact_Type__c}
+                                                            placeholder="-Select-"
+                                                            options={contactTypeValues.data.values}
+                                                            onchange={handleContactTypeChange} >
+                                        </lightning-combobox>
+                                    </template>
+                                </div>
+                                <div class="slds-col slds-size_4-of-12">
+                                </div>
+                            </div>
+                            <div class="slds-grid slds-gutters">
+                                <div class="slds-col slds-size_3-of-12" style="margin-top: 25px;">
+                                    <label class="First Name">Title</label>
+                                </div>
+                                <div class="slds-col slds-size_5-of-12">
+                                    <lightning-input type="text" value={ctRecord.Title} onchange={handleTitleChange}></lightning-input>
+                                </div>
+                                <div class="slds-col slds-size_4-of-12">
+                                </div>
+                            </div>
+                            <div class="slds-grid slds-gutters" style="margin-top:10px;">
+                                <div class="slds-col slds-size_4-of-12">
+    
+                                </div>
+                                <div class="slds-col slds-size_2-of-12">
+                                    <lightning-button label="Save" variant="brand" onclick={handleContactSave}>
+                                    </lightning-button>
+                                </div>
+                                <div class="slds-col slds-size_2-of-12">
+                                    <lightning-button label="Cancel" variant="brand" onclick={closeModal}>
+                                    </lightning-button>
+                                </div>
+                                <div class="slds-col slds-size_4-of-12">
+                                    
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <footer class="slds-modal__footer">  </footer>
+                    </div>
+                </section>
+                <div class="slds-backdrop slds-backdrop_open"></div>
+            </div>
+        </template>
+        <template if:true={openColla}>
+            <div class="demo-only" style="height: 640px; width: 900px;">
+                <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+                    aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                    <div class="slds-modal__container">
+                        <template if:true={loading}>
+                            <div class="slds-spinner_container">
+                                <lightning-spinner variant="brand" size="medium"></lightning-spinner>
+                            </div>
+                        </template>
+                        <header class="slds-modal__header">
+                            <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                                title="Close" onclick={closeCollaborator}>
+                                <lightning-icon icon-name="utility:close" size="medium">
+                                </lightning-icon>
+                                <span class="slds-assistive-text">Close</span>
+                            </button>
+                        </header>
+                        <div class="slds-modal__content" style="padding:25px;">
+                            <template if:true={showcommentmandatorymessage}>
+                                <div class="slds-box slds-theme_error" style="margin-bottom:5px;">
+                                    {errormsg}
+                                </div>
+                            </template>   
+                            <div class="slds-grid">
+                                <div class="slds-col slds-size_6-of-12">
+                                    <lightning-combobox
+                                        value={zsValue}
+                                        placeholder="-Select-"
+                                        options={options}
+                                        onchange={handleZscalerChange} >
+                                    </lightning-combobox>
+                                </div>
+                                <div class="slds-col slds-size_1-of-12"></div>
+                                <div class="slds-col slds-size_5-of-12" style="margin-top: 16px;">
+                                    <lightning-button label="Create New Customer Contact" variant="brand" onclick={openmodal} ></lightning-button>
+                                </div>
+                            </div>    
+                            <div class="slds-grid" style="margin-top:10px;">
+                                <div class="slds-col slds-size_12-of-12">
+                                    <lightning-dual-listbox id="selectOptions"
+                                        name="Select Options"
+                                        label="Select Options"
+                                        source-label="Available Options"
+                                        selected-label="Selected Options"
+                                        options={listOptions}
+                                        value={defaultOptions}
+                                        onchange={handleDualListChange}>
+                                    </lightning-dual-listbox>
+                                </div>
+                            </div> 
+                            <div class="slds-grid" style="margin-top:10px">
+                                <div class="slds-col slds-size_4-of-12"></div>
+                                <div class="slds-col slds-size_3-of-12"></div>
+                                <div class="slds-col slds-size_2-of-12">
+                                    <lightning-button label="Save" variant="brand" onclick={saveMultiTeamMember}></lightning-button>
+                                </div>
+                                <div class="slds-col slds-size_2-of-12">
+                                    <lightning-button label="Cancel" variant="brand" onclick={closeCollaborator}>
+                                    </lightning-button>&nbsp;&nbsp;&nbsp;&nbsp;
+                                </div>
+                                <div class="slds-col slds-size_1-of-12"></div>
+                            </div>
+                        </div>
+                        
+                        <footer class="slds-modal__footer"></footer>
+                    </div>
+                </section>
+                <div class="slds-backdrop slds-backdrop_open"></div>
+            </div>
+        </template>
+    </div>
+</template>

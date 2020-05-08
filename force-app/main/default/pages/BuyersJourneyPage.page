@@ -1,0 +1,1212 @@
+<apex:page standardController="Opportunity" standardStylesheets="true" extensions="BuyersJourneyController" showHeader="false" sidebar="false" action="{!pageload}">
+    <apex:stylesheet id="jQuery-ui" value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css" />
+    <apex:stylesheet id="bootstrap" value="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <apex:includeScript id="jQuery" value="https://code.jquery.com/jquery-3.1.1.min.js" />
+    <apex:includeScript id="bootstrapjs" value="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" />
+    <apex:includeScript id="jQuery-autocomplete" value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" />
+
+    <style type="text/css">
+        .nav-pills {
+            display: flex;
+        }
+        .nav-pills li {
+            display: flex;
+            flex: 1;
+        }
+
+        .nav-pills li  a {
+            flex: 1;
+        }
+
+        .nav-pills > li {
+            margin: 1px 0px;
+        }
+        
+        .nav-pills > li > a {
+            border-radius: 0px;
+            background: #DEEBF7;
+            color: #000000;
+            margin: 1px 0px 1px 0px;
+            padding: 10px 10px;
+        }
+
+        .nav-pills > li.active > a {
+            background: #BDD7EE;
+            border-bottom: 3px solid red;
+            color: #002060;
+        }
+
+        .nav-pills > li.active > a:hover,a:active {
+            color: #337ab7;
+            background-color: #EEEEEE;
+        }
+
+        .nav-pills > li:first-child > a {
+            margin-left: 0px;
+        }
+
+        .nav-pills > li:last-child > a {
+            margin-right: 0px;
+        }
+
+        .contentdiv {
+            min-height: 300px;
+            position: relative;
+        }
+
+        .ui-menu .ui-menu-item {
+            border-bottom:
+            1px solid grey;
+        }
+
+        .loadingIconSearch {
+            background-image: url("/img/loading.gif");
+            background-repeat: no-repeat;
+            background-position: right;
+        }
+
+        .loadingIcon {
+            padding-left: 16px;
+            background-image: url("/img/loading.gif");
+            background-repeat: no-repeat;
+            background-size: 13px 13px;
+        }
+
+        .badge-green {
+            background-color: #3A9E46;
+        }
+
+        .badge-red {
+            background-color: #EF473E;
+        }
+
+        .badge-yellow {
+            background-color: #FFC000;
+            color: #000000
+        }
+
+        .fill { 
+            min-height: 100%;
+            height: 100%;
+        }
+
+        .col-md-4 {
+            padding-left: 0px;
+            padding-right: 0px;
+        }
+
+        .row{
+            overflow: hidden; 
+        }
+
+        [class*="col-"]{
+            margin-bottom: -99999px;
+            padding-bottom: 99999px;
+        }
+
+        .helpOrb:hover {
+            background-position: top right;
+        }
+
+        .row-items {
+            padding-left: 10px;
+            padding-right: 20px;
+        }
+
+        .rowcontents > .col-md-4:nth-child(1) .row-item:hover {
+            border-bottom: 1px solid darkgrey;
+        }
+
+        .rowcontents > .col-md-4:nth-child(2) .row-item:hover {
+            border-bottom: 1px solid lightgrey;
+        }
+    </style>
+    <apex:form id="buyersjourneyform">
+        <script type="text/javascript">
+        (function() {
+            var currentStage = {!currentStage};
+
+            window.accountId = '{!checklist.Opportunity__r.AccountId}';
+            window.loadComplete = (undefined != window.loadComplete) ? window.loadComplete : false;
+            $(document).ready(function() {
+                var selector = '#tabs a[href="#stage' + (currentStage ? currentStage : 1) + '"]';
+                $(selector).tab('show');
+            });
+
+            window.callSaveFn = function() {
+                $("#saveTimestamp").hide();
+                $("#saveLoadingAction").show();
+
+                save();
+            }
+        })();
+        </script>
+        <div class="container-fluid" style="font-family: Calibri, Arial; ">
+            <apex:outputPanel id="saveTimestampPanel" style="color: lightgrey; font-size: 0.9em;">
+                <span id="saveTimestamp">Auto saved the changes at: {!IF(ISBLANK(saveTimestamp), "-", saveTimestamp)}</span><span id="saveLoadingAction" style="display: none;" class="loadingIcon">&nbsp;Auto saving the changes.</span>
+            </apex:outputPanel>
+            <div class="row-fluid">
+                <div class="card">
+                    <ul id="tabs" class="nav nav-pills nav-justified" role="tablist">
+                        <li role="presentation" class="active">
+                            <a href="#stage1" class="nav-link" aria-controls="stage1" role="tab" data-toggle="tab" onclick="setCurrentStage(1);">
+                                <div style="display: flex; flex-flow: row nowrap; justify-content: space-between; align-items: center; height: 100%;">
+                                    <div style="font-size: 1.2em; font-weight: bold; order: 1;">
+                                        Loosen the status quo
+                                    </div>
+                                    <div style="font-size: 1.2em; font-weight: bold; order: 2;">
+                                        <apex:outputPanel id="stage1score" styleClass="badge {!IF(Stage1Score > 0, IF(Stage1Score > 24, IF(Stage1Score > 49, 'badge-green', 'badge-yellow'), 'badge-red'), '')}">
+                                            {!Stage1Score}%
+                                        </apex:outputPanel>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li role="presentation">
+                            <a href="#stage2" class="nav-link" aria-controls="stage2" role="tab" data-toggle="tab" onclick="setCurrentStage(2);">
+                                <div style="display: flex; flex-flow: row nowrap; justify-content: space-between; align-items: center; height: 100%;">
+                                    <div style="font-size: 1.2em; font-weight: bold; order: 1;">
+                                        Commit to Change
+                                    </div>
+                                    <div style="font-size: 1.2em; font-weight: bold; order: 2;">
+                                        <apex:outputPanel id="stage2score" styleClass="badge {!IF(Stage2Score > 0, IF(Stage2Score > 24, IF(Stage2Score > 49, 'badge-green', 'badge-yellow'), 'badge-red'), '')}">
+                                            {!Stage2Score}%
+                                        </apex:outputPanel>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li role="presentation">
+                            <a href="#stage3" class="nav-link" aria-controls="stage3" role="tab" data-toggle="tab" onclick="setCurrentStage(3);">
+                                <div style="display: flex; flex-flow: row nowrap; justify-content: space-between; align-items: center; height: 100%;">
+                                    <div style="font-size: 1.2em; font-weight: bold; order: 1;">
+                                        Explore and Commit to a Solution
+                                    </div>
+                                    <div style="font-size: 1.2em; font-weight: bold; order: 2;">
+                                        <apex:outputPanel id="stage3score" styleClass="badge {!IF(Stage3Score > 0, IF(Stage3Score > 24, IF(Stage3Score > 49, 'badge-green', 'badge-yellow'), 'badge-red'), '')}">
+                                            {!Stage3Score}%
+                                        </apex:outputPanel>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li role="presentation">
+                            <a href="#stage4" class="nav-link" aria-controls="stage4" role="tab" data-toggle="tab" onclick="setCurrentStage(4);">
+                                <div style="display: flex; flex-flow: row nowrap; justify-content: space-between; align-items: center; height: 100%;">
+                                    <div style="font-size: 1.2em; font-weight: bold; order: 1;">
+                                        Justify and Make Purchase
+                                    </div>
+                                    <div style="font-size: 1.2em; font-weight: bold; order: 2;">
+                                        <apex:outputPanel id="stage4score" styleClass="badge {!IF(Stage4Score > 0, IF(Stage4Score > 24, IF(Stage4Score > 49, 'badge-green', 'badge-yellow'), 'badge-red'), '')}">
+                                            {!Stage4Score}%
+                                        </apex:outputPanel>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content clearfix contentdiv">
+                        <div id="stage1" class="tab-pane active">
+                            <apex:outputPanel id="stage1panel">
+                                <div class="container-fluid">
+                                    <div class="row">
+                                        <div class="clearfix" style="background-color: #002060; color: #FFFFFF; font-weight: bold; padding-left: 5px; line-height: 2em;">
+                                            Acknowledges that the status quo isn’t working, identifies needs and explores options. Click <a href="https://apex.zscaler.com/node/1896" target="_blank">here</a> for more info.
+                                        </div>
+                                    </div>
+                                    <div class="row rowcontents" style="position: relative; background-color: #D9D9D9;">
+                                        <div class="col-md-4">
+                                            <div class="clearfix" style="background-color: #DEEBF7; border: 1px solid #FFFFFF; text-align: center; font-weight: bold;">
+                                                Account Team Steps
+                                            </div>
+                                            <div class="clearfix" style="text-align: center; border-bottom: 1px solid #FFFFFF; font-weight: bold; font-style: italic;">
+                                                Guidance to achieve the Customer Verifiers
+                                            </div>
+                                            <br/>
+                                            <div class="row-items">
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Understand the Customer and Research Use Cases" for="dueDiligence" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check once you’ve done due diligence to understand the customer before the first meeting." style="display: inline;" 
+                                                            alt="Check once you’ve done due diligence to understand the customer before the first meeting." />
+                                                    </div>
+                                                    <div style="display: block; float: right; ">
+                                                        <apex:inputCheckbox id="dueDiligence" value="{!checklist.Due_Diligence_to_Understand_Use_Cases__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Introductory Meeting" for="introductoryMeeting" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check if you have an introductory meeting." style="display: inline;" 
+                                                            alt="Check if you have an introductory meeting." />
+                                                    </div>
+                                                    <div style="display: block; float: right; ">
+                                                        <apex:inputCheckbox id="introductoryMeeting" value="{!checklist.Introductory_Meeting__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Introduce VMO Concept" for="introduceVMOConcept" style="font-weight: normal; text-align: right; padding-left: 20px; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check if you’ve introduced the concept of the VMO and how it can help justify the purchase." style="display: inline;" 
+                                                            alt="Check if you’ve introduced the concept of the VMO and how it can help justify the purchase." />
+                                                    </div>
+                                                    <div style="display: block; float: right; ">
+                                                        <apex:inputCheckbox id="introduceVMOConcept" value="{!checklist.Introduce_VMO_Concept__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Identify Change Agent(s)" for="identifyChangeAgents" style="font-weight: normal; padding-left: 20px; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check if you have identified change agents within the customer." style="display: inline;" 
+                                                            alt="Check if you have identified change agents within the customer." />
+                                                    </div>
+                                                    <div style="display: block; float: right; ">
+                                                        <apex:inputCheckbox id="identifyChangeAgents" value="{!checklist.Identify_Change_Agents__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Identify Key Stakeholders" for="identifyKeyStakeholders" style="font-weight: normal; padding-left: 20px; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check once you’ve identified the stakeholders, including economic buyer." style="display: inline;" 
+                                                            alt="Check once you’ve identified the stakeholders, including economic buyer." />
+                                                    </div>
+                                                    <div style="display: block; float: right; ">
+                                                        <apex:inputCheckbox id="identifyKeyStakeholders" value="{!checklist.Identify_Key_Stakeholders__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Provide Relevant Use Cases" for="provideRelevantUserCases" style="font-weight: normal; padding-left: 20px; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check once you have provided relevant use cases to the customer." style="display: inline;" 
+                                                            alt="Check once you have provided relevant use cases to the customer." />
+                                                    </div>
+                                                    <div style="display: block; float: right; ">
+                                                        <apex:inputCheckbox id="provideRelevantUserCases" value="{!checklist.Provide_Relevant_Use_Cases__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Sent Promise to Proceed Email" for="sentPromiseEmail" style="font-weight: normal; display: inline;" />
+                                                        <!-- <img src="/img/s.gif" class="helpOrb" title="Check once sent, templates are available." style="display: inline;" 
+                                                            alt="Check once sent, templates are available." /> -->
+                                                    </div>
+                                                    <div style="display: block; float: right; ">
+                                                        <apex:inputCheckbox id="sentPromiseEmail" value="{!checklist.Sent_Promise_to_Proceed_Email__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Have Customer Run Security Preview" for="haveRunSecurityPreview" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check if you’ve had the customer run Security Preview.  The customer verifier will be the letter grade." style="display: inline;" 
+                                                            alt="Check if you’ve had the customer run Security Preview.  The customer verifier will be the letter grade." />
+                                                    </div>
+                                                    <div style="display: block; float: right; ">
+                                                        <apex:inputCheckbox id="haveRunSecurityPreview" value="{!checklist.Have_Customer_Run_Security_Preview__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Identify Partner" for="identifyPartnerName" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="This is to ensure the partner is well understood, including their role." style="display: inline;" 
+                                                            alt="This is to ensure the partner is well understood, including their role." />
+                                                    </div>
+                                                    <div style="display: block; float: right; ">
+                                                        <apex:inputCheckbox id="identifyPartnerName" value="{!primaryPartnerFound}" disabled="true" />
+                                                    </div>
+                                                </div>
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 70%;">
+                                                        <apex:outputLabel value="Identify Partner Type" for="identifyPartnerType" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="This is to ensure the partner is well understood, including their role." style="display: inline;" 
+                                                            alt="This is to ensure the partner is well understood, including their role." />
+                                                    </div>
+                                                    <div style="display: block; float: right; ">
+                                                        <apex:outputLabel id="identifyPartnerType" value="{!IF(primaryPartnerFound, primaryPartnerType, 'N/A')}" style="font-weight: normal;" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <br />
+                                        </div>
+                                        <div class="col-md-4" style="background-color: #F2F2F2;">
+                                            <div class="clearfix" style="background-color: #DEEBF7; border: 1px solid #FFFFFF; text-align: center; font-weight: bold;">
+                                                Customer Verifiers
+                                            </div>
+                                            <div class="clearfix" style="text-align: center; border-bottom: 1px solid #FFFFFF; font-weight: bold; font-style: italic;">
+                                                Record outcome of your Actions with the customer
+                                            </div>
+                                            <br />
+                                            <div class="row-items">
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Multiple Unique Leads from Account" for="multipleUniqueLeads" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check if you have observed multiple unique leads from a single prospect." style="display: inline;" 
+                                                            alt="Check if you have observed multiple unique leads from a single prospect." />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:inputCheckbox id="multipleUniqueLeads" value="{!checklist.Multiple_Unique_Leads_from_Account__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 70%;">
+                                                        <apex:outputLabel value="SecurityPreview Grade (A,B,C,D,F)" for="securityPreviewGrade" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Enter the letter grade (A,B,C,D,F) the customer received after running Security Preview" style="display: inline;" 
+                                                            alt="Enter the letter grade (A,B,C,D,F) the customer received after running Security Preview" />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:inputField id="securityPreviewGrade" value="{!checklist.SecurityPreview_Grade__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Customer responded to promise to proceed email" for="responseToPromiseLetter" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check if the customer responded, leave unchecked if they did not.  This helps qualify the opportunity early on." style="display: inline;" 
+                                                            alt="Check if the customer responded, leave unchecked if they did not.  This helps qualify the opportunity early on." />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:inputField id="responseToPromiseLetter" value="{!checklist.Customer_Responded_to_Promise_Email__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix">
+                                                    <apex:outputPanel id="changeAgents">
+                                                        <apex:outputLabel value="Identified Change Agent(s):" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Enter the name or names of those you’ve identified as the change agent." style="display: inline;" 
+                                                            alt="Enter the name or names of those you’ve identified as the change agent." />
+                                                        <!-- <apex:outputPanel id="changeAgentsEmptyMessage" rendered="{!(changeAgents = NULL || changeAgents.size = 0) && inEditChangeAgentMode != TRUE}">
+                                                            <br />No change agents were identified.
+                                                        </apex:outputPanel> -->
+                                                        <apex:outputPanel id="changeAgentsList" rendered="{!changeAgents != NULL && changeAgents.size > 0 && inEditChangeAgentMode != TRUE}">
+                                                            <br />
+                                                            <ul>
+                                                            <apex:repeat value="{!changeAgents}" var="agent">
+                                                                <li>{!agent.FirstName}&nbsp;{!agent.LastName}</li>
+                                                            </apex:repeat>
+                                                            </ul>
+                                                            Action(s): <apex:commandLink styleClass="btn"  style="padding: 5px 5px; font-size:0.9em; background: none; border: 0px; color: #337ab7;" action="{!enableEditChangeAgentMode}" rerender="changeAgents"><span class="glyphicon glyphicon-pencil" alt="Edit Change Agents List" title="Edit Change Agents List"></span></apex:commandLink>
+                                                        </apex:outputPanel>
+                                                        <apex:outputPanel id="addChangeAgentPanel" rendered="{!AND(NOT(inAddChangeAgentMode), NOT(inEditChangeAgentMode), changeAgents.size < 5)}">
+                                                            <apex:commandLink styleClass="btn" style="padding: 5px 5px; font-size: 0.9em; background: none; border: 0px; color: #337ab7;" action="{!enableAddChangeAgentMode}" rerender="changeAgents"><span class="glyphicon glyphicon-plus" alt="Add Change Agent" title="Add Change Agent"></span></apex:commandLink>
+                                                        </apex:outputPanel>
+                                                        <apex:outputPanel id="changeAgentAddModePanel" rendered="{!AND(inAddChangeAgentMode, NOT(inEditChangeAgentMode))}">
+                                                            <br />Search and add agents:
+                                                            <div style="float: right">
+                                                                <apex:inputText id="changeAgentSearchBox" value="{!changeAgentSearchText}" />
+                                                                <apex:commandLink styleClass="btn" style="padding: 5px 5px; font-size: 0.9em; background: none; border: 0px; color: #337ab7;" action="{!disableAddChangeAgentMode}" rerender="changeAgents"><span class="glyphicon glyphicon-remove" alt="Cancel" title="Cancel"></span></apex:commandLink>
+                                                                <apex:inputHidden id="changeAgentContactId" value="{!changeAgentContactId}" />
+                                                            </div>
+
+                                                            <script type="text/javascript">
+                                                                $("[id$='changeAgentSearchBox']").autocomplete({
+                                                                    minLength: 2,
+                                                                    appendTo: this,
+                                                                    source: function(request, response) {
+                                                                        $(this.element).addClass("loadingIconSearch");
+                                                                        var that = this;
+                                                                        BuyersJourneyController.searchContacts(request.term, window.accountId, function(result, event) {
+                                                                            $(that.element).removeClass("loadingIconSearch");
+                                                                            if (event.type == 'exception' || result == null) {
+                                                                                response('No matching users found');
+                                                                            } else {
+                                                                                response(result);
+                                                                            }
+                                                                        });
+                                                                    },
+                                                                    change: function(event, ui) {
+                                                                        $("[id$=changeAgentSearchBox]").val('');
+
+                                                                        return false;
+                                                                    },
+                                                                    focus: function(event, ui) {
+                                                                        $("[id$=changeAgentSearchBox]").val(ui.item.Name);
+                                                                        return false;
+                                                                    },
+                                                                    select: function(event, ui) {
+                                                                        $("[id$=changeAgentSearchBox]").val(ui.item.Name);
+                                                                        $("[id$=changeAgentContactId]").val(ui.item.Id);
+                                                                        return false;
+                                                                    },
+                                                                    open: function(event, ui){
+                                                                        var input = $(event.target);
+                                                                        var results = input.autocomplete("widget");
+                                                                        results.css("max-height", "200px");
+                                                                        var top = results.position().top;
+                                                                        var height = results.height();
+                                                                        var inputHeight = input.height();
+                                                                        var newTop = top - height - inputHeight - 5;
+
+                                                                        results.css({"top" : newTop + "px", "max-height": "200px", "overflow-x" : "hidden", "overflow-y": "auto"});
+                                                                    }
+                                                                })
+                                                                .data('uiAutocomplete')._renderItem = function(ul, item) {
+                                                                    var department = "<span style='font-size: 0.75em; clear: both;'>" + (item.Account.Name ? item.Account.Name : "") + "</span>";
+                                                                    var entry = "<a>" + item.Name;
+                                                                    entry = entry + "<br />" + department + "</a>";
+                                                                    var wrapper = "<div style=\"width: 250px;\" onclick='$(\"[id$=changeAgentSearchBox]\").val(\"\"); addChangeAgent(\"" + item.Id + "\");'>" + entry + "</div>";
+                                                                    return $("<li></li>")
+                                                                        .append(wrapper)
+                                                                        .appendTo(ul);
+                                                                }
+                                                            </script>
+                                                        </apex:outputPanel>
+                                                        <apex:outputPanel id="editChangeAgentsPanel" rendered="{!AND(inEditChangeAgentMode, NOT(inAddChangeAgentMode))}">
+                                                            <br />
+                                                            <ul>
+                                                                <apex:repeat value="{!changeAgents}" var="agent">
+                                                                    <li>
+                                                                        <span>{!agent.FirstName}&nbsp;{!agent.LastName}</span>&nbsp;&nbsp;
+                                                                        <apex:commandLink action="{!deleteChangeAgent}" rerender="changeAgents, stage1score" styleClass="btn" style="padding: 5px 5px; font-size: 0.9em; background: none; border: 0px; color: #337ab7;" >
+                                                                            <apex:param name="changeAgentToDeleteId" assignTo="{!changeAgentToDeleteId}" value="{!agent.Id}" />
+                                                                            <span class="glyphicon glyphicon-remove" alt="Delete Change Agent" title="Delete Change Agent"></span>
+                                                                        </apex:commandLink>
+                                                                    </li>
+                                                                </apex:repeat>
+                                                            </ul>
+                                                            Action(s): <apex:commandLink styleClass="btn" style="padding: 5px 5px; font-size: 0.9em; background: none; border: 0px; color: #337ab7;" action="{!disableEditChangeAgentMode}" rerender="changeAgents"><span class="glyphicon glyphicon-ok" alt="Done editing" title="Done editing"></span></apex:commandLink>
+                                                        </apex:outputPanel>
+                                                    </apex:outputPanel>
+                                                </div>
+                                                <div class="clearfix row-item" style="height: 100%">
+                                                </div>
+                                            </div>
+                                            <br />
+                                        </div>
+                                        <div class="col-md-4" style="background-color: #D9D9D9;">
+                                            <div class="clearfix" style="background-color: #DEEBF7; border: 1px solid #FFFFFF; text-align: center; font-weight: bold;">
+                                                Sales Tools and Customer Content
+                                            </div>
+                                            <div class="clearfix" style="text-align: center; border-bottom: 1px solid #FFFFFF; font-weight: bold; font-style: italic;">
+                                                Collaterals to guide through the Buyer's Journey phase
+                                            </div>
+                                            <br />
+                                            <div class="row-items">
+                                                <div class="row-item clearfix" style="font-weight: bold;">
+                                                    VMO&nbsp;
+                                                    <img src="/img/s.gif" class="helpOrb" title="Run the suggested VMO Play. Check the “VMO Business Case History” section of the opportunity." style="display: inline;" 
+                                                        alt="Run the suggested VMO Play. Check the “VMO Business Case History” section of the opportunity." />
+                                                </div>
+                                                <div class="row-item clearfix">
+                                                    <a href="#" onclick="window.parent.location.href='/{!LEFT(checklist.Opportunity__c, 15)}#{!LEFT(checklist.Opportunity__c, 15)}_00N70000003Ee00_target';">Run VMO C-level Door Opener Play</a>
+                                                </div>
+                                                <div class="row-item clearfix">
+                                                    <a href="https://apex.zscaler.com/vmo-engagement" target="_blank">How to Engage the VMO</a>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix" style="font-weight: bold;">
+                                                    Apex&nbsp;
+                                                    <img src="/img/s.gif" class="helpOrb" title="Resources to help you." style="display: inline;" 
+                                                        alt="Resources to help you." />
+                                                </div>
+                                                <div class="row-item clearfix">
+                                                    <a href="https://apex.zscaler.com/node/1896" target="_blank">Loosen Status Quo Apex Page</a>
+                                                </div>
+                                                <br />
+                                                <!-- <div>
+                                                    <ol>
+                                                        <li>Corp Presentation</li>
+                                                        <li><a href="https://apex.zscaler.com/node/1451" target="_blank">VMO C-level Door Opener</a></li>
+                                                        <li>Overview of the Suites</li>
+                                                        <li>Topical differentiators (O365, ransomware)</li>
+                                                        <li><a href="https://apex.zscaler.com/node/3486" target="_blank">Data sheets</a> and <a href="https://apex.zscaler.com/node/3326" target="_blank">white papers</a></li>
+                                                        <li>Channel and partner information</li>
+                                                    </ol>
+                                                </div>
+                                                <br /> -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </apex:outputPanel>
+                        </div>
+                        <div id="stage2" class="tab-pane">
+                            <apex:outputPanel id="stage2panel">
+                                <div class="container-fluid">
+                                    <div class="row">
+                                        <div class="clearfix" style="background-color: #002060; color: #FFFFFF; font-weight: bold; padding-left: 5px; line-height: 2em;">
+                                            Identify budget and build case for change. Click <a target="_blank" href="https://apex.zscaler.com/node/1906">here</a> for more info.
+                                        </div>
+                                    </div>
+                                    <div class="row rowcontents" style="position: relative;">
+                                        <div class="col-md-4" style=" min-height: 300px; height: 100%; background-color: #D9D9D9;">
+                                            <div class="clearfix" style="background-color: #DEEBF7; border: 1px solid #FFFFFF; text-align: center; font-weight: bold;">
+                                                Account Team Steps
+                                            </div>
+                                            <div class="clearfix" style="text-align: center; border-bottom: 1px solid #FFFFFF; font-weight: bold; font-style: italic;">
+                                                Guidance to achieve the Customer Verifiers
+                                            </div>
+                                            <br />
+                                            <div class="row-items">
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Schedule Architectural Workshop" for="scheduleWorkshops" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check once scheduled." style="display: inline;" 
+                                                            alt="Check once scheduled." />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:inputCheckbox id="scheduleWorkshops" value="{!checklist.Schedule_Architectural_Workshop__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Get agreement to start POC, pilot or Feature Validation" for="getAgreementToStartPOC" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check if you get agreement to start technical validation. Customer verifier will be participating in planning meeting." style="display: inline;" 
+                                                            alt="Check if you get agreement to start technical validation. Customer verifier will be participating in planning meeting." />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:inputCheckbox id="getAgreementToStartPOC" value="{!checklist.Get_Agreement_to_Start_POC_Pilot_Feva__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Schedule & conduct POC planning meeting" for="schedulePOCPlanningMeeting" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check once POC or Tech Validation planning meeting is completed." style="display: inline;" 
+                                                            alt="Check once POC or Tech Validation planning meeting is completed." />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:inputCheckbox id="schedulePOCPlanningMeeting" value="{!checklist.Schedule_conduct_POC_planning_meeting__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Provide Customer References" for="provideCustomerReferences" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check once you’ve provided the customers with references." style="display: inline;" 
+                                                            alt="Check once you’ve provided the customers with references." />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:inputCheckbox id="provideCustomerReferences" value="{!checklist.Provide_Customer_References__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="VMO Plan in SFDC" for="vmoPlan" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check once VMO Plan is complete." style="display: inline;" 
+                                                            alt="Check once VMO Plan is complete." />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:inputCheckbox id="vmoPlan" value="{!vmoPlanInSFDC}" disabled="true" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <br />
+                                        </div>
+                                        <div class="col-md-4" style="min-height: 300px; height: 100%; background-color: #F2F2F2;">
+                                            <div class="clearfix" style="background-color: #DEEBF7; border: 1px solid #FFFFFF; text-align: center; font-weight: bold;">
+                                                Customer Verifiers
+                                            </div>
+                                            <div class="clearfix" style="text-align: center; border-bottom: 1px solid #FFFFFF; font-weight: bold; font-style: italic;">
+                                                Record outcome of your Actions with the customer
+                                            </div>
+                                            <br />
+                                            <div class="row-items">
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Collaborated on and Customized Business Case Value Statements" for="collaboratedOnBusinessCase" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check if the customer has collaborated on the VMO business case." style="display: inline;" 
+                                                            alt="Check if the customer has collaborated on the VMO business case." />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:inputCheckbox id="collaboratedOnBusinessCase" value="{!checklist.Colloborated_on_business_case__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Has Spoken with References" for="hasSpokenWithReferences" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check if the customer has spoken with at least 1 provided reference." style="display: inline;" 
+                                                            alt="Check if the customer has spoken with at least 1 provided reference." />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:inputCheckbox id="hasSpokenWithReferences" value="{!checklist.Has_spoken_with_references__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 80%;">
+                                                        <apex:outputLabel value="Participated in Architectural Workshop" for="architechtureWorkshop" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Based on Architecture Workshop SCI" style="display: inline;" 
+                                                            alt="Based on Architecture Workshop SCI" />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:outputPanel id="hasArchWorkshopSCI" rendered="{!checklist.Opportunity__r.Architecture_Workshop_SCI__c != null}">
+                                                            <a href="/{!checklist.Opportunity__r.Architecture_Workshop_SCI__c}" target="_blank">{!checklist.Opportunity__r.Architecture_Workshop_SCI__r.Name}</a>
+                                                        </apex:outputPanel>
+                                                        <apex:outputPanel id="noArchWorkshopSCI" rendered="{!checklist.Opportunity__r.Architecture_Workshop_SCI__c == null}">
+                                                            None
+                                                        </apex:outputPanel>
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Participated in POC Planning" for="participatedInPOCPlanning" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check if the customer participated in developing POC plan." style="display: inline;" 
+                                                            alt="Check if the customer participated in developing POC plan." />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:inputCheckbox id="participatedInPOCPlanning" value="{!checklist.Participated_in_POC_Planning__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <br />
+                                        </div>
+                                        <div class="col-md-4" style="min-height: 300px; height: 100%; background-color: #D9D9D9;">
+                                            <div class="clearfix" style="background-color: #DEEBF7; border: 1px solid #FFFFFF; text-align: center; font-weight: bold;">
+                                                Sales Tools and Customer Content
+                                            </div>
+                                            <div class="clearfix" style="text-align: center; border-bottom: 1px solid #FFFFFF; font-weight: bold; font-style: italic;">
+                                                Collaterals to guide through the Buyer's Journey phase
+                                            </div>
+                                            <br />
+                                            <div class="row-items">
+                                                <div class="row-item clearfix" style="font-weight: bold; font-size: 1.1em;">
+                                                    VMO&nbsp;
+                                                    <img src="/img/s.gif" class="helpOrb" title="Run the suggested VMO Play. Check the “VMO Business Case History” section of the opportunity." style="display: inline;" 
+                                                        alt="Run the suggested VMO Play. Check the “VMO Business Case History” section of the opportunity." />
+                                                </div>
+                                                <div class="row-item clearfix">
+                                                    <a href="#" onclick="window.parent.location.href='/{!LEFT(checklist.Opportunity__c, 15)}#{!LEFT(checklist.Opportunity__c, 15)}_00N70000003Ee00_target';">Run Create Separation Play (Self service)</a>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix" style="font-weight: bold; font-size: 1.1em;">
+                                                    Apex&nbsp;
+                                                    <img src="/img/s.gif" class="helpOrb" title="Resources to help you." style="display: inline;" 
+                                                        alt="Resources to help you." />
+                                                </div>
+                                                <div class="row-item clearfix">
+                                                    <a target="_blank" href="https://apex.zscaler.com/node/1906">Commit to Change Apex Page</a>
+                                                </div>
+                                                <br />
+                                                <!-- <div>
+                                                    <ol>
+                                                        <li>VMO Create Separation play</li>
+                                                        <li>Customer testimonials/references</li>
+                                                        <li>Competitive collateral, technical capability deep dives</li>
+                                                        <li>Pricing and Price Books</li>
+                                                    </ol>
+                                                </div>
+                                                <br /> -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </apex:outputPanel>
+                        </div>
+                        <div id="stage3" class="tab-pane">
+                            <apex:outputPanel id="stage3panel">
+                                <div class="container-fluid">
+                                    <div class="row">
+                                        <div class="clearfix" style="background-color: #002060; color: #FFFFFF; font-weight: bold; line-height: 2em; padding-left: 5px; ">
+                                            Confirms budget and vendor preference, concedes that other suppliers’ solutions are less viable. – click <a target="_blank" href="https://apex.zscaler.com/node/1911">here</a> for more info
+                                        </div>
+                                    </div>
+                                    <div class="row rowcontents">
+                                        <div class="col-md-4" style=" min-height: 300px; height: 100%; background-color: #D9D9D9;">
+                                            <div class="clearfix" style="background-color: #DEEBF7; border: 1px solid #FFFFFF; text-align: center; font-weight: bold;">
+                                                Account Team Steps
+                                            </div>
+                                            <div class="clearfix" style="text-align: center; border-bottom: 1px solid #FFFFFF; font-weight: bold; font-style: italic;">
+                                                Guidance to achieve the Customer Verifiers
+                                            </div>
+                                            <br />
+                                            <div class="row-items">
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Create and Share POC Plan & Success Criteria with Customer" for="createAndSharePlan" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check once POC Plan and success criteria is shared with customer." style="display: inline;" 
+                                                            alt="Check once POC Plan and success criteria is shared with customer." />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:inputCheckbox id="createAndSharePlan" value="{!techValidationPlanInSFDC}" disabled="true" />
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Create and share Mutual Activity Plan (MAP) with Customer" for="createAndShareMAP" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check if you’re using a MAP and is shared with customer.  Templates are available." style="display: inline;" 
+                                                            alt="Check if you’re using a MAP and is shared with customer.  Templates are available." />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:inputCheckbox id="createAndShareMAP" value="{!checklist.Create_and_share_Mutual_Activity_Plan__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Conduct POC Kick-off Meeting" for="pocKickoffMeeting" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check once POC Technical Validation kick-off meeting is complete." style="display: inline;" 
+                                                            alt="Check once POC Technical Validation kick-off meeting is complete." />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:inputCheckbox id="pocKickoffMeeting" value="{!checklist.Conduct_POC_Kick_Off_Meeting__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Schedule POC Exec Findings Meeting with Economic Buyer/Decision Maker" for="schedulePOCFindings" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check once POC exec findings meeting is scheduled, this defines the end-date of the POC." style="display: inline;" 
+                                                            alt="Check once POC exec findings meeting is scheduled, this defines the end-date of the POC." />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:inputCheckbox id="schedulePOCFindings" value="{!checklist.Schedule_POC_Exec_Findings_Meeting__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <br />
+                                        </div>
+                                        <div class="col-md-4" style=" min-height: 300px; height: 100%; background-color: #F2F2F2;">
+                                            <div class="clearfix" style="background-color: #DEEBF7; border: 1px solid #FFFFFF; text-align: center; font-weight: bold;">
+                                                Customer Verifiers
+                                            </div>
+                                            <div class="clearfix" style="text-align: center; border-bottom: 1px solid #FFFFFF; font-weight: bold; font-style: italic;">
+                                                Record outcome of your Actions with the customer
+                                            </div>
+                                            <br />
+                                            <div class="row-items">
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Confirms budget to purchase our solution" for="budgetConfirmed" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check if the customer has confirmed they have necessary budget to purchase." style="display: inline;" 
+                                                            alt="Check if the customer has confirmed they have necessary budget to purchase." />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:inputCheckbox id="budgetConfirmed" value="{!checklist.Confirm_Budget_To_Purchase_Solution__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Customer agrees to and returns MAP" for="agreesToMAP" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check if using a MAP and the customer has confirmed the plan." style="display: inline;" 
+                                                            alt="Check if using a MAP and the customer has confirmed the plan." />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:inputCheckbox id="agreesToMAP" value="{!checklist.Customer_Agrees_And_Returns_MAP__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Customer Accepts POC Plan and Success Criteria (Tech Validation Plan)" for="acceptsPOCPlan" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check once customer has accepted the Tech Validation Plan." style="display: inline;" 
+                                                            alt="Check once customer has accepted the Tech Validation Plan." />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:inputCheckbox id="acceptsPOCPlan" value="{!checklist.Customer_Accepts_Tech_Validation_Plan__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 50%;">
+                                                        <apex:outputLabel value="Date of POC Kick-off meeting" for="pocKickoffMeetingDate" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Enter date of the POC kick-off meeting, if needed." style="display: inline;" 
+                                                            alt="Enter date of the POC kick-off meeting, if needed." />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:inputField id="pocKickoffMeetingDate" value="{!checklist.Date_of_POC_Kick_off_Meeting__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 50%;">
+                                                        <apex:outputLabel value="Date of POC Exec Findings Meeting" for="pocFindingsMeetingDate" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Enter date of POC exec findings meeting once customer has accepted." style="display: inline;" 
+                                                            alt="Enter date of POC exec findings meeting once customer has accepted." />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:inputField id="pocFindingsMeetingDate" value="{!checklist.Date_of_POC_Exec_Findings_Meeting__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <br />
+                                        </div>
+                                        <div class="col-md-4" style="min-height: 300px; height: 100%; background-color: #D9D9D9;">
+                                            <div class="clearfix" style="background-color: #DEEBF7; border: 1px solid #FFFFFF; text-align: center; font-weight: bold;">
+                                                Sales Tools and Customer Content
+                                            </div>
+                                            <div class="clearfix" style="text-align: center; border-bottom: 1px solid #FFFFFF; font-weight: bold; font-style: italic;">
+                                                Collaterals to guide through the Buyer's Journey phase
+                                            </div>
+                                            <br />
+                                            <div class="row-items">
+                                                <div class="row-item clearfix" style="font-weight: bold; font-size: 1.1em;">
+                                                    VMO&nbsp;
+                                                    <img src="/img/s.gif" class="helpOrb" title="Run the suggested VMO Play. Check the “VMO Business Case History” section of the opportunity." style="display: inline;" 
+                                                        alt="Run the suggested VMO Play. Check the “VMO Business Case History” section of the opportunity." />
+                                                </div>
+                                                <div class="row-item row-item clearfix">
+                                                    <a href="#" onclick="window.parent.location.href='/{!LEFT(checklist.Opportunity__c, 15)}#{!LEFT(checklist.Opportunity__c, 15)}_00N70000003Ee00_target';">Refine Business Case as Seal the Deal</a>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix" style="font-weight: bold; font-size: 1.1em;">
+                                                    Apex&nbsp;
+                                                    <img src="/img/s.gif" class="helpOrb" title="Resources to help you." style="display: inline;" 
+                                                        alt="Resources to help you." />
+                                                </div>
+                                                <div class="row-item clearfix">
+                                                    <a target="_blank" href="https://apex.zscaler.com/node/1911">Explore and Commit to a Solution Apex Page</a>
+                                                </div>
+                                                <br />
+                                                <!-- <div>
+                                                    <ol>
+                                                        <li>VMO Seal the Deal Play, business case revisions</li>
+                                                        <li>Specific competitive collateral to stall competitor advances</li>
+                                                    </ol>
+                                                </div>
+                                                <br /> -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </apex:outputPanel>
+                        </div>
+                        <div id="stage4" class="tab-pane">
+                            <apex:outputPanel id="stage4panel">
+                                <div class="container-fluid">
+                                    <div class="row">
+                                        <div class="clearfix" style="background-color: #002060; color: #FFFFFF; font-weight: bold; padding-left: 5px; line-height: 2em;">
+                                            Refines purchasing requirements and specifications business case in a way that reflects Zscaler's advantages. - click <a href="https://apex.zscaler.com/node/1921" target="_blank">here</a> for more info.
+                                        </div>
+                                    </div>
+                                    <div class="row rowcontents">
+                                        <div class="col-md-4" style="background-color: #D9D9D9; min-height: 300px; height: 100%">
+                                            <div class="clearfix" style="background-color: #DEEBF7; border: 1px solid #FFFFFF; text-align: center; font-weight: bold;">
+                                                Account Team Steps
+                                            </div>
+                                            <div class="clearfix" style="text-align: center; border-bottom: 1px solid #FFFFFF; font-weight: bold; font-style: italic;">
+                                                Guidance to achieve the Customer Verifiers
+                                            </div>
+                                            <br />
+                                            <div class="row-items">
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Combine POC Findings and final VMO Business Case (if applicable)" for="combinePOCFindings" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Combine final VMO business case and POC findings report if desired for customer presentation." style="display: inline;" 
+                                                            alt="Combine final VMO business case and POC findings report if desired for customer presentation." />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:inputCheckbox id="combinePOCFindings" value="{!checklist.Combine_POC_and__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Finalize VMO Business Case (submit on its own or with POC findings)" for="finalizeBusinessCase" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check once VMO business case is finalized and submitted with or without POC findings." style="display: inline;" 
+                                                            alt="Check once VMO business case is finalized and submitted with or without POC findings." />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:inputCheckbox id="finalizeBusinessCase" value="{!checklist.Finalize_VMO_Business_Case__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Conduct POC Exec Findings Meeting" for="pocExecFindingsMeeting" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check once POC exec findings meeting is complete." style="display: inline;" 
+                                                            alt="Check once POC exec findings meeting is complete." />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:inputCheckbox id="pocExecFindingsMeeting" value="{!checklist.Conduct_POC_Execs_Findings_Meeting__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="MAP Review" for="mapReview" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check once you’ve conducted a MAP review." style="display: inline;" 
+                                                            alt="Check once you’ve conducted a MAP review." />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:inputCheckbox id="mapReview" value="{!checklist.MAP_Review__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Post-Sales Support Team Intros" for="postSalesTeamIntro" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check once post-sales support team intros are complete." style="display: inline;" 
+                                                            alt="Check once post-sales support team intros are complete." />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:inputCheckbox id="postSalesTeamIntro" value="{!checklist.Post_Sales_Support_Team_Intros__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Initiate F90 program" for="f90Handoff" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="" style="display: inline;" 
+                                                            alt="" />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:inputField id="f90Handoff" value="{!checklist.F90_Handoff_Status_Flag__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <br />
+                                        </div>
+                                        <div class="col-md-4" style=" min-height: 300px; height: 100%; background-color: #F2F2F2;">
+                                            <div class="clearfix" style="background-color: #DEEBF7; border: 1px solid #FFFFFF; text-align: center; font-weight: bold;">
+                                                Customer Verifiers
+                                            </div>
+                                            <div class="clearfix" style="text-align: center; border-bottom: 1px solid #FFFFFF; font-weight: bold; font-style: italic;">
+                                                Record outcome of your Actions with the customer
+                                            </div>
+                                            <br />
+                                            <div class="row-items">
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Interaction with Business Case" for="busCaseInteraction" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check if customer interacted with or collaborated on final VMO business case." style="display: inline;" 
+                                                            alt="Check if customer interacted with or collaborated on final VMO business case." />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:inputCheckbox id="busCaseInteraction" value="{!checklist.Interaction_with_Business_Case__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix">
+                                                    <apex:outputPanel id="endorsers">
+                                                        <apex:outputLabel value="Customer contact that endorsed the Business Case:" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Enter first and last name of customer contact that endorsed the business case." style="display: inline;" 
+                                                            alt="Enter first and last name of customer contact that endorsed the business case." />
+                                                        <apex:outputPanel id="endorsersList" rendered="{!endorsers != NULL && endorsers.size > 0 && inEditEndorsersMode != TRUE}">
+                                                            <br />
+                                                            <ul>
+                                                            <apex:repeat value="{!endorsers}" var="agent">
+                                                                <li>{!agent.FirstName}&nbsp;{!agent.LastName}</li>
+                                                            </apex:repeat>
+                                                            </ul>
+                                                            Action(s): <apex:commandLink styleClass="btn"  style="padding: 5px 5px; font-size:0.9em; background: none; border: 0px; color: #337ab7;" action="{!enableEditEndorsersMode}" rerender="saveTimestampPanel, endorsers"><span class="glyphicon glyphicon-pencil" alt="Edit Endorsers List" title="Edit Endorsers List"></span></apex:commandLink>
+                                                        </apex:outputPanel>
+                                                        <apex:outputPanel id="addEndorsersPanel" rendered="{!AND(NOT(inAddEndorsersMode), NOT(inEditEndorsersMode), endorsers.size < 5)}">
+                                                            <apex:commandLink styleClass="btn" style="padding: 5px 5px; font-size: 0.9em; background: none; border: 0px; color: #337ab7;" action="{!enableAddEndorsersMode}" rerender="saveTimestampPanel, endorsers"><span class="glyphicon glyphicon-plus" alt="Add Endorser" title="Add Endorser"></span></apex:commandLink>
+                                                        </apex:outputPanel>
+                                                        <apex:outputPanel id="endorsersAddModePanel" rendered="{!AND(inAddEndorsersMode, NOT(inEditEndorsersMode))}">
+                                                            <br />Search and add endorsers:
+                                                            <div style="float: right;">
+                                                                <apex:inputText id="endorsersearchBox" value="{!endorsersSearchText}" />&nbsp;&nbsp;
+                                                                <apex:commandLink styleClass="btn" style="padding: 5px 5px; font-size: 0.9em; background: none; border: 0px; color: #337ab7;" action="{!disableAddEndorsersMode}" rerender="saveTimestampPanel, endorsers"><span class="glyphicon glyphicon-remove" alt="Cancel" title="Cancel"></span></apex:commandLink>
+                                                                <apex:inputHidden id="endorsersContactId" value="{!endorsersContactId}" />
+                                                            </div>
+                                                            <script type="text/javascript">
+                                                                $("[id$='endorsersearchBox']").autocomplete({
+                                                                    minLength: 2,
+                                                                    appendTo: this,
+                                                                    source: function(request, response) {
+                                                                        $(this.element).addClass("loadingIconSearch");
+                                                                        var that = this;
+                                                                        BuyersJourneyController.searchContacts(request.term, accountId, function(result, event) {
+                                                                            $(that.element).removeClass("loadingIconSearch");
+                                                                            if (event.type == 'exception' || result == null) {
+                                                                                response('No matching users found');
+                                                                            } else {
+                                                                                response(result);
+                                                                            }
+                                                                        });
+                                                                    },
+                                                                    change: function(event, ui) {
+                                                                        $("[id$=endorsersearchBox]").val('');
+
+                                                                        return false;
+                                                                    },
+                                                                    focus: function(event, ui) {
+                                                                        $("[id$=endorsersearchBox]").val(ui.item.Name);
+                                                                        return false;
+                                                                    },
+                                                                    select: function(event, ui) {
+                                                                        $("[id$=endorsersearchBox]").val(ui.item.Name);
+                                                                        $("[id$=endorsersContactId]").val(ui.item.Id);
+                                                                        return false;
+                                                                    },
+                                                                    open: function(event, ui){
+                                                                        var input = $(event.target);
+                                                                        var results = input.autocomplete("widget");
+                                                                        results.css("max-height", "200px");
+                                                                        var top = results.position().top;
+                                                                        var height = results.height();
+                                                                        var inputHeight = input.height();
+                                                                        var newTop = top - height - inputHeight - 5;
+
+                                                                        results.css({"top" : newTop + "px", "max-height": "200px", "overflow-x" : "hidden", "overflow-y": "auto"});
+                                                                    }
+                                                                })
+                                                                .data('uiAutocomplete')._renderItem = function(ul, item) {
+                                                                    var department = "<span style='font-size: 0.75em; clear: both;'>" + (item.Account.Name ? item.Account.Name : "") + "</span>";
+                                                                    var entry = "<a>" + item.Name;
+                                                                    entry = entry + "<br />" + department + "</a>";
+                                                                    var wrapper = "<div onclick='$(\"[id$=endorsersearchBox]\").val(\"\"); addEndorsers(\"" + item.Id + "\");'>" + entry + "</div>";
+                                                                    return $("<li></li>")
+                                                                        .append(wrapper)
+                                                                        .appendTo(ul);
+                                                                }
+                                                            </script>
+                                                        </apex:outputPanel>
+                                                        <apex:outputPanel id="editendorsersPanel" rendered="{!AND(inEditEndorsersMode, NOT(inAddEndorsersMode))}">
+                                                            <br />
+                                                            <ul>
+                                                            <apex:repeat value="{!endorsers}" var="agent">
+                                                                <li>
+                                                                <span>{!agent.FirstName}&nbsp;{!agent.LastName}</span>&nbsp;&nbsp;
+                                                                <apex:commandLink action="{!deleteEndorsers}" rerender="saveTimestampPanel, endorsers, stage4score" styleClass="btn" style="padding: 5px 5px; font-size: 0.9em; background: none; border: 0px; color: #337ab7;" >
+                                                                    <apex:param name="endorsersToDeleteId" assignTo="{!endorsersToDeleteId}" value="{!agent.Id}" />
+                                                                    <span class="glyphicon glyphicon-remove" alt="Delete Endorser" title="Delete Endorser"></span>
+                                                                </apex:commandLink>
+                                                                </li>
+                                                            </apex:repeat>
+                                                            </ul>
+                                                            Action(s): <apex:commandLink styleClass="btn" style="padding: 5px 5px; font-size: 0.9em; background: none; border: 0px; color: #337ab7;" action="{!disableEditEndorsersMode}" rerender="endorsers"><span class="glyphicon glyphicon-ok" alt="Done Editing" title="Done Editing"></span></apex:commandLink>
+                                                        </apex:outputPanel>
+                                                    </apex:outputPanel>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Champion Submitted Business Case Internally for Investment Justification" for="busCaseSubmitted" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check if you are able to verify your customer champion used the VMO business case for internal investment justification." style="display: inline;" 
+                                                            alt="Check if you are able to verify your customer champion used the VMO business case for internal investment justification." />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:inputCheckbox id="busCaseSubmitted" value="{!checklist.Business_case_submitted_internally__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Zscaler Advantages Reflected in Purchasing Requirements" for="zscalerAdvantages" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check if the customer made Zscaler’s advantages clear in their purchasing requirements." style="display: inline;" 
+                                                            alt="Check if the customer made Zscaler’s advantages clear in their purchasing requirements." />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:inputCheckbox id="zscalerAdvantages" value="{!checklist.Zscaler_Advantages_Reflected_in__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix">
+                                                    <div style="display: block; float: left; width: 90%;">
+                                                        <apex:outputLabel value="Agrees to review F90/MAP/Implementation Plan" for="agreesToReviewMap" style="font-weight: normal; display: inline;" />
+                                                        <img src="/img/s.gif" class="helpOrb" title="Check if customer has agreed to review implementation and post-sales plans." style="display: inline;" 
+                                                            alt="Check if customer has agreed to review implementation and post-sales plans." />
+                                                    </div>
+                                                    <div style="display: block; float: right;">
+                                                        <apex:inputCheckbox id="agreesToReviewMap" value="{!checklist.Agrees_to_review_F90_MAP_Implementation__c}" onchange="callSaveFn()" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <br />
+                                        </div>
+                                        <div class="col-md-4" style="min-height: 300px; height: 100%; background-color: #D9D9D9;">
+                                            <div class="clearfix" style="background-color: #DEEBF7; border: 1px solid #FFFFFF; text-align: center; font-weight: bold;">
+                                                Sales Tools and Customer Content
+                                            </div>
+                                            <div class="clearfix" style="text-align: center; border-bottom: 1px solid #FFFFFF; font-weight: bold; font-style: italic;">
+                                                Collaterals to guide through the Buyer's Journey phase
+                                            </div>
+                                            <br />
+                                            <div class="row-items">
+                                                <div class="row-item clearfix" style="font-weight: bold; font-size: 1.1em;">
+                                                    VMO&nbsp;
+                                                    <img src="/img/s.gif" class="helpOrb" title="Run the suggested VMO Play. Check the “VMO Business Case History” section of the opportunity." style="display: inline;" 
+                                                        alt="Run the suggested VMO Play. Check the “VMO Business Case History” section of the opportunity." />
+                                                </div>
+                                                <div class="row-item clearfix">
+                                                    <a href="#" onclick="window.parent.location.href='/{!LEFT(checklist.Opportunity__c, 15)}#{!LEFT(checklist.Opportunity__c, 15)}_00N70000003Ee00_target';">Run Seal the Deal Play</a> as Finalized VMO Business Case
+                                                </div>
+                                                <br />
+                                                <div class="row-item clearfix" style="font-weight: bold; font-size: 1.1em;">
+                                                    Apex&nbsp;
+                                                    <img src="/img/s.gif" class="helpOrb" title="Resources to help you." style="display: inline;" 
+                                                        alt="Resources to help you." />
+                                                </div>
+                                                <div class="row-item clearfix">
+                                                    <a target="_blank" href="https://apex.zscaler.com/node/1921">Justify and Make Purchase Apex Page</a>
+                                                </div>
+                                                <br />
+                                                <!-- <div>
+                                                    <ol>
+                                                        <li>Final VMO business case (Seal the Deal) and proposal for internal cost justification</li>
+                                                        <li>POC findings</li>
+                                                        <li>Proposal templates</li>
+                                                    </ol>
+                                                </div>
+                                                <br /> -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </apex:outputPanel>
+                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <apex:outputPanel id="dummy"></apex:outputPanel>
+
+        <apex:actionFunction id="save" name="save" action="{!save}" oncomplete="$('#saveLoadingAction').hide(); $('#saveTimestamp').show();" reRender="saveTimestampPanel, stage1score, stage2score, stage3score, stage4score, stage1panel, stage2panel, stage3panel, stage4panel" status="saveLoadingAction">
+        </apex:actionFunction>
+        <apex:actionFunction id="setCurrentStage" name="setCurrentStage" action="{!setCurrentStage}" reRender="dummy">
+            <apex:param id="newStage" name="newStage" assignTo="{!newStage}" value="" />
+        </apex:actionFunction>
+
+        <apex:actionFunction id="addChangeAgent" name="addChangeAgent" action="{!addChangeAgent}" reRender="saveTimestampPanel, changeAgents, stage1score, stage2score, stage3score, stage4score">
+            <apex:param id="changeAgentContactIdparam" name="changeAgentContactId" assignTo="{!changeAgentContactId}" value="" />
+        </apex:actionFunction>
+        <apex:actionFunction id="deleteChangeAgent" name="deleteChangeAgent" action="{!deleteChangeAgent}" reRender="saveTimestampPanel, changeAgents, stage1score, stage2score, stage3score, stage4score" oncomplete="">
+            <apex:param name="changeAgentToDeleteId" assignTo="{!changeAgentToDeleteId}" value="" />
+        </apex:actionFunction>
+
+        <apex:actionFunction id="addEndorsers" name="addEndorsers" action="{!addEndorsers}" reRender="saveTimestampPanel, endorsers, stage1score, stage2score, stage3score, stage4score">
+            <apex:param id="endorsersContactIdparam" name="endorsersContactId" assignTo="{!endorsersContactId}" value="" />
+        </apex:actionFunction>
+        <apex:actionFunction id="deleteEndorsers" name="deleteEndorsers" action="{!deleteEndorsers}" reRender="saveTimestampPanel, endorsers, stage1score, stage2score, stage3score, stage4score" oncomplete="">
+            <apex:param name="endorsersToDeleteId" assignTo="{!endorsersToDeleteId}" value="" />
+        </apex:actionFunction>
+
+        <script type="text/javascript">
+        $('a[data-toggle="tab"]').on("shown.bs.tab", function(e) {
+            //alert(e.target);
+            var target = e.target;
+            var urlString = e.target.href;
+            var targetStage = urlString.split('#')[1];
+
+            $(".nav-pills > li > a").css({
+                "background" : "#DEEBF7", 
+                "color" : "#000000"
+            });
+
+            $(".nav-pills > li.active > a").css({
+                "background" : "#BDD7EE", 
+                "background" : "-webkit-linear-gradient(to bottom, #BDD7EE, #DEEBF7, #BDD7EE)",
+                "background" : "-o-linear-gradient(to bottom, #BDD7EE, #DEEBF7, #BDD7EE)",
+                "background" : "-moz-linear-gradient(to bottom, #BDD7EE, #DEEBF7, #BDD7EE)",
+                "background" : "linear-gradient(to bottom, #BDD7EE, #DEEBF7, #BDD7EE)",
+                "color" : "#002060"
+            });
+
+            $(".contentdiv").css({"opacity" : "0", "left" : "10px"}).animate({"opacity" : "1", "left" : "0px"}, "5");
+            $(".rowcontents").css({"opacity" : "0", "left" : "10px"}).animate({"opacity" : "1", "left" : "0px"}, "5");
+
+            /*
+            "background" : "#BDD7EE", 
+            "background" : -w"ebkit-linear-gradient(to bottom, #BDD7EE, #DEEBF7, #BDD7EE)"
+            "background" : "-o-linear-gradient(to bottom, #BDD7EE, #DEEBF7, #BDD7EE)",
+            "background" : "-moz-linear-gradient(to bottom, #BDD7EE, #DEEBF7, #BDD7EE)",
+            "background" : "linear-gradient(to bottom, #BDD7EE, #DEEBF7, #BDD7EE)"
+             */
+        })
+        </script>
+    </apex:form>
+</apex:page>

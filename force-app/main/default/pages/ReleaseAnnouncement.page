@@ -1,0 +1,9 @@
+<apex:page controller="ReleaseAnnouncementController">
+
+<apex:pageBlock title="SFDC Announcements" >
+  <apex:repeat value="{!relAnnounceList}" var="release">
+      <apex:outputText value="{!release.Announcement__c}" escape="false"/><br/>
+  </apex:repeat>
+</apex:pageBlock>
+
+</apex:page>

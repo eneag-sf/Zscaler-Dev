@@ -1,0 +1,192 @@
+<apex:component controller="SiteApprovalRequestController" access="Global">
+    <apex:attribute type="String" name="equipmentRequestId" assignTo="{!equipmentRequestRecordId}" description="Equipment Request Id"/>
+<table class="body" style="border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:left; height:100%; width:100%; color:#222222; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:14px; margin:0; padding:0; " ><tbody ><tr style="vertical-align:top; text-align:left; padding:0; " align="left" ><td class="center" align="center" valign="top" style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:center; color:#222222; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:14px; margin:0; padding:0; " ><center style="width:100%; min-width:900px; " ><table width="100%" border="0" cellspacing="0" cellpadding="0" class="hide-for-small">
+<tbody>
+<tr>
+<td style="color:#555555; font-size:11px; line-height:11px; font-family:Arial, Helvetica, sans-serif; word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:center; font-weight:normal; margin:0; padding:0px;" align="center" valign="top"></td>
+</tr>
+</tbody>
+</table>
+<table class="container" style="border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:inherit; width:900px; margin:0 auto; padding:0; border:1px solid #bcc0be; background-color:#FFFFFF; " ><tbody ><tr style="vertical-align:top; text-align:left; padding:0; " align="left" ><td style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:left; color:#222222; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:14px; margin:0; padding:0; " align="left" valign="top" ><table class="row" style="border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:left; width:100%; position:relative; display:block; padding:0px; " ><tbody ><tr style="vertical-align:top; text-align:left; padding:0; " align="left" ><td class="wrapper last" style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:left; position:relative; color:#222222; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:14px; margin:0; padding:0px; " align="left" valign="top" ><table class="twelve columns" style="border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:left; width:600px; padding:0; " ><tbody ><tr style="vertical-align:top; text-align:left; padding:0; " align="left" ><td align="left" valign="top" style="padding-top:8px; padding-bottom:8px; " ><div class="mktEditable" id="logo" style="margin:0 0 0 10px; " ><!--
+<p><a style="vertical-align: baseline;" _mce_style="vertical-align: baseline;" href="http://www.zscaler.com" _mce_href="http://www.zscaler.com"><img style="margin-left: 12px;" _mce_style="margin-left: 12px;" src="http://info.zscaler.com/rs/zscaler/images/zlogo-pms306-200x44.png" _mce_src="http://info.zscaler.com/rs/zscaler/images/zlogo-pms306-200x44.png" border="0" alt="Zscaler" height="36" /></a>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span style="color: #555555; font-family: Arial;" _mce_style="color: #555555; font-family: Arial;"> June 16<sup>th</sup>, 2015</span></p>
+--><table width="100%">
+<tbody>
+<tr>
+<td align="left"><a style="vertical-align: baseline;" href="http://www.zscaler.com"><img style="margin-left: 12px;" src="http://info.zscaler.com/rs/zscaler/images/zlogo-pms306-200x44.png" border="0" alt="Zscaler" height="36" /></a></td>
+<td style="padding-right: 20px;" align="right"></td>
+</tr>
+</tbody>
+</table>
+</div>
+</td>
+<td class="expander" style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:bottom; text-align:right; width:0px; color:#009DD0; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:10px; margin:0; padding:0; " align="right" valign="bottom" ><table width="100%" border="0" cellspacing="0" cellpadding="0" class="hide-for-small" ><tbody ><tr ><td class="expander" style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:bottom; text-align:right; width:0px; color:#009DD0; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:10px; margin:0; padding:0 12px 0 0; " align="right" valign="bottom" ><div class="mktEditable" id="contact" ></div>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr style="vertical-align:top; text-align:left; padding:0; " align="left" ><td style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:left; color:#222222; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:14px; margin:0; padding:0; " align="left" valign="top" ><table class="row" style="display:table !important; border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:left; width:100%; position:relative; padding:0px; " ><tbody ><tr style="vertical-align:top; text-align:left; padding:0; background:#00b3e3; " class="bg-white" align="left" ><td class="wrapper" style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:left; position:relative; color:#222222; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:14px; margin:0; padding:0px; " align="left" valign="top" ><table width="780" class="six columns" style="border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:left; width:900px; padding:0; " ><tbody ><tr style="vertical-align:top; text-align:left; padding:0; " align="left" ><td width="330" align="left" valign="top" class="center-table" style="color:#fff; font-size:15px; font-family:Arial, Helvetica, sans-serif; line-height:22px; word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:left; font-weight:normal; margin:0; padding:0px 0px 0px 20px; " ><div class="mktEditable" id="content-one" ><p style="color: #bed62f; font-family: Helvetica,Arial,sans-serif; font-weight: 500; text-align: left; word-break: normal; font-size: 16px; margin: 10px 0px 0px; margin-top: 10px; margin-bottom: 10px;" align="left"><span style="font-size: 27px; color: #fff; font-weight: 100; line-height: 49px;">Request for ME Site Approval</span></p>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr style="vertical-align:top; text-align:left; padding:0; " align="left" >
+<td style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:left; color:#222222; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:14px; margin:0; padding:0; " align="left" valign="top" ><table class="row" style="border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:left; width:100%; position:relative; display:block; padding:0px; " ><tbody >
+<tr style="vertical-align:top; text-align:left; padding:0; " align="left" >
+
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr style="vertical-align:top; text-align:left; padding:0; background-color:#ededed; " align="left" ><td style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:left; color:#222222; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:14px; margin:0; padding:0; " align="left" valign="top" ><table class="row" style="border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:left; width:100%; position:relative; display:block; padding:0px; " ><tbody ><tr style="vertical-align:top; text-align:left; padding:0; " align="left" >
+
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr style="vertical-align:top; text-align:left; padding:0; " align="left" ><td style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:left; color:#222222; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:14px; margin:0; padding:0; " align="left" valign="top" ><table class="row" style="border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:left; width:100%; position:relative; display:block; padding:0px; " ><tbody ><tr style="vertical-align:top; text-align:left; padding:0; " align="left" ><td class="wrapper" style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:left; position:relative; color:#222222; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:14px; margin:0; padding:0px;" align="left" valign="top">
+<div style="padding:6px;">&nbsp;</div>
+</td>
+<td class="wrapper last" style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:left; position:relative; color:#222222; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:14px; margin:0; padding:0px; " align="left" valign="top" ><table class="twelve columns" style="border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:left; width:880px; padding:0; " ><tbody ><tr style="vertical-align:top; text-align:left; padding:0; " align="left" ><td style="color:#555555; font-size:14px; line-height:18px; font-family:Arial, Helvetica, sans-serif; word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:left; font-weight:normal; margin:0; padding:0px 15px 10px; " align="left" valign="top" ><div class="mktEditable" id="content-under-gray" >
+<br />
+<p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Hi Zservices,</p>
+
+<p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">We would like to request approval for surcharge users on the following Middle East Nodes. Site details are provided below.
+</p>
+
+
+<!--
+<ul style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 10px;">
+
+<b><p>Deal Registration Details:</p></b>
+<p>Deal Registration Number: {!Deal_Reg__c.Name}<p>
+<p>End Customer Company: {!Deal_Reg__c.End_Customer_Name__c}</p>
+<p>End Customer State: {!Deal_Reg__c.End_Customer_State__c}</p>
+<p>End Customer Country: {!Deal_Reg__c.End_Customer_Country__c}</p>
+<p>Status: {!Deal_Reg__c.Status__c}</p>
+<p>Reason: {!ApprovalRequest.Comments}</p>
+<p> Partner Company Name: {!Deal_Reg__c.Partner_Account__c} </p>
+<p>Account Manager: {!Deal_Reg__c.Account_Manager__c}</p>
+<p>Account Manager Phone: {!Deal_Reg__c.Account_Manager_Phone__c}</p>
+<p>Channel Manager: {!Deal_Reg__c.Channel_Manager__c}</p>
+<p>Channel Manager Phone: {!Deal_Reg__c.Channel_Manager_Phone__c}</p>
+
+</ul>
+-->
+<apex:repeat id="SiteRequests" value="{!SiteRequests}" var="request" rendered="{!AND(SiteRequests != null, SiteRequests.size > 0)}">
+    <table border="1" cellspacing="0" cellpadding="3" width="100%"
+       style="text-align: left; color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 10px;">
+        <tr style="text-align: left; vertical-align: middle; color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: normal;">
+            <td style="font-weight: bold; width: 30%;">Site Request Id</td>
+            <td style="">{!request.Name}</td>
+        </tr>
+        <tr style="text-align: left; vertical-align: middle; color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: normal;">
+            <td style="font-weight: bold; width: 30%;">Customer Details</td>
+            <td style="">{!request.Customer_Name__r.Name}<br /><br />
+                {!request.Customer_Street_Address__c}<br />
+                {!request.Customer_State__c}<br />
+                {!request.Customer_City__c}<br />
+                {!request.Customer_Country_New__c}<br />
+            </td>
+        </tr>
+        <tr style="text-align: left; vertical-align: middle; color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: normal;">
+            <td style="font-weight: bold; width: 30%;">Customer Contact</td>
+            <td style=" ">{!request.Contact_Name__c}</td>
+        </tr>
+        <tr style="text-align: left; vertical-align: middle; color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: normal;">
+            <td style="font-weight: bold; width: 30%;">Customer Contact Phone</td>
+            <td style=" ">{!request.Contact_phone__c}</td>
+        </tr>
+        <tr style="text-align: left; vertical-align: middle; color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: normal;">
+            <td style="font-weight: bold; width: 30%;">Customer Contact Email</td>
+            <td style=" ">{!request.Contact_Email__c}</td>
+        </tr>
+        <tr style="text-align: left; vertical-align: middle; color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: normal;">
+            <td style="font-weight: bold; width: 30%;">ME Domain Name</td>
+            <td style=" ">{!request.Domain_Name__c}</td>
+        </tr>
+        <tr style="text-align: left; vertical-align: middle; color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: normal;">
+            <td style="font-weight: bold; width: 30%;">ME Node Location</td>
+            <td style=" ">{!request.Country_for_ME_Node__c}</td>
+        </tr>
+        <tr style="text-align: left; vertical-align: middle; color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: normal;">
+            <td style="font-weight: bold; width: 30%;">Number of Users</td>
+            <td style=" ">{!request.Number_of_users__c}</td>
+        </tr>
+        <tr style="text-align: left; vertical-align: middle; color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: normal;">
+            <td style="font-weight: bold; width: 30%;">ISP Used</td>
+            <td style=" ">{!request.ISP_Used__c}</td>
+        </tr>
+        <tr style="text-align: left; vertical-align: middle; color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: normal;">
+            <td style="font-weight: bold; width: 30%;">Estimated Start Date</td>
+            <td style=" "><apex:outputText value="{0,date,MM/dd/yyyy}"> <apex:param value="{!request.Estimated_Start_Date__c}" /> </apex:outputText></td>
+        </tr>
+        <tr style="text-align: left; vertical-align: middle; color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: normal;">
+            <td style="font-weight: bold; width: 30%;">Estimated End Date</td>
+            <td style=" "><apex:outputText value="{0,date,MM/dd/yyyy}"> <apex:param value="{!request.Estimated_Stop_Date__c}" /> </apex:outputText></td>
+        </tr>
+        <tr style="text-align: left; vertical-align: middle; color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: normal;">
+            <td style="font-weight: bold; width: 30%;">Is this for a POC?</td>
+            <td style=" ">{!request.Is_this_for_a_POC__c}</td>
+        </tr>
+    </table>
+    <br/>
+</apex:repeat>
+<p>
+Best Regards,
+<br />Zscaler Sales
+</p>
+<!--
+<p style="font-weight: bold; font-style: italic;">
+This registration can be revoked if a meeting with the customer to validate the opportunity is not scheduled with a Zscaler sales representative within 30 days of this approval.
+</p>
+-->
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr style="vertical-align:top; text-align:left; padding:0;" align="left">
+<td style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:left; color:#222222; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:14px; background:#252d34; margin:0; padding:0;" align="left" bgcolor="#252D34" valign="top">
+<table class="twelve columns" style="border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:center; width:900px; padding:0;">
+<tbody>
+<tr style="vertical-align:top; text-align:center; padding:0;" align="center">
+<td class="wrapper last" style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:center; position:relative; color:#999999; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:11px; margin:0; padding:10px 0px 0px;" align="center" valign="top">Copyright ©2017 Zscaler, Inc.<br />
+&nbsp;</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</center>
+</td>
+</tr>
+</tbody>
+</table>
+</apex:component>

@@ -1,0 +1,125 @@
+<apex:page controller="ValueSummaryDocController" action="{!initquote}" sidebar="false" showHeader="false">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.nicescroll/3.6.0/jquery.nicescroll.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.11/angular.min.js" type="text/javascript"></script>
+        <script>
+                var acceptProposalApp= angular.module('acceptProposalApp', []);
+                acceptProposalApp.controller('acceptProposalController' ,['$scope',function($scope,$filter){
+                    $scope.message = 'Generating Document';
+                }]);
+        </script>        
+<script>
+    $( document ).ready(function() {
+        var accountId = '{!accountId}';
+        var proposalId = '{!proposalId}';
+        var renderdoc = '{!renderAs}';
+        console.log(proposalId);
+        console.log(accountId);
+        showLoadingImage();
+        generateDoc(proposalId, accountId, renderdoc);
+    });
+    
+    function showLoadingImage(){
+           $('.cstm-loading-img-submit').show();
+            $('.messageBlock').show();
+            $('.agreement-create').show();
+            $('.overlay').show();
+        
+    }
+    function generateDoc (proposalId, acctId, renderdoc) {
+        console.log(proposalId);
+        var propoppacc = proposalId + '---' + acctId + '---' + renderdoc + '---{!$User.Id}';
+        if(proposalId == null || proposalId == undefined || proposalId == ''){
+            angular.element(document.getElementById('mainbody')).scope().message = 'Value Summary Quote is missing. Please reach out to SFDC support team.';
+            angular.element(document.getElementById('mainbody')).scope().$apply();
+            window.location.href =  '/'+acctId;
+        }else{
+            Visualforce.remoting.Manager.invokeAction(
+                '{!$RemoteAction.ValueSummaryDocController.generateDoc}', propoppacc,
+                function(result, event) {
+                    if(result.indexOf('00P') == -1){
+                        angular.element(document.getElementById('mainbody')).scope().message =  result;
+                        angular.element(document.getElementById('mainbody')).scope().$apply();
+                        window.location.href =  '/'+acctId;
+                    }else{
+                        
+                        angular.element(document.getElementById('mainbody')).scope().message =  'Success: Document has been Generated... Redirecting...';
+                        console.log(result);
+                        angular.element(document.getElementById('mainbody')).scope().$apply();   
+                        //window.open('/servlet/servlet.FileDownload?file='+result, '_blank');
+                        //setTimeout(function() {
+                        redirectAF(result);
+                        //}, 10000);
+                    }
+                    
+                });
+        }
+        
+    }
+    
+    
+        
+</script>
+<style>
+    .loading-container{
+        padding-top: 20%;
+        position: fixed;
+        left: 0px;
+        top:0px;
+        z-index: 999999999;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255,255,255,0.75);
+     
+    }
+     .overlay {
+            background-color: white;
+            z-index: 999;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+       .messageBlock{
+            background-color: white;
+            position: absolute;
+            top: 40%;
+            left: 43%;
+            z-index: 99;
+            width: 300px;
+            height: 150px;
+            text-align: center;
+        } 
+        .cstm-loading-img-submit {
+              display: none;
+              background-image: url({!$Resource.loadingimg});
+              width: 51px;  /* the exact width of the image */
+              height: 57px;  /* the exact height of the image */
+              position: absolute;
+              top: 25px;
+              margin-left: 40%;
+              z-index: 99;
+        }
+   
+</style>
+<apex:pageMessages ></apex:pageMessages>
+<body   ng-app="acceptProposalApp" ng-controller="acceptProposalController" ng-cloak='True' id="mainbody">
+<div id="LoadingImg" class="loading-container" style="display:none;">
+            <img src="{!$Resource.loadingimg}" style="margin-left: 50%;"/><br />
+        </div>
+        <div class="overlay">
+            <div class="messageBlock">
+                <div class="cstm-loading-img-submit"></div>
+                <div class="agreement-create" style="margin-top: 35%;">{{message}}</div>
+            </div>
+        </div> 
+        <apex:form >
+            <apex:actionFunction id="redirectAF" name="redirectAF" action="{!redirectToURL}" reRender="">
+                <apex:param id="attachId" name="attachId" assignTo="{!attachId}" value="" />
+            </apex:actionFunction>
+        </apex:form>
+</body>
+</apex:page>

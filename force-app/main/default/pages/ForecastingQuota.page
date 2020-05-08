@@ -1,0 +1,244 @@
+<apex:page sidebar="false" controller="ForecastingQuotaController" tabStyle="Forecasting__tab">
+    <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular-animate.min.js"></script>
+    <apex:stylesheet value="{!URLFOR($Resource.Forecasting, 'css/fq.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.Forecasting, 'css/toggle-switch.css')}" />
+    <link href="https://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet" />
+    <script>
+        var rootUsers = {!RootUsers};
+        var forecastType = "{!forecastType}";
+        var fiscalQuarter = "{!CurrentFiscalQuarter.FormattedString}";
+    </script>
+    <script>
+        (function() {
+            angular.module('forecastingApp', ['ngAnimate'])
+            .controller('forecastingQuotaCtrl', function($scope) {
+                $scope.users = rootUsers;
+                $scope.fiscalQuarter = fiscalQuarter;
+                $scope.forecastType = forecastType;
+                $scope.loadingFlag = 0;
+                $scope.autoExpanding = false;
+                
+                $scope.findUser = function(users, userId) {
+                    for(var i = 0; i < users.length; i++) {
+                        if(users[i].UserId == userId) {
+                            return users[i];
+                        }
+                        if(users[i].SubUsers) {
+                            var found = $scope.findUser(users[i].SubUsers, userId);
+                            if(found != null) {
+                                return found;
+                            }
+                        }
+                    }
+                    return null;
+                };
+                
+                $scope.loadUsers = function(userId) {
+                    $scope.loadingFlag++;
+                    ForecastingQuotaController.GetDirectSubUserQuota(userId, $scope.fiscalQuarter, $scope.forecastType, function(result){
+                        if($scope.users == null) {
+                            $scope.users = result;
+                        }
+                        else
+                        {
+                            var user = $scope.findUser($scope.users, userId);
+                            if(user != null) {
+                                user.Expanded = true;
+                                user.SubUsers = [];
+                                for(var i = 0; i < result.length; i++) {
+                                    var usr = result[i];
+                                    if($scope.findUser($scope.users, usr.UserId) == null) {
+                                        user.SubUsers.push(usr);
+                                    }
+                                    if($scope.autoExpanding && usr.HasSubordinate && !usr.Expanded) {
+                                        $scope.loadUsers(usr.UserId);
+                                    }
+                                }
+                            }
+                        }
+                        $scope.loadingFlag--;
+                        setTimeout(function() {$scope.$apply();});
+                    })
+                };
+                $scope.saveUser = function() {
+                    $(".btn").prop("disabled", true);
+                    $(".btn").addClass("btnDisabled");
+                    $scope.loadingFlag++;
+                    var allUsers = $scope.streamLineUsers($scope.users);
+                    ForecastingQuotaController.SaveUserQuota(allUsers, function(result, event) {
+                        $scope.loadingFlag--;
+                        $(".btn").removeClass("btnDisabled");
+                        $(".btn").prop("disabled", false);
+                        setTimeout(function() {$scope.$apply();});
+                    });
+                };
+                $scope.expandAll = function() {
+                    $scope.autoExpanding = true;
+                    for(var i = 0; i < $scope.users.length; i++) {
+                        var usr = $scope.users[i];
+                        if(usr.HasSubordinate && !usr.Expanded) {
+                            $scope.loadUsers(usr.UserId);
+                        }
+                    }
+                };
+                $scope.streamLineUsers = function(users) {
+                    var result = [];
+                    for(var i = 0; i < users.length; i++) {
+                        var u = users[i];
+                        result.push({UserId: u.UserId, QuotaAmount: $scope.enforceNumberValidated(u.QuotaAmount), FiscalQuarter:$scope.fiscalQuarter, ForecastType: u.ForecastType});
+                        if(users[i].SubUsers && users[i].SubUsers.length > 0) {
+                            result = result.concat($scope.streamLineUsers(users[i].SubUsers));
+                        }
+                    }
+                    return result;
+                };
+                $scope.enforceNumberValidated = function(value) {
+                    if(typeof(value) == "string")
+                    {
+                        var newValue = value.replace(/\$/g, '').replace(/,/g, '').replace(/[KkMm]$/i, '');
+                        newValue = parseFloat(newValue);
+                        if(value.substr(-1) == 'K' || value.substr(-1) == 'k')
+                        {
+                            newValue *= 1000;
+                        }
+                        if(value.substr(-1) == 'M' || value.substr(-1) == 'm')
+                        {
+                            newValue *= 1000000;
+                        }
+                        return newValue;
+                    }
+                    return value;
+                };
+            });
+        })();
+    </script>
+
+    <style type="text/css">
+        .fp-quota ul, ol, li .fp-line {
+            margin: 0;
+            padding: 5px 0 0 8px;
+            list-style-type: none;
+        }
+
+        .fp-quota .fp-user-name {
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .fp-quota .fp-user-name span {
+            font-weight: bold;
+        }
+        .fp-quota .fp-role {
+            font-size: 12px;
+            font-style: italic;
+            position: absolute;
+            left: 400px;
+        }
+        .fp-quota .fp-number {
+            position: absolute;
+            left: 650px;
+        }
+        .fp-quota .fp-next {
+            position: absolute;
+            left:850px;
+        }
+        .fp-quota .fp-quota-amount {
+            width: 100px;
+            text-align:right;
+        }
+    </style>
+    
+    <apex:sectionHeader title="Forecasting" subTitle="Edit Plans" />
+    <apex:PageMessages id="pageMessage" escape="true" />
+    
+    <apex:form id="form" html-ng-app="forecastingApp" html-ng-controller="forecastingQuotaCtrl">
+        <div class="ptBreadcrumb">
+            <a class="fa fa-angle-double-left" href="{!$Page.Forecasting}?type={{forecastType}}&quarter={{fiscalQuarter}}"> Back to Forecasting</a>
+            &nbsp;<span style="margin-left:40%;color:red;" ng-show="loadingFlag > 0">Loading...</span>
+        </div>
+        <br/>
+        <div id="wrap">
+            <div class="fqTitleCon">
+                <span class="fqTitle">Fiscal Quarter</span>
+                <span class="fqNum">{!CurrentFiscalQuarter.FormattedString}</span>
+                <a class="fqBtn" href="{!$Page.ForecastingQuota}?quarter={!CurrentFiscalQuarter.Previous.FormattedString}" title="Previous quarter"><img src="{!URLFOR($Resource.Forecasting, 'img/fqBtnLeft.gif')}" /></a>
+                <a class="fqBtn" href="{!$Page.ForecastingQuota}?quarter={!CurrentFiscalQuarter.Next.FormattedString}" title="Next quarter"><img src="{!URLFOR($Resource.Forecasting, 'img/fqBtnRight.gif')}" /></a>
+                <div class="switch-toggle switch-3 switch-candy switch-candy-blue fqSwitch" style="width:250px;margin-left:15%">
+                    <input id="forecastNew" name="view" type="radio" ng-checked="forecastType=='new'" />
+                    <label for="forecastNew" ng-click="users=null;forecastType='new';loadUsers(null)">New</label>
+                    <input id="forecastUpsell" name="view" type="radio" ng-checked="forecastType=='upsell'" />
+                    <label for="forecastUpsell" ng-click="users=null;forecastType='upsell';loadUsers(null)">Upsell</label>
+                    <input id="forecastRenewal" name="view" type="radio" ng-checked="forecastType=='renewal'" />
+                    <label for="forecastRenewal" ng-click="users=null;forecastType='renewal';loadUsers(null)">Renewal</label>
+                    <a></a>
+                </div>
+                <span style="float:right;margin-right:10px;">
+                    <input type="button" class="btn" value="Save" style="width:50px" ng-click="saveUser()"/>&nbsp;
+                    <input type="button" class="btn" value="Cancel" style="width:50px" onclick="top.location='/apex/Forecasting'"/>
+                </span>
+            </div>
+        </div>
+        <apex:pageBlock >
+            <div class="fp-quota">
+                <ul>
+                    <li class="fp-line" style="margin-bottom:5px;">
+                        <span class="fp-user-name">&nbsp;</span>
+                        <span class="fp-role">&nbsp;</span>
+                        <span class="fp-number" style="font-weight:bold">{{fiscalQuarter}}</span>
+                        <span class="fp-next" style="font-weight:bold">{!CurrentFiscalQuarter.Previous.FormattedString}</span>
+                    </li>
+                    <li ng-repeat="user in users" class="fp-line">
+                        <span ng-class="{'fa':true, 'fa-plus-square-o':user.HasSubordinate&&!user.Expanded}" ng-click="loadUsers(user.UserId)"  class="fp-user-name"><span> {{user.UserName}}</span></span>
+                        <span class="fp-role">{{user.RoleName}}</span>
+                        <span class="fp-number"><input ng-model="user.QuotaAmount" class="fp-quota-amount" /></span>
+                        <span class="fp-next" ng-show="user.PreviousQuota">${{user.PreviousQuota | number:0}}</span>
+                        <ul>
+                            <li ng-repeat="user1 in user.SubUsers" class="fp-line">
+                                <span ng-class="{'fa':true, 'fa-plus-square-o':user1.HasSubordinate&&!user1.Expanded}" ng-click="loadUsers(user1.UserId)" class="fp-user-name"><span> {{user1.UserName}}</span></span>
+                                <span class="fp-role">{{user1.RoleName}}</span>
+                                <span class="fp-number"><input ng-model="user1.QuotaAmount" class="fp-quota-amount" /></span>
+                                <span class="fp-next" ng-show="user1.PreviousQuota">${{user1.PreviousQuota | number:0}}</span>
+                                <ul>
+                                    <li ng-repeat="user2 in user1.SubUsers" class="fp-line">
+                                        <span ng-class="{'fa':true, 'fa-plus-square-o':user2.HasSubordinate&&!user2.Expanded}" ng-click="loadUsers(user2.UserId)" class="fp-user-name"><span> {{user2.UserName}}</span></span>
+                                        <span class="fp-role">{{user2.RoleName}}</span>
+                                        <span class="fp-number"><input ng-model="user2.QuotaAmount" class="fp-quota-amount" /></span>
+                                        <span class="fp-next" ng-show="user2.PreviousQuota">${{user2.PreviousQuota | number:0}}</span>
+                                        <ul>
+                                            <li ng-repeat="user3 in user2.SubUsers" class="fp-line">
+                                                <span ng-class="{'fa':true,'fa-plus-square-o':user3.HasSubordinate&&!user3.Expanded}" ng-click="loadUsers(user3.UserId)" class="fp-user-name"><span> {{user3.UserName}}</span></span>
+                                                <span class="fp-role">{{user3.RoleName}}</span>
+                                                <span class="fp-number"><input ng-model="user3.QuotaAmount" class="fp-quota-amount" /></span>
+                                                <span class="fp-next" ng-show="user3.PreviousQuota">${{user3.PreviousQuota | number:0}}</span>
+                                                <ul>
+                                                    <li ng-repeat="user4 in user3.SubUsers" class="fp-line">
+                                                        <span ng-class="{'fa':true, 'fa-plus-square-o':user4.HasSubordinate&&!user4.Expanded}" class="fp-user-name"><span> {{user4.UserName}}</span></span>
+                                                        <span class="fp-role">{{user4.RoleName}}</span>
+                                                        <span class="fp-number"><input ng-model="user4.QuotaAmount" class="fp-quota-amount" /></span>
+                                                        <span class="fp-next" ng-show="user4.PreviousQuota">${{user4.PreviousQuota | number:0}}</span>
+                                                        <ul>
+                                                            <li ng-repeat="user5 in user4.SubUsers" class="fp-line">
+                                                                <span ng-class="{'fa':true,'fa-plus-square-o':user5.HasSubordinate&&!user5.Expanded}" ng-click="loadUsers(user5.UserId)" class="fp-user-name"><span> {{user5.UserName}}</span></span>
+                                                                <span class="fp-role">{{user5.RoleName}}</span>
+                                                                <span class="fp-number"><input ng-model="user5.QuotaAmount" class="fp-quota-amount" /></span>
+                                                                <span class="fp-next" ng-show="user5.PreviousQuota">${{user5.PreviousQuota | number:0}}</span>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="fp-line" style="margin-bottom:5px;">
+                        <span class="fp-user-name fa fa-angle-double-down" style="margin-left:30px" title="Expand All" ng-click="expandAll()">&nbsp;</span>
+                    </li>
+                </ul>
+            </div>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

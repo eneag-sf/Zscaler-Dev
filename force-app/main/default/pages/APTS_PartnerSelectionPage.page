@@ -1,0 +1,424 @@
+<!--
+Updated BY : Sateesh U
+Added the Lightning styles to this page.
+To Display Reseller and Distributor partners for the opportunity and To make selected partner as primary.
+-->
+
+<apex:page standardController="Apttus_Proposal__Proposal__c" extensions="APTS_PartnerSelectionCOntroller" sidebar="false"
+    showHeader="true" lightningStylesheets="true" docType="html-5.0">
+    <apex:includeScript id="jQuery" value="https://code.jquery.com/jquery-3.1.1.min.js" />
+    <script type="text/javascript"></script>
+    <script src="/soap/ajax/30.0/connection.js" type="text/javascript"></script>
+    <script src="/soap/ajax/30.0/apex.js" type="text/javascript"></script>
+    <apex:slds />
+    <style>
+        body .bEditBlock .pbBottomButtons,
+        body .apexp .bPageBlock.apexDefaultPageBlock .pbBottomButtons {
+            margin-top: 0px;
+        }
+
+        .loadingIcon {
+            padding-left: 16px;
+            background-image: url("/img/loading.gif");
+            background-repeat: no-repeat;
+            background-size: 13px 13px;
+        }
+
+        .slds-table_bordered {
+            border-collapse: separate;
+            border-top: 1px solid rgb(217, 219, 221);
+            border-bottom: 1px solid rgb(217, 219, 221);
+            border-right: 1px solid rgb(217, 219, 221);
+            border-left: 1px solid rgb(217, 219, 221);
+        }
+
+        .btn-disabled {
+            color: gray !important;
+            cursor: not-allowed;
+        }
+    </style>
+    <div class="slds-scope">
+        <apex:form id="frm">
+
+            <apex:outputPanel id="Errors">
+                <apex:outputpanel rendered="{!haserror}">
+                    <apex:pageMessages />
+                </apex:outputpanel>
+            </apex:outputPanel>
+
+            <apex:outputpanel id="dummyPanel" style="display:none;"></apex:outputpanel>
+
+            <apex:actionFunction name="saveFile" action="{!submitForApproval}" rerender="panel,panel1,RerenderButtons,rerenderSubmitPanel"
+                status="actionStatus">
+                <apex:param name="AttId" value="" assignTo="{!AttachmentId}" />
+                <apex:param name="FilePartner" value="" assignTo="{!selectedPartnerIdForApproval}" />
+            </apex:actionFunction>
+
+            <apex:actionFunction action="{!CheckDistributorPartners}" name="CheckOrUncheckPrimaryDistributor" rerender="panel1,RerenderButtons"
+                status="actionStatus">
+                <apex:param name="PartnerIdValue" assignTo="{!DistributorPartnerId}" value="" />
+            </apex:actionFunction>
+
+            <apex:actionFunction action="{!AssignPartnerId}" name="SaveMethod" rerender="dummyPanel" status="actionStatus">
+                <apex:param name="PartnerIdValue" assignTo="{!SelectedPartnerId}" value="" />
+                <apex:param name="Partnerprogvalue" assignTo="{!SelectedPartnerProgram}" value="" />
+            </apex:actionFunction>
+
+            <!--<apex:actionFunction action="{!AssignDistributorPartnerId}" name="AssignDistPart" rerender="dummyPanel" status="actionStatus">
+            <apex:param name="PartnerIdValue" assignTo="{!SelectedDistributorPartnerId}" value="" />
+        </apex:actionFunction>-->
+
+            <h3 class="slds-section-title--divider slds-m-around--small" style="background-color: #21a0df;color: white;">
+                <b>Reseller Partners</b>
+            </h3>
+            <apex:outputpanel id="panel" rendered="{!hasPartners}">
+                <div class="slds-m-around--small">
+                    <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered">
+                        <thead>
+                            <tr class="slds-text-title_caps">
+
+                                <th style="text-align:center;width: 40%;" class="" scope="col">
+                                    <div class="slds-truncate" title="Partner">Partner</div>
+                                </th>
+                                <th style="text-align:center;width: 20%;" class="" scope="col">
+                                    <div class="slds-truncate" title="Primary">Select</div>
+                                </th>
+                                <th style="text-align:center;width: 20%;" class="" scope="col">
+                                    <div class="slds-truncate" title="Partner Program">Partner Program</div>
+                                </th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <apex:repeat value="{!oppPartnerRecords}" var="part" id="theRepeat">
+                                <tr class="slds-hint-parent">
+
+                                    <td style="text-align:center;">
+                                        <a href="{!'/'+part.oppPartner.Account__c}" target="_blank">{!part.oppPartner.Account__r.Name}</a>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <input type="radio" id="{!part.oppPartner.Id}" name="Primary" value="{!part.oppPartner.Is_Primary__c}" onclick="CheckMethods('{!part.oppPartner.Id}', '{!part.oppPartner.Partner_Program__c}');"
+                                        />
+                                    </td>
+                                    <td style="text-align:center;">
+                                        {!part.oppPartner.Partner_Program__c}
+                                    </td>
+
+                                    <td>
+                                        <apex:outputpanel rendered="{!part.oppPartnerStatus == 'Approval Required'}">
+                                            <!--<input type="file" id="text"  onchange="checkFile('{!part.oppPartner.Id}')"/>-->
+                                            <input type="file" id="text_{!part.oppPartner.Id}" />
+                                        </apex:outputpanel>
+                                        <!--<apex:inputFile value="{!part.attachment.body}"  filename="{!part.attachment.name}" id="file" rendered="{!part.oppPartnerStatus == 'Approval Required'}"  />-->
+                                        <apex:actionRegion >
+                                            <apex:commandButton styleClass="slds-button slds-button--brand" value="Submit For Approval" onclick="checkFile('{!part.oppPartner.Id}');"
+                                                rendered="{!part.oppPartnerStatus == 'Approval Required'}" rerender="panel,rerenderSubmitPanel"
+                                                status="actionStatus" />
+                                            <!--<apex:commandButton styleClass="slds-button slds-button--brand" value="Submit For Approval" action="{!submitForApproval}" rendered="{!part.oppPartnerStatus == 'Approval Required'}" rerender="panel,rerenderSubmitPanel" status="actionStatus">
+                                            <apex:param name="partnerId" value="{!part.oppPartner.Id}" assignTo="{!selectedPartnerIdForApproval}"/>
+                                        </apex:commandButton>-->
+                                        </apex:actionRegion>
+                                        <apex:outputLabel rendered="{!part.oppPartnerStatus != 'Approval Required'}" value="{!part.oppPartnerStatus}"></apex:outputLabel>
+                                    </td>
+                                </tr>
+                            </apex:repeat>
+                        </tbody>
+                    </table>
+                </div>
+            </apex:outputpanel>
+            <apex:outputPanel rendered="{!!hasPartners}">
+                <apex:pageMessage severity="warning" summary="No Reseller Partners are added on Opportunity"></apex:pageMessage>
+            </apex:outputPanel>
+
+            <h3 class="slds-section-title--divider slds-m-around--small" style="background-color: #21a0df;color: white;">
+                <b>Distributor Partners</b>
+            </h3>
+            <apex:outputpanel id="panel1" rendered="{!hasDistributors}">
+                <div class="slds-m-around--small">
+                    <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered">
+                        <thead>
+                            <tr class="slds-text-title_caps">
+
+                                <th style="text-align:center;width: 40%;" class="" scope="col">
+                                    <div class="slds-truncate" title="Partner">Partner</div>
+                                </th>
+                                <th style="text-align:center;width: 20%;" class="" scope="col">
+                                    <div class="slds-truncate" title="Primary">Select</div>
+                                </th>
+                                <!--<th style="text-align:center;width: 20%;" class="" scope="col">
+                                <div class="slds-truncate" title="Type">Type</div>
+                            </th>-->
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <apex:repeat value="{!OppDistributorPartnerRecords}" var="part" id="theRepeat1">
+                                <tr class="slds-hint-parent">
+
+                                    <td style="text-align:center;">
+                                        <a href="{!'/'+part.oppPartner.Account__c}" target="_blank">{!part.oppPartner.Account__r.Name}</a>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <!--<input type="checkbox" id="{!part.oppPartner.Id}" name="Primary" value="{!part.oppPartner.Is_Primary__c}" onclick="CheckDistributorMethods('{!part.oppPartner.Id}');" ></input>-->
+                                        <!--{!part.oppPartner.Is_Primary__c}-->
+                                        <!--<input type="radio" id="{!part.oppPartner.Id}"  checked="{!if(part.oppPartner.Is_Primary__c == true,true,false)}" name="{!part.oppPartner.Id}" value="{!part.oppPartner.Is_Primary__c}" onclick="CheckDistributorMethods('{!part.oppPartner.Id}');" />-->
+                                        <!--<apex:selectRadio id="{!part.oppPartner.Id}" name="{!part.oppPartner.Id}" value="{!part.oppPartner.Is_Primary__c}" onclick="CheckDistributorMethods('{!part.oppPartner.Id}');" />-->
+
+                                        <apex:outputpanel rendered="{!if(part.oppPartner.Is_Primary__c == true,true,false)}">
+                                            <apex:actionRegion >
+                                                <apex:image id="Check" value="{!$Resource.RadioButtonChecked}" style="height: 20px;width: 20px;" height="10" width="10" onclick="CheckDistributorMethods('{!part.oppPartner.Id}');"
+                                                />
+                                            </apex:actionRegion>
+                                        </apex:outputpanel>
+                                        <apex:outputpanel rendered="{!if(part.oppPartner.Is_Primary__c == true,false,true)}">
+                                            <apex:actionRegion >
+                                                <apex:image id="UnCheck" value="{!$Resource.RadioButtonUnChecked}" style="height: 20px;width: 20px;" height="10" width="10"
+                                                    onclick="CheckDistributorMethods('{!part.oppPartner.Id}');" />
+                                            </apex:actionRegion>
+                                        </apex:outputpanel>
+
+                                    </td>
+                                    <!--<td style="text-align:center;">
+                                    {!part.oppPartner.Partner_Type__c}
+                                </td>-->
+
+                                    <td>
+                                        <!--<apex:commandButton styleClass="slds-button slds-button--brand" value="Submit For Approval" action="{!submitForApproval}" rendered="{!part.oppPartnerStatus == 'Approval Required'}" rerender="panel1,rerenderDistributorSubmitPanel" status="actionStatus">
+                                    <apex:param name="partnerId" value="{!part.oppPartner.Id}" assignTo="{!selectedPartnerIdForApproval}"/>
+                                    </apex:commandButton>
+                                    <apex:outputLabel rendered="{!part.oppPartnerStatus != 'Approval Required'}" value="{!part.oppPartnerStatus}"></apex:outputLabel>-->
+                                    </td>
+                                </tr>
+                            </apex:repeat>
+                        </tbody>
+                    </table>
+                </div>
+            </apex:outputpanel>
+
+            <!-- Partner Model Type Pop up Start -->
+
+            <!-- Partner Model Type Pop up End -->
+
+            <apex:outputPanel rendered="{!!hasDistributors}">
+                <apex:pageMessage severity="warning" summary="No Distributor Partners are added on Opportunity"></apex:pageMessage>
+            </apex:outputPanel>
+            <div class="slds-align_absolute-center">
+                <apex:commandButton styleClass="slds-button slds-button--brand" value="Save" action="{!SavePartner1}" rerender="Errors,PartnerModelPanel"
+                    status="actionStatus" onclick="     " />
+                <apex:commandButton styleClass="slds-button slds-button--brand" value="Cancel" action="{!cancelAction}" status="actionStatus"
+                    rerender="Errors" />
+                <!--<apex:actionStatus id="actionStatus" startText="Please wait..." stopText="" onstart="disableButtons()" onstop="enableButtons()" startStyleClass="loadingIcon" stopStyleClass=""></apex:actionStatus>-->
+                <apex:actionstatus id="actionStatus">
+                    <apex:facet name="start">
+                        <div class="slds-spinner_container">
+                            <div id="mySpinner" role="status" class="slds-spinner slds-spinner_medium">
+                                <span class="slds-assistive-text">Loading</span>
+                                <div class="slds-spinner__dot-a"></div>
+                                <div class="slds-spinner__dot-b"></div>
+                            </div>
+                        </div>
+                    </apex:facet>
+                </apex:actionstatus>
+            </div>
+            <!--</apex:outputpanel>-->
+
+
+
+            <apex:outputpanel id="rerenderPanel">
+                <script>
+                    function onCancel() {
+                        if (!{!haserror
+                    }) {
+                        window.opener.location.href = "/{!$CurrentPage.parameters.id}";
+                        window.top.close();
+                    }
+            }
+                </script>
+            </apex:outputpanel>
+
+
+            <apex:outputPanel id="PartnerModelPanel">
+                <apex:outputPanel rendered="{!partnerModel}">
+                    <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1"
+                        class="slds-modal slds-fade-in-open slds-modal_large">
+                        <div class="slds-modal__container">
+                            <header class="slds-modal__header">
+                                <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">Are you Sure?</h2>
+                            </header>
+                            <!--###### MODAL BOX BODY Part Start######-->
+                            <div class="slds-modal__content slds-p-around_large" id="modal-content-id-1">
+                                <center>
+                                    <apex:outputPanel rendered="{!NOT(hasModelError)}">
+                                        The selected Partner has a different program to the current program with which quote is configured. Clicking on save will
+                                        require re-configuration of cart in future. Do you want to Proceed?
+                                    </apex:outputPanel>
+                                    <apex:outputPanel id="errorpanel">
+                                        <apex:outputPanel rendered="{!hasModelError}">
+                                            <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error" role="alert">
+                                                <span class="slds-assistive-text">error</span>
+                                                <span class="slds-icon_container slds-icon-utility-error slds-m-right_x-small">
+                                                </span>
+                                                <h2>
+                                                    {!errorMessage}
+                                                </h2>
+                                            </div>
+                                        </apex:outputPanel>
+                                    </apex:outputPanel>
+                                </center>
+                                <div class="slds-p-bottom_small"></div>
+                            </div>
+                            <footer class="slds-modal__footer">
+                                <apex:commandButton action="{!cancelModal}" value="{!$Label.apttus_proposal__cancel}" immediate="true" styleclass="slds-button slds-button_brand slds-m-top_large"
+                                />
+                                <apex:commandButton action="{!SavePartner}" value="Proceed" styleclass="slds-button slds-button_brand slds-m-top_large" />
+                            </footer>
+                        </div>
+                    </section>
+                    <div class="slds-backdrop slds-backdrop_open"></div>
+                </apex:outputPanel>
+            </apex:outputPanel>
+        </apex:form>
+    </div>
+    <apex:outputpanel id="rerenderSubmitPanel">
+        <script>
+            callPrimaryCheckMethod();
+        </script>
+    </apex:outputpanel>
+
+    <apex:outputpanel id="rerenderDistributorSubmitPanel">
+        <script>
+            callDistributorCheckMethod();
+        </script>
+    </apex:outputpanel>
+
+    <script>
+
+        var JsonString = '{!PartnerString}';
+        var proposalDistributor = '{!proposalDistributor}';
+        var proposalBillTo = '{!proposalBillTo}';
+        var PartnerList = JSON.parse(JsonString);
+        for (var i = 0; i < PartnerList.length; i++) {
+            //if(PartnerList[i].Is_Primary__c == true){
+            if (PartnerList[i].Account__c == proposalBillTo) {
+                document.getElementById(PartnerList[i].Id).checked = true;
+            } else {
+                document.getElementById(PartnerList[i].Id).checked = false;
+            }
+        }
+
+        /*var JsonDistributorString = '{!DistributorPartnerString}';
+            var DistributorPartnerList = JSON.parse(JsonDistributorString);
+            for(var i=0;i<DistributorPartnerList.length;i++){
+                //if(DistributorPartnerList[i].Is_Primary__c == true){
+                if(DistributorPartnerList[i].Account__c == proposalDistributor){
+                    document.getElementById(DistributorPartnerList[i].Id).checked=true;
+                }else{
+                    document.getElementById(DistributorPartnerList[i].Id).checked=false;
+                }
+            }*/
+
+        function CheckMethods(PartnerId, partProgram) {
+            var JsonString = '{!PartnerString}';
+            var PartnerList = JSON.parse(JsonString);
+            //alert('----------'+PartnerList);
+            for (var i = 0; i < PartnerList.length; i++) {
+                if (PartnerList[i].Id == PartnerId) {
+                    document.getElementById(PartnerId).checked = true;
+                    SaveMethod(PartnerId, partProgram);
+                    //alert(PartnerId+'--Id--'+PartnerList[i].Id);
+                } else {
+                    document.getElementById(PartnerList[i].Id).checked = false;
+                }
+            }
+
+        }
+
+        function callPrimaryCheckMethod() {
+            //alert('--calling--');
+            var JsonString = '{!PartnerString}';
+            var PartnerList = JSON.parse(JsonString);
+            for (var i = 0; i < PartnerList.length; i++) {
+                //if(PartnerList[i].Is_Primary__c == true){
+                if (PartnerList[i].Account__c == proposalBillTo) {
+                    document.getElementById(PartnerList[i].Id).checked = true;
+                } else {
+                    document.getElementById(PartnerList[i].Id).checked = false;
+                }
+            }
+        }
+
+
+        function CheckDistributorMethods(PartnerId) {
+            /*var JsonDistributorString = '{!DistributorPartnerString}';
+                var DistributorPartnerList = JSON.parse(JsonDistributorString);
+                //alert('----------'+PartnerList);
+                
+                for(var i=0;i<DistributorPartnerList.length;i++){
+                    if(DistributorPartnerList[i].Id == PartnerId){
+                        alert(document.getElementById(PartnerId).checked);
+                        document.getElementById(PartnerId).checked=true;
+                        AssignDistPart(PartnerId);
+                        //alert(PartnerId+'--Id--'+PartnerList[i].Id);
+                    }else{
+                        document.getElementById(DistributorPartnerList[i].Id).checked=false;
+                    }
+                }*/
+            CheckOrUncheckPrimaryDistributor(PartnerId);
+
+        }
+
+        function callDistributorCheckMethod() {
+
+            var JsonDistributorString = '{!DistributorPartnerString}';
+            var DistributorPartnerList = JSON.parse(JsonDistributorString);
+            for (var i = 0; i < DistributorPartnerList.length; i++) {
+                if (DistributorPartnerList[i].Is_Primary__c == true) {
+                    document.getElementById(DistributorPartnerList[i].Id).checked = true;
+                } else {
+                    document.getElementById(DistributorPartnerList[i].Id).checked = false;
+                }
+            }
+        }
+
+        sforce.connection.sessionId = "{!$Api.Session_ID}";
+        function checkFile(PartnerId) {
+            var reader = new FileReader();
+            var file = document.getElementById('text_' + PartnerId).files[0];
+            if (file != undefined) {
+                var name = file.name;
+                reader.onload = function (e) {
+                    //alert('------------------'+(new sforce.Base64Binary(e.target.result)).toString());
+                    var attachmentbodybase64 = window.btoa(reader.result);
+                    var attachment = new sforce.SObject('Attachment');
+                    attachment.Name = name;
+                    attachment.Body = (new sforce.Base64Binary(e.target.result)).toString();
+                    attachment.ParentId = PartnerId;
+                    var result = sforce.connection.create([attachment]);
+                    if (result[0].getBoolean("success")) {
+                        var AttachmentId = result[0].id;  // get attachment id.
+                        saveFile(AttachmentId, PartnerId);
+                    } else {
+                        alert('Error while uploading the file..');
+                    }
+                }
+                reader.readAsDataURL(file);
+            } else {
+                saveFile(null, PartnerId);
+            }
+        }
+
+        function disableButtons() {
+            $(".saveBtn").attr("disabled", "true");
+            $(".saveBtn").addClass("btn-disabled");
+            $(".cancelBtn").attr("disabled", "true");
+            $(".cancelBtn").addClass("btn-disabled");
+        }
+        function enableButtons() {
+            $(".saveBtn").removeAttr("disabled");
+            $(".saveBtn").removeClass("btn-disabled");
+            $(".cancelBtn").removeAttr("disabled");
+            $(".cancelBtn").removeClass("btn-disabled");
+        }
+
+    </script>
+</apex:page>

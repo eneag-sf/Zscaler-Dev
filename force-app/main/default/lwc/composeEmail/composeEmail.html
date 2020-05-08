@@ -1,0 +1,64 @@
+<template>
+    <lightning-layout multiple-rows="true">
+        
+        <lightning-layout-item size="12">
+            <lightning-layout multiple-rows="true" aria-setsize="6" style="background: white;padding: 1rem;">
+                <lightning-layout-item size=6 >
+                    <div class="slds-p-right_small">
+                        <lightning-combobox name="fromAddress" label="From:" data-type="fromAddress" value={fromAddress}
+                        options={fromResults} onchange={handleChange}>
+                        </lightning-combobox>
+                    </div>
+                </lightning-layout-item>
+
+                <lightning-layout-item size=6 >
+                    <lightning-input type="text" name="toAddress" label="To" data-type="toAddress" value={toAddress} onchange={handleChange}></lightning-input>
+                    <!-- <c-lwc-custom-look-up object-name='Contact' display-fields='Id, Name, FirstName, LastName, Email'
+                        label='To:' icon-name='standard:contact' onchange={handleChange}>
+                    </c-lwc-custom-look-up> -->
+                </lightning-layout-item>
+
+                <lightning-layout-item size=12 >
+                    <lightning-textarea name="additionalTo" label="Additional To:" data-type="additionalTo"
+                        value={additionalTo} onchange={handleChange}></lightning-textarea>
+                </lightning-layout-item>
+
+                <lightning-layout-item size=12 >
+                    <lightning-textarea name="ccAddress" label="CC:" data-type="ccAddress" value={ccAddress}
+                        onchange={handleChange}></lightning-textarea>
+                </lightning-layout-item>
+
+                <lightning-layout-item size=12 >
+                    <lightning-textarea name="bccAddress" label="BCc:" data-type="bccAddress" value={bccAddress}
+                        onchange={handleChange}></lightning-textarea>
+                </lightning-layout-item>
+
+                <lightning-layout-item size=12 >
+                    <lightning-input value={subject} label="Subject:" data-type="subject" onchange={handleChange}
+                        placeholder="Subject"></lightning-input>
+                </lightning-layout-item>
+
+                <lightning-layout-item size=12   if:false={isBodyReadOnly}>
+                    <lightning-input-rich-text label-visible=true label="Body:" value={emailBody} data-type="emailBody"
+                        onchange={handleChange} placeholder="Email body...."> </lightning-input-rich-text>
+                </lightning-layout-item>
+
+                <lightning-layout-item size=12  if:true={isBodyReadOnly}>
+                    <div class="slds-p-top_small">
+                        <p>Body:</p>
+                        <div class="slds-box">
+                        <lightning-formatted-rich-text label="Body:" value={emailBody} data-type="emailBody"
+                            onchange={handleChange} placeholder="Email body...."> </lightning-formatted-rich-text>
+                        </div>
+                    </div>
+                </lightning-layout-item>
+
+                <lightning-layout-item size=12  class="slds-button-group slds-float_right">
+                    <lightning-button class="slds-m-top_medium slds-float_right" variant="brand" label="Send"
+                        onclick={sendMail}> </lightning-button>
+                </lightning-layout-item>
+
+            </lightning-layout>
+        </lightning-layout-item>
+    </lightning-layout>
+</template>

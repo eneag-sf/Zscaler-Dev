@@ -1,0 +1,24 @@
+<apex:page standardController="Deal_Reg__c" extensions="MatchingDealRegContactsControllerExt">
+     <apex:form >
+        <apex:pageBlock id="block">
+        
+            <apex:pageBlockSection columns="1" rendered="{!matchingContactList.size > 0}">
+                <apex:pageBlockSectionItem >
+                    <apex:pageBlockTable value="{!matchingContactList}" var="con" >
+                    <apex:column headerValue="Name">
+                        <a href="/{!con.Id}" target="_blank">{!con.Name}</a>
+                    </apex:column>
+                    <apex:column value="{!con.Company_Name__c}"/>
+                    <apex:column value="{!con.Email}"/>
+                    <apex:column value="{!con.Phone}"/>    
+                    <apex:column value="{!con.Contact_Lead_Status__c}"/>    
+                    <apex:column value="{!con.mkto2__Lead_Score__c}"/>                    
+                </apex:pageBlockTable>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection rendered="{!NOT(matchingContactList.size > 0)}">
+                No Matching Contact Found.
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+    </apex:form> 
+</apex:page>

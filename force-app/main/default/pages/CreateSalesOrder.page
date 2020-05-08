@@ -1,0 +1,763 @@
+<apex:page standardController="Opportunity" extensions="CreateSalesOrderExtension" showHeader="true" sidebar="true" action="{!pageLoad}" docType="html-5.0" >
+    <apex:includeScript id="jQuery" value="https://code.jquery.com/jquery-3.1.1.min.js" />
+    <apex:stylesheet id="jQuery-ui" value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css" />
+    <apex:includeScript id="jQuery-autocomplete" value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" />
+
+    <style>
+        .modal-backdrop {
+            background-color: rgba(255,255,255,0.75);
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            width: 100%;
+            height: 100%;
+        }
+
+        .loading-modal {
+            position: relative;
+            height: 300px;
+            width: 500px;
+            top: 20%;
+            background: url({!$Resource.loadingimg}) 50% 0 no-repeat;
+            margin: 0 auto;
+            padding-top: 60px;
+            text-align: center;
+            font-family: Verdana, Geneva, sans-serif;
+        }
+
+        .loadingIconSearch {
+            background-image: url("/img/loading.gif");
+            background-repeat: no-repeat;
+            background-position: 150px;
+        }
+
+        .ui-menu.ui-autocomplete.ui-front {
+            overflow-x: hidden;
+            overflow-y: auto;
+            min-height: 40px;
+            max-height: 200px;
+            max-width: 350px;
+        }
+
+        .ui-menu .ui-menu-item {
+            border-bottom:
+             1px solid grey;
+        }
+        .slds-theme_alert-texture, .slds-theme--alert-texture {
+            background-image: linear-gradient(45deg, rgba(0,0,0,0.025) 25%, transparent 25%, transparent 50%, rgba(0,0,0,0.025) 50%, rgba(0,0,0,0.025) 75%, transparent 75%, transparent) !important;
+            background-size: 64px 64px !important;
+        }
+
+        .slds-theme_error, .slds-theme--error {
+            color: #fff !important;
+            background-color: #c23934 !important;
+        }
+        .slds-notify_alert, .slds-notify--alert {
+            color: #fff;
+            display: -webkit-inline-box;
+            display: -ms-inline-flexbox;
+            display: inline-flex;
+            -webkit-box-align: center;
+            -ms-flex-align: center;
+            align-items: center;
+            -webkit-box-pack: center;
+            -ms-flex-pack: center;
+            justify-content: center;
+            position: relative;
+            background: rgba(112,110,107,0.95);
+            font-weight: 300;
+            padding: .5rem 2rem .5rem .5rem;
+            text-align: center;
+            width: 97.95%;
+        }
+
+    </style>
+    <apex:form id="frm">
+        <div class="waitingSearchDiv" id="el_loading" style="background-color: #fbfbfb; height:100%;opacity:0.65;width:100%;display:none;">
+            <div class="waitingHolder" style="top: 100px; width: 91px;">
+            <img class="waitingImage" src="/img/loading.gif" title="Please Wait..." />
+            <span class="waitingDescription">Loading...</span>
+            </div>
+        </div>
+        
+        <apex:actionstatus id="loadinggif">
+            <apex:facet name="start">
+                <div class="waitingSearchDiv" id="el_loading" style="background-color: #fbfbfb; height:100%;opacity:0.65;width:100%;">
+                    <div class="waitingHolder" style="top: 100px; width: 91px;">
+                    <img class="waitingImage" src="/img/loading.gif" title="Please Wait..." />
+                    <span class="waitingDescription">Loading...</span>
+                    </div>
+                </div>
+            </apex:facet>
+        </apex:actionstatus>
+        <apex:outputPanel id="frmPanel">
+            <apex:outputPanel id="messagesPanel" rendered="{!showMessage}">
+                <div id="messagesContainer" style="border: 1px solid #faebcc; border-radius: 3px; background-color: #fcf8e3; color: #8a6d3b; clear: both; padding: 8px 6px; margin: 5px 20px;">
+                    Successfully submitted the sales order creation request. You will be redirected back to the opportunity in 5 seconds...
+                 </div>
+
+                <script>
+                    var counter = 5;
+                    var redirect = function(counter) {
+                        setTimeout(function() {
+                            $("#messagesContainer").html('Successfully submitted the sales order creation request. You will be redirected back to the opportunity in ' + counter + ' seconds...');
+                            counter--;
+                            if (counter > 0) {
+                                redirect(counter);
+                            } else {
+                                cancel();
+                            }
+                        }, 1000);
+                    }
+                    redirect(counter);
+                </script>
+            </apex:outputPanel>
+
+            <apex:outputPanel id="errorsPanel" rendered="{!showError}">
+                <div id="messagesContainer" style="border: 1px solid #ebccd1; border-radius: 3px; background-color: #f2dede; color: #a94442; clear: both; padding: 8px 6px; margin: 5px 20px;">
+                    {!errors}
+                </div>
+            </apex:outputPanel>
+
+            <apex:pageBlock id="pblock">
+                <!-- Edit mode section - Start -->
+                <apex:outputPanel id="editPanel" rendered="{!NOT(reviewMode)}">
+                    <apex:pageBlockSection columns="2" collapsible="true" title="Bill To Customer">
+                         <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Bill To Customer ID" for="nsPartnerId" />
+                            <apex:outputText id="nsPartnerId" value="{!opportunity.Netsuite_Primary_Partner_ID__c}" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Bill To Customer Details" for="nsPartnerIdDetails" />
+                            <apex:outputText id="nsPartnerIdDetails" value="{!IF(NOT(ISBLANK(billToDetails)), billToDetails, '-')}" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Order Ops Bill To Override" for="nsPartnerIdOverride" />
+                            <apex:inputField id="nsPartnerIdOverride" value="{!opportunity.Netsuite_Primary_Partner_ID_Override__c}" onchange="getPartnerInternalId();"/> <!-- onchange="resetPartnerBillToOverriddenDetails('');" -->
+                        </apex:pageBlockSectionItem>
+                        
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Netsuite Partner Internal ID Override" />
+                            <apex:inputField label="Netsuite Partner Internal ID Override" id="nsBillToPartnerIdOverride" value="{!opportunity.Netsuite_Partner_Internal_ID_Override__c}" />
+                        </apex:pageBlockSectionItem>
+                        
+                        <apex:pageBlockSectionItem id="editBillToOverriddenDetailsPanel" >
+                            <apex:outputLabel value="Order Ops Bill To Override Customer Detail" for="editShipToOverriddenDetails" />
+                            <apex:outputText id="editBillToOverriddenDetails" value="{!IF(NOT(ISBLANK(billToOverriddenDetails)), billToOverriddenDetails, '-')}" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem id="editPartnerIdOverriddenDetailsPanel" >
+                            <apex:outputLabel value="Order Ops Partner Override Detail" />
+                            <apex:outputText id="editPartnerOverriddenDetails" value="{!IF(NOT(ISBLANK(partnerIdOverriddendetails)), partnerIdOverriddendetails, '-')}" />
+                        </apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem >
+                            <apex:inputCheckbox id="overrideBillToId" value="{!overrideBillToId}" />&nbsp;Apply Override on SFDC Bill To Account
+                        </apex:pageBlockSectionItem>
+                        
+                        <apex:pageBlockSectionItem >
+                            <apex:inputCheckbox value="{!overridePartnerId}" />&nbsp;Apply Override on Partner Account Id
+                        </apex:pageBlockSectionItem>                        
+
+                        <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+                        </apex:pageBlockSection>
+                        <apex:pageBlockSection columns="1" collapsible="true" title="Ship To Customer">
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Ship To Customer ID" for="nsCustId" />
+                            <apex:outputText id="nsCustId" value="{!opportunity.Netsuite_Customer_ID__c}" />
+                        </apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Ship To Customer Details" for="nsCustIdDetails" />
+                            <apex:outputText id="nsCustIdDetails" value="{!IF(NOT(ISBLANK(shipToDetails)), shipToDetails, '-')}" />
+                        </apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Order Ops Ship To Override" for="nsCustIdOverride" />
+                            <apex:inputText id="nsCustIdOverride" value="{!opportunity.Netsuite_Customer_ID_Override__c}" /> <!-- onchange="resetShipToOverriddenDetails('');" --> 
+                        </apex:pageBlockSectionItem>
+                        
+                        <apex:pageBlockSectionItem id="editShipToOverriddenDetailsPanel" >
+                            <apex:outputLabel value="Order Ops Ship To Override Customer Detail" for="editShipToOverriddenDetails" />
+                            <apex:outputText id="editShipToOverriddenDetails" value="{!IF(NOT(ISBLANK(shipToOverriddenDetails)), shipToOverriddenDetails, '-')}" />
+                        </apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem >
+                            <apex:inputCheckbox id="overrideShipToId" value="{!overrideShipToId}" />&nbsp;Apply Override on SFDC Ship To Account
+                        </apex:pageBlockSectionItem>
+                        
+                        <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+                        </apex:pageBlockSection>
+                        <apex:pageBlockSection columns="1" collapsible="true" title="Additional Details">
+                        <apex:pageBlockSection >
+                            <!-- <apex:outputLabel for="stageName" value="Opportunity Stage" /> -->
+                            <apex:outputField id="partnerprogram" value="{!opportunity.Primary_Partner_Program__c}" />
+                        </apex:pageBlockSection>
+                        <apex:pageBlockSection >
+                            <!-- <apex:outputLabel for="stageName" value="Opportunity Stage" /> -->
+                            <apex:inputField id="stageName" value="{!opportunity.StageName}" />
+                        </apex:pageBlockSection>
+
+                        <apex:pageBlockSection >
+                            <!-- <apex:outputLabel for="oppty10breason" value="10b Reason" /> -->
+                            <apex:inputField id="oppty10breason" value="{!opportunity.X10b_Reason__c}" />
+                        </apex:pageBlockSection>
+
+                        <apex:pageBlockSection >
+                            <apex:inputField id="financeComments" value="{!opportunity.Finance_Comments__c}" style="width: 300px; height: 50px;" />
+                        </apex:pageBlockSection>
+
+                        <apex:pageBlockSection >
+                            <apex:inputField id="soCreationDate" value="{!opportunity.SO_Creation_Date__c}"  required="true"/>
+                        </apex:pageBlockSection>
+                        
+                        <apex:pageBlockSection >
+                            <apex:inputField id="secpartner" value="{!opportunity.Secondary_Partner__c}"  required="{!requireSecPartner}"/>
+                        </apex:pageBlockSection>
+                        
+                        <apex:pageBlockSection >
+                            <apex:inputField id="secpartner" value="{!opportunity.Secondary_Partner_Role__c}"  required="{!requireSecPartner}"/>
+                        </apex:pageBlockSection>
+
+                        <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+                        
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Partner PO Number" for="partpromonumber" />
+                            <apex:inputField id="partpromonumber" value="{!opportunity.Partner_PO_Number__c}" required="true" />
+                        </apex:pageBlockSectionItem>
+                        
+                        <apex:pageBlockSectionItem rendered="{!shownewacv}">
+                            <apex:outputLabel value="Customer Since" for="firstpodate" />
+                            <apex:inputField id="firstpodate" value="{!opportunity.First_PO_Date__c}" required="true" />
+                        </apex:pageBlockSectionItem>
+                        
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Netsuite Promo Code" for="promocode" />
+                            <apex:inputField id="promocode" value="{!opportunity.Netsuite_Promo_Code__c}" />
+                        </apex:pageBlockSectionItem>
+                    </apex:pageBlockSection>
+                </apex:outputPanel>
+                <!-- Edit mode section - End -->
+
+                <!-- Review mode section - Start -->
+                <apex:outputPanel id="reviewPanel" rendered="{!reviewMode}">
+                    <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error" role="alert">
+                        <h2>
+                            Disclaimer: Numbers presented below are auto-calculated by the system. Please verify and override (if necessary) before order creation.
+                        </h2>
+                    </div>
+                    <br/>
+                    <br/>
+                    <apex:pageBlockSection columns="1" collapsible="true" title="Header Information">
+                         <!--<apex:pageBlockSectionItem >
+                            <apex:outputLabel value="10b Reason" for="X10bReason" />
+                            <apex:outputText id="X10bReason" value="{!opportunity.X10b_Reason__c}" />
+                        </apex:pageBlockSectionItem> -->
+
+                        <apex:pageBlockSectionItem rendered="{!AND(NOT(nsPartnerIdOverridden), NOT(ISBLANK(opportunity.Netsuite_Primary_Partner_ID__c)))}">
+                            <apex:outputLabel value="Bill To Customer ID" for="nsPartnerId" />
+                            <apex:outputText id="nsPartnerId" value="{!IF(ISBLANK(billToDetails), opportunity.Netsuite_Primary_Partner_ID__c, billToDetails)}" />
+                        </apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem rendered="{!AND(NOT(nsPartnerIdOverridden), ISBLANK(opportunity.Netsuite_Primary_Partner_ID__c))}">
+                            <apex:outputLabel value="Bill To Customer ID" for="nsPartnerId" />
+                            <apex:outputText id="nsPartnerId" value="To be created in NetSuite" />
+                        </apex:pageBlockSectionItem>
+                        
+                        <apex:pageBlockSectionItem rendered="{!nsPartnerIdOverridden && (billToOverriddenDetails == null)}">
+                            <apex:outputLabel value="Bill To Customer ID (Overridden)" for="nsPartnerIdOverride" />
+                            <apex:outputText id="nsPartnerIdOverride" value="{!opportunity.Netsuite_Primary_Partner_ID_Override__c}" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem rendered="{!nsPartnerIdOverridden && billToOverriddenDetails != null}">
+                            <apex:outputLabel value="Bill To Customer ID (Overridden)" for="nsPartnerIdOverride" />
+                            <apex:outputText value="{!billToOverriddenDetails}"/>
+                        </apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem rendered="{!AND(NOT(nsCustomerIdOverridden), NOT(ISBLANK(opportunity.Netsuite_Customer_ID__c)))}">
+                            <apex:outputLabel value="Ship To Customer ID" for="nsCustId" />
+                            <apex:outputText id="nsCustId" value="{!IF(ISBLANK(shipToDetails), opportunity.Netsuite_Customer_ID__c, shipToDetails)}" />
+                            <!-- <apex:outputText id="nsCustIdDetails" value="{!shipToDetails}" rendered="{!NOT(ISBLANK(shipToDetails))}" /> -->
+                        </apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem rendered="{!AND(NOT(nsCustomerIdOverridden), ISBLANK(opportunity.Netsuite_Customer_ID__c))}">
+                            <apex:outputLabel value="Ship To Customer ID" for="nsCustId" />
+                            <apex:outputText id="nsCustId" value="To be created in NetSuite" />
+                        </apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem rendered="{!nsCustomerIdOverridden && shipToOverriddenDetails == null}">
+                            <apex:outputLabel value="Ship To Customer ID (Overridden)" for="nsCustIdOverride" />
+                            <apex:outputText id="nsCustIdOverride" value="{!opportunity.Netsuite_Customer_ID_Override__c}"/>
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem rendered="{!nsCustomerIdOverridden && shipToOverriddenDetails != null}">
+                            <apex:outputLabel value="Ship To Customer ID (Overridden)" for="nsCustIdOverride" />
+                            <apex:outputText value="{!shipToOverriddenDetails}"/>
+                        </apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Stage" for="opptyStage" />
+                            <apex:outputText id="opptyStage" value="{!opportunity.StageName}" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Stage 5 Reason" for="oppty10bReason" />
+                            <apex:outputText id="oppty10bReason" value="{!opportunity.X10b_Reason__c}"/>
+                        </apex:pageBlockSectionItem>
+
+                         <apex:pageBlockSectionItem >
+                            <apex:outputLabel for="financeCommentsText" value="Finance Comments" />
+                            <apex:outputText id="financeCommentsText" value="{!opportunity.Finance_Comments__c}" />
+                        </apex:pageBlockSectionItem>
+
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel for="soCreationDateText" value="SO Creation Date" />
+                            <apex:outputText id="soCreationDateText" value="{0, Date, MM/dd/yyyy}">
+                                <apex:param value="{!opportunity.SO_Creation_Date__c}" />
+                            </apex:outputText>
+                        </apex:pageBlockSectionItem>
+                        
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Partner PO Number" for="partpromonumberText" />
+                            <apex:outputText id="partpromonumberText" value="{!opportunity.Partner_PO_Number__c}" />
+                        </apex:pageBlockSectionItem>
+                        
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Customer Since" for="firstpodateText" />
+                            <apex:outputText id="firstpodateText" value="{0, Date, MM/dd/yyyy}">
+                                <apex:param value="{!opportunity.First_PO_Date__c}" />
+                            </apex:outputText>
+                        </apex:pageBlockSectionItem>
+                        
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Netsuite Promo Code" for="promocodeText" />
+                            <apex:outputText id="promocodeText" value="{!opportunity.Netsuite_Promo_Code__c}" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Do not Override ACV calculations" />
+                            <apex:inputCheckbox id="nooverrideACV" value="{!nooverrideACV}" />
+                        </apex:pageBlockSectionItem>
+                    </apex:pageBlockSection>
+                    <br />
+                    <apex:pageBlockSection columns="1" rendered="{!lstdroppedcontractdetails.size > 0}" collapsible="true" title="Contract Details (Dropped)">
+                        <apex:pageBlockTable value="{!lstdroppedcontractdetails}" var="renewal">
+                            <apex:column value="{!renewal.Name}" headerValue="Contract Detail Name" />
+                            <apex:column value="{!renewal.Product_Name__r.Name}" headerValue="Product Name" />
+                            <apex:column value="{!renewal.Product_SKU__c}" headerValue="SKU" />
+                            <apex:column value="{!renewal.Quantity__c}" headerValue="Quantity" />
+                            <apex:column value="{!renewal.ARR_Finance__c}" headerValue="ARR(Finance)" />
+                            <apex:column value="{!renewal.MRR_USD__c}" headerValue="MRR" />
+                            <apex:column value="{!renewal.Amount_USD__c}" headerValue="Amount" />
+                        </apex:pageBlockTable>
+                    </apex:pageBlockSection>
+                    <br/>
+                    <apex:pageBlockSection columns="1" rendered="{!lstfinallinestoNSwithoutinternallines.size > 0}" collapsible="true" title="Lines Information">
+                        <apex:pageBlockTable value="{!lstfinallinestoNSwithoutinternallines}" var="renewal">
+                            <apex:column value="{!renewal.productName}" headerValue="Product Name" />
+                            <apex:column value="{!renewal.productCode}" headerValue="SKU" />
+                            <apex:column headerValue="Base Price" >
+                                <apex:outputText value="{0,number,currency}">
+                                    <apex:param value="{!renewal.basePrice}"/>
+                                </apex:outputText>
+                            </apex:column>
+                            <apex:column headerValue="Quantity" >
+                                <apex:outputText value="{0,number,###.##}">
+                                    <apex:param value="{!renewal.Qty}"/>
+                                </apex:outputText>
+                            </apex:column>
+                            <apex:column headerValue="Start Date" >
+                                <apex:outputText value="{0,date,MM/dd/yyyy}">
+                                    <apex:param value="{!renewal.StartDate}"/>
+                                </apex:outputText>
+                            </apex:column>
+                            <apex:column headerValue="End Date" >
+                                <apex:outputText value="{0,date,MM/dd/yyyy}">
+                                    <apex:param value="{!renewal.EndDate}"/>
+                                </apex:outputText>
+                            </apex:column>
+                            <apex:column headerValue="Term" >
+                                <apex:outputText value="{0,number,###.##}">
+                                    <apex:param value="{!renewal.SellingTermNS}"/>
+                                </apex:outputText>
+                            </apex:column>
+                            <apex:column headerValue="List Price" >
+                                <apex:outputText value="{0,number,currency}">
+                                    <apex:param value="{!renewal.ListPrice}"/>
+                                </apex:outputText>
+                            </apex:column>
+                            <apex:column headerValue="Discount" >
+                                
+                                <apex:outputText value="{0,number,percent}">
+                                    <apex:param value="{!renewal.discPercent}"/>
+                                </apex:outputText>
+                            </apex:column>
+                            <apex:column headerValue="Net Price" >
+                                
+                                <apex:outputText value="{0,number,currency}">
+                                    <apex:param value="{!renewal.NetPriceOriginal}"/>
+                                </apex:outputText>
+                            </apex:column>
+                            <apex:column headerValue="TCV (after Adjustment)" >
+                                
+                                <apex:outputText value="{0,number,currency}">
+                                    <apex:param value="{!renewal.NetPrice}"/>
+                                </apex:outputText>
+                            </apex:column>
+                            <apex:column headerValue="ACV (after Adjustment)" >
+                                
+                                <apex:outputText value="{0,number,currency}">
+                                    <apex:param value="{!renewal.ACV}"/>
+                                </apex:outputText>
+                            </apex:column>
+                            <apex:column rendered="{!shownewacv}">
+                                <apex:facet name="header">NetSuite Override New TCV</apex:facet>
+                                <apex:input value="{!renewal.newTCV}" />
+                            </apex:column>
+                            <apex:column rendered="{!showrenewalacv}">
+                                <apex:facet name="header">NetSuite Override Renewal TCV</apex:facet>
+                                <apex:input styleClass="{!renewal.recId}_totalRenewalTCV" value="{!renewal.RenewalTCV}" onchange="calculateUpsell('{!renewal.recId}_totalUpsellTCV', this.value, {!renewal.NetPrice});" />
+                            </apex:column>
+                            <apex:column rendered="{!showupsellacv}">
+                                <apex:facet name="header">NetSuite Override Upsell TCV</apex:facet>
+                                <apex:input styleClass="{!renewal.recId}_totalUpsellTCV" value="{!renewal.UpsellTCV }" onchange="calculateUpsell('{!renewal.recId}_totalRenewalTCV', this.value, {!renewal.NetPrice});" />
+                            </apex:column>
+                            <apex:column rendered="{!shownewacv}">
+                                <apex:facet name="header">NetSuite Override New ACV</apex:facet>
+                                <apex:input value="{!renewal.newACV}" />
+                            </apex:column>
+                            <apex:column rendered="{!showrenewalacv}">
+                                <apex:facet name="header">NetSuite Override Renewal ACV</apex:facet>
+                                <apex:input styleClass="{!renewal.recId}_totalRenewalACV" value="{!renewal.RenewalACV }" onchange="calculateUpsell('{!renewal.recId}_totalUpsellACV', this.value, {!renewal.ACV});" />
+                            </apex:column>
+                            <apex:column rendered="{!showupsellacv}">
+                                <apex:facet name="header">NetSuite Override Upsell ACV</apex:facet>
+                                <apex:input styleClass="{!renewal.recId}_totalUpsellACV" value="{!renewal.UpsellACV }"  onchange="calculateUpsell('{!renewal.recId}_totalRenewalACV', this.value, {!renewal.ACV});" />
+                            </apex:column>
+                            <apex:column headerValue="Renewed From Contract Details" rendered="{!AND(showupsellacv, showrenewalacv)}">
+                                <apex:inputText styleClass="cdn_{!renewal.productCode}" value="{!renewal.contractDetailName}" />
+                                <apex:inputText styleClass="cdid_{!renewal.productCode}" style="display: none;" value="{!renewal.contractDetailId}" />
+
+                                <script type="text/javascript">
+                                $(".cdn_{!renewal.productCode}").autocomplete({
+                                    minLength: 2,
+                                    appendTo: this,
+                                    source: function(request, response) {
+                                        $(this.element).addClass("loadingIconSearch");
+                                        var that = this;
+                                        CreateSalesOrderExtension.searchContractDetails(request.term, "{!opportunity.AccountId}", function(result, event) {
+                                            $(that.element).removeClass("loadingIconSearch");
+                                            if (event.type == 'exception' || result == null) {
+                                                response('No matching users found');
+                                            } else {
+                                                response(result);
+                                            }
+                                        });
+                                    },
+                                    onkeypress: function(event, ui) {
+                                        $(".cdn_{!renewal.productCode}").val('');
+                                        $(".cdid_{!renewal.productCode}").val('');
+
+                                        return false;
+                                    },
+                                    focus: function(event, ui) {
+                                        $(".cdn_{!renewal.productCode}").val(ui.item.Name);
+                                        return false;
+                                    },
+                                    select: function(event, ui) {
+                                        $(".cdn_{!renewal.productCode}").val(ui.item.Name);
+                                        $(".cdid_{!renewal.productCode}").val(ui.item.Id);
+                                        return false;
+                                    }
+                                })
+                                .data('uiAutocomplete')._renderItem = function(ul, item) {
+                                    var wrapper = "<div>" + item.Name + "</div>";
+                                    return $("<li></li>")
+                                        .append(wrapper)
+                                        .appendTo(ul);
+                                }
+                                function calculateUpsell(idtoChange, val, total){
+                                    console.log(total);
+                                    console.log(val);
+                                    console.log(total-val);
+                                    $('.'+idtoChange).val(total-val);
+                                    $('[Id$=nooverrideACV]').attr('checked','checked');
+                                }
+                            </script>
+                            </apex:column>
+                            <apex:column headerValue="Additional Contract Details" rendered="{!AND(showupsellacv, showrenewalacv)}">
+                                <apex:inputTextArea value="{!renewal.addcontractDetailName }" />
+                            </apex:column>
+                        </apex:pageBlockTable>
+                    </apex:pageBlockSection>
+                    <apex:pageBlockSection columns="1" rendered="{!lstfinallinestoNSwithinternallines.size > 0}" collapsible="true" title="Internal Lines">
+                        <apex:pageBlockTable value="{!lstfinallinestoNSwithinternallines}" var="renewal">
+                            <apex:column value="{!renewal.productName}" headerValue="Product Name" />
+                            <apex:column value="{!renewal.productCode}" headerValue="SKU" />
+                            <apex:column headerValue="Base Price" >
+                                <apex:outputText value="{0,number,currency}">
+                                    <apex:param value="{!renewal.basePrice}"/>
+                                </apex:outputText>
+                            </apex:column>
+                            <apex:column headerValue="Quantity" >
+                                <apex:outputText value="{0,number,###.##}">
+                                    <apex:param value="{!renewal.Qty}"/>
+                                </apex:outputText>
+                            </apex:column>
+                            <apex:column headerValue="Start Date" >
+                                <apex:outputText value="{0,date,MM/dd/yyyy}">
+                                    <apex:param value="{!renewal.StartDate}"/>
+                                </apex:outputText>
+                            </apex:column>
+                            <apex:column headerValue="End Date" >
+                                <apex:outputText value="{0,date,MM/dd/yyyy}">
+                                    <apex:param value="{!renewal.EndDate}"/>
+                                </apex:outputText>
+                            </apex:column>
+                            <apex:column headerValue="Term" >
+                                <apex:outputText value="{0,number,###.##}">
+                                    <apex:param value="{!renewal.SellingTermNS}"/>
+                                </apex:outputText>
+                            </apex:column>
+                            <apex:column headerValue="List Price" >
+                                <apex:outputText value="{0,number,currency}">
+                                    <apex:param value="{!renewal.ListPrice}"/>
+                                </apex:outputText>
+                            </apex:column>
+                            <apex:column headerValue="Discount" >
+                                
+                                <apex:outputText value="{0,number,percent}">
+                                    <apex:param value="{!renewal.discPercent}"/>
+                                </apex:outputText>
+                            </apex:column>
+                            <apex:column headerValue="Net Price" >
+                                
+                                <apex:outputText value="{0,number,currency}">
+                                    <apex:param value="{!renewal.NetPriceOriginal}"/>
+                                </apex:outputText>
+                            </apex:column>
+                            <apex:column headerValue="Net Price (after Adjustment)" >
+                                
+                                <apex:outputText value="{0,number,currency}">
+                                    <apex:param value="{!renewal.NetPrice}"/>
+                                </apex:outputText>
+                            </apex:column>
+                            <apex:column headerValue="ACV (after Adjustment)" >
+                                
+                                <apex:outputText value="{0,number,currency}">
+                                    <apex:param value="{!renewal.ACV}"/>
+                                </apex:outputText>
+                            </apex:column>
+                            <apex:column rendered="{!shownewacv}">
+                                <apex:facet name="header">NetSuite Override New TCV</apex:facet>
+                                <apex:input value="{!renewal.newTCV}" />
+                            </apex:column>
+                            <apex:column rendered="{!showrenewalacv}">
+                                <apex:facet name="header">NetSuite Override Renewal TCV</apex:facet>
+                                <apex:input styleClass="{!renewal.recId}_totalRenewalTCV" value="{!renewal.RenewalTCV}" onchange="calculateUpsell('{!renewal.recId}_totalUpsellTCV', this.value, {!renewal.NetPrice});" />
+                            </apex:column>
+                            <apex:column rendered="{!showupsellacv}">
+                                <apex:facet name="header">NetSuite Override Upsell TCV</apex:facet>
+                                <apex:input styleClass="{!renewal.recId}_totalUpsellTCV" value="{!renewal.UpsellTCV }" onchange="calculateUpsell('{!renewal.recId}_totalRenewalTCV', this.value, {!renewal.NetPrice});" />
+                            </apex:column>
+                            <apex:column rendered="{!shownewacv}">
+                                <apex:facet name="header">NetSuite Override New ACV</apex:facet>
+                                <apex:input value="{!renewal.newACV}" />
+                            </apex:column>
+                            <apex:column rendered="{!showrenewalacv}">
+                                <apex:facet name="header">NetSuite Override Renewal ACV</apex:facet>
+                                <apex:input styleClass="{!renewal.recId}_totalRenewalACV" value="{!renewal.RenewalACV }" onchange="calculateUpsell('{!renewal.recId}_totalUpsellACV', this.value, {!renewal.acv});" />
+                            </apex:column>
+                            <apex:column rendered="{!showupsellacv}">
+                                <apex:facet name="header">NetSuite Override Upsell ACV</apex:facet>
+                                <apex:input styleClass="{!renewal.recId}_totalUpsellACV" value="{!renewal.UpsellACV }"  onchange="calculateUpsell('{!renewal.recId}_totalRenewalACV', this.value, {!renewal.acv});" />
+                            </apex:column>
+                            <apex:column headerValue="Renewed From Contract Details" rendered="{!AND(showupsellacv, showrenewalacv)}">
+                                <apex:inputText styleClass="cdninternal_{!renewal.productCode}" value="{!renewal.contractDetailName}" />
+                                <apex:inputText styleClass="cdidinternal_{!renewal.productCode}" style="display: none;" value="{!renewal.contractDetailId}" />
+
+                                <script type="text/javascript">
+                                $(".cdninternal_{!renewal.productCode}").autocomplete({
+                                    minLength: 2,
+                                    appendTo: this,
+                                    source: function(request, response) {
+                                        $(this.element).addClass("loadingIconSearch");
+                                        var that = this;
+                                        CreateSalesOrderExtension.searchContractDetails(request.term, "{!opportunity.AccountId}", function(result, event) {
+                                            $(that.element).removeClass("loadingIconSearch");
+                                            if (event.type == 'exception' || result == null) {
+                                                response('No matching users found');
+                                            } else {
+                                                response(result);
+                                            }
+                                        });
+                                    },
+                                    onkeypress: function(event, ui) {
+                                        $(".cdninternal_{!renewal.productCode}").val('');
+                                        $(".cdidinternal_{!renewal.productCode}").val('');
+
+                                        return false;
+                                    },
+                                    focus: function(event, ui) {
+                                        $(".cdninternal_{!renewal.productCode}").val(ui.item.Name);
+                                        return false;
+                                    },
+                                    select: function(event, ui) {
+                                        $(".cdninternal_{!renewal.productCode}").val(ui.item.Name);
+                                        $(".cdidinternal_{!renewal.productCode}").val(ui.item.Id);
+                                        return false;
+                                    }
+                                })
+                                .data('uiAutocomplete')._renderItem = function(ul, item) {
+                                    var wrapper = "<div>" + item.Name + "</div>";
+                                    return $("<li></li>")
+                                        .append(wrapper)
+                                        .appendTo(ul);
+                                }
+                                
+                                function calculateUpsell(idtoChange, val, total){
+                                    console.log(total);
+                                    console.log($('.'+idtoChange).val);
+                                    console.log(total-val);
+                                    $('.'+idtoChange).val(total-val);
+                                    $('[Id$=nooverrideACV]').attr('checked','checked');
+                                }
+                            </script>
+                            </apex:column>
+                            <apex:column headerValue="Additional Contract Details" rendered="{!AND(showupsellacv, showrenewalacv)}">
+                                <apex:inputTextArea value="{!renewal.addcontractDetailName }" />
+                            </apex:column>
+                        </apex:pageBlockTable>
+                    </apex:pageBlockSection>
+                </apex:outputPanel>
+                <!-- Review mode section - End -->
+
+                <apex:pageBlockButtons id="pbBtn">
+                    <button class="btn" style="padding: 4px 3px;" onclick="cancel(); return false;">Cancel</button>
+                    <!--<apex:commandButton id="cancelBtn" styleClass="cancelBtn" action="{!doCancel}" status="loadinggif" value="Cancel" immediate="true" />-->
+                    <apex:commandButton id="backBtn" styleClass="backBtn" action="{!doBack}" value="<< Previous" status="loadinggif" reRender="frmPanel" rendered="{!reviewMode}" />
+                    <apex:commandButton id="reviewBtn" styleClass="reviewBtn" action="{!doReview}"  status="loadinggif" value="{!IF(opportunity.Type == 'Existing Customer (Renewal)', 'Review Contract Details >>', 'Review >>')}" reRender="frmPanel, editPanel, reviewPanel" rendered="{!NOT(reviewMode)}" />
+                    <apex:commandButton id="submitBtn" styleClass="submitBtn" action="{!doSubmit}" status="loadinggif" value="Submit" reRender="frmPanel" rendered="{!reviewMode}" disabled="{!disableSubmit}" />
+                    <apex:commandButton id="calculateACVbtn" action="{!calculateACV}" value="Calculate ACV" reRender="frmPanel" status="loadinggif" rendered="{!reviewMode && !shownewacv}" />
+                    <apex:commandButton id="nsBtn" styleClass="nsBtn" onclick="callNetSuiteCustomerDetails('{!opportunity.Netsuite_Customer_ID__c}', '{!opportunity.Netsuite_Customer_ID_Override__c}', '{!opportunity.Netsuite_Primary_Partner_ID__c}','{!opportunity.Netsuite_Primary_Partner_ID_Override__c}');return false;" value="View Customer Details" status="loadinggif" reRender="frmPanel" rendered="{!NOT(reviewMode)}"/>
+                    <apex:actionStatus id="btnActionStatus" startText="" stopText="" onstart="disableButtons()" onstop="enableButtons()" startStyleClass="" stopStyleClass=""></apex:actionStatus>
+                </apex:pageBlockButtons>
+            </apex:pageBlock>
+            <script type="text/javascript">
+                function calculateTotalUpsell(elementId, totalRenewal, totalNetPrice) {
+                    var upsellEl = document.getElementById(elementId);
+                    upsellEl.innerHTML = totalNetPrice - totalRenewal;
+                }
+    
+                function callNetSuiteCustomerDetails(customerId, customerOverriddenId, partnerId, partnerOverriddenId)
+                {
+                    document.getElementById('el_loading').style.display = 'block';
+                    console.log('Info');
+                   
+                    newCustomerOverriddenId = $('[id$=nsCustIdOverride]').val();
+                    newPartnerOverriddenId = $('[id$=nsPartnerIdOverride]').val();
+
+                    if (customerOverriddenId == '' 
+                        || (customerOverriddenId != newCustomerOverriddenId
+                            && newCustomerOverriddenId != '')) {
+                        customerOverriddenId = newCustomerOverriddenId;
+                    }
+
+                    if (partnerOverriddenId == '' 
+                        || (partnerOverriddenId != newPartnerOverriddenId
+                            && newPartnerOverriddenId != '')) {
+                        partnerOverriddenId = newPartnerOverriddenId;
+                    }
+                    
+                    CreateSalesOrderExtension.getNetSuiteCustomerDetails(customerId, customerOverriddenId, partnerId, partnerOverriddenId, function(result, event) {
+                        
+                        if(event.status){
+                            var billToDetails = '';
+                            var shipToDetails = '';
+                            var billToOverriddenDetails = '';
+                            var shipToOverriddenDetails = '';
+                            var partnerOverriddenDetails = '';
+                            var response = result;
+                            for (var i = 0; i < response.length; i++) {
+                                console.log('Id is : ' + JSON.stringify(response[i].id));
+                                console.log('Name is : ' + JSON.stringify(response[i].name));
+                                console.log('EntityId is : ' + JSON.stringify(response[i].entityId));
+                                if(partnerId == JSON.stringify(response[i].id) && response[i].type == 'customer'){
+                                    console.log('1 Id is : ' + JSON.stringify(response[i].id));
+                                    billToDetails = JSON.stringify(response[i].id) + ' - '+ JSON.stringify(response[i].name) + ' - ' + JSON.stringify(response[i].entityId);
+                                }
+                                if(partnerOverriddenId == JSON.stringify(response[i].id) && response[i].type == 'customer'){
+                                    console.log('2 Id is : ' + JSON.stringify(response[i].id));
+                                    billToOverriddenDetails = JSON.stringify(response[i].id) + ' - '+ JSON.stringify(response[i].name) + ' - ' + JSON.stringify(response[i].entityId);
+                                }
+                                if(customerId == JSON.stringify(response[i].id) && response[i].type == 'customer'){
+                                    console.log('3 Id is : ' + JSON.stringify(response[i].id));
+                                    shipToDetails = JSON.stringify(response[i].id) + ' - '+ JSON.stringify(response[i].name) + ' - ' + JSON.stringify(response[i].entityId);
+                                }
+                                if(customerOverriddenId == JSON.stringify(response[i].id) && response[i].type == 'customer'){
+                                    console.log('4 Id is : ' + JSON.stringify(response[i].id));
+                                    shipToOverriddenDetails = JSON.stringify(response[i].id) + ' - '+ JSON.stringify(response[i].name) + ' - ' + JSON.stringify(response[i].entityId);
+                                }
+                                
+                                if(response[i].type == 'partner'){
+                                    partnerOverriddenDetails = JSON.stringify(response[i].id) + ' - '+ JSON.stringify(response[i].name) + ' - ' + JSON.stringify(response[i].entityId);
+                                }
+                                
+                            }
+                            $("[id$='nsPartnerIdDetails']").html(billToDetails);
+                            $("[id$='editBillToOverriddenDetails']").html(billToOverriddenDetails);
+                            $("[id$='nsCustIdDetails']").html(shipToDetails);
+                            $("[id$='editShipToOverriddenDetails']").html(shipToOverriddenDetails);
+                            $("[id$='editPartnerOverriddenDetails']").html(partnerOverriddenDetails);
+
+                            assignOverriddenDetails(billToDetails, billToOverriddenDetails, shipToDetails, shipToOverriddenDetails, partnerOverriddenDetails);
+                        } else {
+                            alert(event.message);
+                        }
+                        document.getElementById('el_loading').style.display = 'none';
+                    }, {escape: true, timeout: 120000 });
+                }
+            </script>
+            <!-- Action functions - Start -->
+            <apex:actionFunction name="cancel" action="{!doCancel}" immediate="true"/>
+            <apex:actionFunction name="getPartnerInternalId" status="loadinggif" action="{!getPartnerInternalId}" reRender="pblock"/>
+            <apex:actionFunction name="assignOverriddenDetails" action="{!NULL}" oncomplete="" reRender="reviewPanel" >
+                <apex:param id="billToDetails" name="billToDetails" assignTo="{!billToDetails}" value="" />
+                <apex:param id="billToOverriddenDetails" name="billToOverriddenDetails" assignTo="{!billToOverriddenDetails}" value="" />
+                <apex:param id="shipToDetails" name="shipToDetails" assignTo="{!shipToDetails}" value="" />
+                <apex:param id="shipToOverriddenDetails" name="shipToOverriddenDetails" assignTo="{!shipToOverriddenDetails}" value="" />
+                <apex:param id="partnerOverriddenDetails" name="partnerOverriddenDetails" assignTo="{!partnerIdOverriddendetails}" value="" />
+            </apex:actionFunction>
+            <apex:actionFunction name="resetPartnerBillToOverriddenDetails" action="{!NULL}" reRender="null">
+                <apex:param id="billToOverriddenDetailsReset" name="billToOverriddenDetails" assignTo="{!opportunity.Netsuite_Primary_Partner_ID_Override__c}" value="" />
+            </apex:actionFunction>
+            <apex:actionFunction name="resetShipToOverriddenDetails" action="{!NULL}" reRender="null" >
+                <apex:param id="shipToOverriddenDetailsReset" name="shipToOverriddenDetails" assignTo="{!opportunity.Netsuite_Customer_ID_Override__c}" value="" />
+            </apex:actionFunction>
+            <!-- Action functions - End -->
+
+            <script>
+            
+            function disableButtons() {
+                $(".cancelBtn").attr("disabled", "true");
+                $(".submitBtn").attr("disabled", "true");
+                $(".reviewBtn").attr("disabled", "true");
+                $(".backBtn").attr("disabled", "true");
+            }
+
+            function enableButtons() {
+                $(".cancelBtn").removeAttr("disabled");
+                $(".submitBtn").removeAttr("disabled");
+                $(".reviewBtn").removeAttr("disabled");
+                $(".backBtn").removeAttr("disabled");
+            }
+            </script>
+
+        </apex:outputPanel>
+    </apex:form>
+
+    <script>
+        $(document).ready(function() {
+            $("[id$='stageName']").attr("disabled", "disabled");
+        });
+    </script>
+</apex:page>

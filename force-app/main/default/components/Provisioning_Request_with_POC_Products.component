@@ -1,0 +1,19 @@
+<apex:component access="global" controller="ProvisioningRequestWithPOCProducts">
+    <apex:attribute name="prRecordId" description="This field is used to display list of Proposal products"
+                     type="String" assignTo="{!provreqid}" />
+    <apex:attribute name="attrTableTitle" description="This field is capture the title of the table"
+                  type="String" assignTo="{!tableTitle}" />
+
+    <table border="1" style="border-collapse: collapse; width: 50%;">
+                   <tr style="font-weight:bold; text-align: center; background-color: #929599;">
+                        <td>{!tableTitle}</td>
+
+                    </tr>
+            <apex:repeat value="{!pocprodlst}" var="Item">
+
+                <tr >
+                    <td style="text-align: left;" ><apex:outputField value="{!Item.Product__r.Name}"/> </td>
+                </tr>
+            </apex:repeat>
+        </table><br/>
+</apex:component>

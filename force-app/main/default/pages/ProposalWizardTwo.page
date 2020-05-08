@@ -1,0 +1,68 @@
+<apex:page standardController="Apttus_Proposal__Proposal__c" extensions="ProposalWizardController">
+  <c:loadingStatus title="Please wait..." message="Generating Document" width="500" />
+    <apex:sectionHeader title="Executive Proposal Wizard" subtitle="Page 2 of 2"/>
+    <apex:form id="errorMsgForm" rendered="false">
+        <apex:pageBlock id="pageTwo">
+            <apex:pagemessages ></apex:pagemessages>
+        </apex:pageBlock>
+    </apex:form>
+
+    <apex:form id="form1">
+        <apex:pageblock title="Proposal derived values, highly recommended not to changes these.">
+            <apex:pageblocksection >
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Include ZIA Price Stack (Coffee Cups)"/>
+                    <apex:inputField value="{!proposal.Include_ZIA_Coffee_Proposal__c}"/>
+                </apex:pageBlockSectionItem>
+
+               <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Include ZPA Price Stack (Coffee Cups)"/>
+                    <apex:inputField value="{!proposal.Include_ZPA_Coffee_Proposal__c}"/>
+                    </apex:pageBlockSectionItem>
+
+                  <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="ZIA No. Users for Exec Proposal"/>
+                      <apex:inputField value="{!proposal.ZIA_No_Users_for_Exec_Proposal__c  }">
+
+                        <apex:actionSupport event="onchange" action="{!updateprices}" reRender="pricePanel" />
+                    </apex:inputField>
+                </apex:pageBlockSectionItem>
+
+                   <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="ZPA No. Users for Exec Proposal"/>
+                    <apex:inputField value="{!proposal.ZPA_No_Users_for_Exec_Proposal__c}">
+
+                        <apex:actionSupport event="onchange" action="{!updateprices}" reRender="pricePanel" />
+                    </apex:inputField>
+                </apex:pageBlockSectionItem>
+
+              <!--   <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Insert Blank Page for VMO Business Case"/>
+                    <apex:inputField value="{!proposal.VMO_Report_blank_placeholder__c}"/>
+                </apex:pageBlockSectionItem>-->
+
+                </apex:pageblocksection>
+
+
+            <div align="center" draggable="false" >
+                <apex:commandbutton value="<< Previous" action="{!goToPreviousWizard}"/>
+                <apex:commandbutton value="Close" action="{!updateWizardTwoElements}"/>
+                <apex:commandbutton value="Generate Document" action="{!generateDocument}"
+                                                              onclick="showLoadingDialog();"
+                                                            reRender="form1"/>
+            </div>
+
+
+        <!--<apex:outputText>Page 2 of 2</apex:outputText>-->
+        </apex:pageblock>
+
+        <apex:outputPanel id="generateDocumentPanel" rendered="{!runGenerateDocument}">
+            <script>
+                hold();
+            </script>
+        </apex:outputPanel>
+
+        <apex:actionFunction action="{!generateFinalDocument}" name="hold" oncomplete="hideLoadingDialog();"/>
+    </apex:form>
+</apex:page>

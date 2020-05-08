@@ -1,0 +1,155 @@
+<apex:page controller="ForecastingExportExcel_Ctrl" showHeader="false" standardStylesheets="false" readOnly="true" contentType="application/vnd.ms-excel#ForecastExport.xls">
+    <apex:pageBlock >
+        <apex:pageBlockSection columns="2" title="FILTERS">
+             <apex:pageBlockSectionItem rendered="{!(isExecUserLevel || isVPUserLevel) && request.Geo.size > 0}">
+                <apex:outputLabel value="Geo"/>
+                <apex:outputText value="{!request.Geo}"/>
+            </apex:pageBlockSectionItem>
+             <apex:pageBlockSectionItem rendered="{!(isExecUserLevel || isVPUserLevel) && request.Geo.size == 0}">
+                <apex:outputLabel value="Geo"/>
+                <apex:outputText value="All"/>
+            </apex:pageBlockSectionItem>
+            
+            <apex:pageBlockSectionItem rendered="{!(isExecUserLevel || isVPUserLevel) && request.Region.size > 0}">
+                <apex:outputLabel value="Region" />
+                <apex:outputText value="{!request.Region}" />
+            </apex:pageBlockSectionItem>            
+            <apex:pageBlockSectionItem rendered="{!(isExecUserLevel || isVPUserLevel) && request.Region.size == 0}">
+                <apex:outputLabel value="Region" />
+                <apex:outputText value="All" />
+            </apex:pageBlockSectionItem>
+            
+            <apex:pageBlockSectionItem rendered="{!isnewupsell}">
+                <apex:outputLabel value="Show ZPA deals" for="showzpadeals" />
+                <apex:outputText id="showzpadeals" value="{!request.showzpa}" />
+            </apex:pageBlockSectionItem>
+            
+            <apex:pageBlockSectionItem rendered="{!request.Stage.size > 0}">
+                <apex:outputLabel value="View" />
+                <apex:outputText value="{!request.Stage}" />
+            </apex:pageBlockSectionItem>            
+            <apex:pageBlockSectionItem rendered="{!request.Stage.size == 0}">
+                <apex:outputLabel value="View"/>
+                <apex:outputText value="All" />
+            </apex:pageBlockSectionItem>
+            
+            <apex:pageBlockSectionItem rendered="{!request.DealValue.size > 0}">
+                <apex:outputLabel value="Deal Band"/>
+                <apex:outputText value="{!request.DealValue}" />
+            </apex:pageBlockSectionItem>            
+            <apex:pageBlockSectionItem rendered="{!request.DealValue.size == 0}">
+                <apex:outputLabel value="Deal Band" />
+                <apex:outputText value="All" />
+            </apex:pageBlockSectionItem>
+            
+            <apex:pageBlockSectionItem rendered="{!isrenewal && request.CustomerSuccessStage.size > 0}">
+                <apex:outputLabel value="Customer Success Stage"/>
+                <apex:outputText value="{!request.CustomerSuccessStage}" />
+            </apex:pageBlockSectionItem>            
+            <apex:pageBlockSectionItem rendered="{!isrenewal && request.CustomerSuccessStage.size == 0}">
+                <apex:outputLabel value="Customer Success Stage"/>
+                <apex:outputText value="All" />
+            </apex:pageBlockSectionItem>
+            
+            
+            
+            <apex:pageBlockSectionItem rendered="{!isrenewal && request.CustomerSentiment.size > 0}">
+                <apex:outputLabel value="Customer Sentiment"/>
+                <apex:outputText value="{!request.CustomerSentiment}" />
+            </apex:pageBlockSectionItem>            
+            <apex:pageBlockSectionItem rendered="{!isrenewal && request.CustomerSentiment.size == 0}">
+                <apex:outputLabel value="Customer Sentiment"/>
+                <apex:outputText value="All" />
+            </apex:pageBlockSectionItem>
+            
+            <apex:pageBlockSectionItem rendered="{!!isrenewal && request.ClosingMonth.size > 0}">
+                <apex:outputLabel value="Closing Month" />
+                <apex:outputText value="{!request.ClosingMonth}" />
+            </apex:pageBlockSectionItem>            
+            <apex:pageBlockSectionItem rendered="{!!isrenewal && request.ClosingMonth.size == 0}">
+                <apex:outputLabel value="Closing Month" />
+                <apex:outputText value="All" />
+            </apex:pageBlockSectionItem>
+            
+            <apex:pageBlockSectionItem rendered="{!!isrenewal && request.ClosingWeek.size > 0}">
+                <apex:outputLabel value="Closing Week" />
+                <apex:outputText value="{!request.ClosingWeek}" />
+            </apex:pageBlockSectionItem>            
+            <apex:pageBlockSectionItem rendered="{!!isrenewal && request.ClosingWeek.size == 0}">
+                <apex:outputLabel value="Closing Week" />
+                <apex:outputText value="All" />
+            </apex:pageBlockSectionItem>
+            
+            <apex:pageBlockSectionItem rendered="{!isrenewal && request.ContractEndDateMonth.size > 0}">
+                <apex:outputLabel value="Contract End Date Month" />
+                <apex:outputText value="{!request.ContractEndDateMonth}" />
+            </apex:pageBlockSectionItem>            
+            <apex:pageBlockSectionItem rendered="{!isrenewal && request.ContractEndDateMonth.size == 0}">
+                <apex:outputLabel value="Contract End Date Month" />
+                <apex:outputText value="All" />
+            </apex:pageBlockSectionItem>
+            
+            <apex:pageBlockSectionItem rendered="{!isrenewal && NOT(ISNULL(viewNotra)) && NOT(ISBLANK(viewNotra)) && request.NOTRAFilter.size > 0}">
+                <apex:outputLabel value="NOTRA (ML forecast only)"/>
+                <apex:outputText value="{!request.NOTRAFilter}" />
+            </apex:pageBlockSectionItem>            
+            <apex:pageBlockSectionItem rendered="{!isrenewal && NOT(ISNULL(viewNotra)) && NOT(ISBLANK(viewNotra)) && request.NOTRAFilter.size == 0}">
+                <apex:outputLabel value="NOTRA (ML forecast only)"/>
+                <apex:outputText value="All" />
+            </apex:pageBlockSectionItem>
+            
+            <apex:pageBlockSectionItem rendered="{!!isrenewal && NOT(ISNULL(daterange)) && NOT(ISBLANK(daterange))}">
+                <apex:outputLabel value="Close Week Date Range" for="CloseWeekDateRange" />
+                <apex:outputText id="CloseWeekDateRange" value="{!daterange}" />
+            </apex:pageBlockSectionItem>
+
+            <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+            
+        </apex:pageBlockSection>
+        <apex:dataTable value="{!OpplstforExcel}" var="opp">
+            <apex:column headerValue="Opportunity Name" value="{!opp.OppName}"/>
+            <apex:column headerValue="Amount" value="{!opp.Amount}"/>
+	    <apex:column headerValue="Renewal ACV" value="{!opp.RenewalACV}" rendered="{!isrenewal}"/>
+            <apex:column headerValue="Opportunity Stage" value="{!opp.Stage}"/>
+            <apex:column headerValue="Technical Stage" value="{!opp.PocStatus}" rendered="{!!isrenewal}"/>
+            <apex:column headerValue="Customer Success Stage" value="{!opp.CustomerSuccessStage}" rendered="{!isrenewal}"/>
+            <apex:column headerValue="Customer Sentiment" value="{!opp.CustomerSentiment}" rendered="{!isrenewal}"/>
+            <apex:column headerValue="Close Date" value="{!opp.CloseDateExcel}"/>
+            <apex:column headerValue="Contract End Date" value="{!opp.ContractEndDateExcel}" rendered="{!isrenewal}"/>
+            <apex:column headerValue="Rep FC" value="{!opp.ForecastCategory}" rendered="{!!isrepUserLevel}"/>
+            <apex:column headerValue="{!LevelminusoneTitle}" value="{!opp.LevelMinusOneForecastCategory}" rendered="{!!isrepUserLevel}"/>
+            <apex:column headerValue="My FC" value="{!opp.MyForecastCategory}"/>
+            <apex:column headerValue="My FC Lock" value="{!opp.MyFCLock}" rendered="{!!isrepUserLevel}"/>
+            <apex:column headerValue="Next Step" value="{!opp.NextStep}"/>
+            <apex:column headerValue="Primary Partner" value="{!opp.PrimaryPartnerName }"/>
+            <apex:column headerValue="Split Owner" value="{!opp.OwnerName}"/>
+            <apex:column headerValue="Last Architecture Workshop Date" value="{!opp.LastArchWorkshopDateExcel}" rendered="{!!isrenewal}"/>
+            <apex:column headerValue="Last F2F Meeting Date" value="{!opp.LastF2FMeetingDateExcel}"/>
+            <apex:column headerValue="Account Name" value="{!opp.AccountName}"/>
+            <apex:column headerValue="Opportunity Owner" value="{!opp.OppOwner}"/>
+            <apex:column headerValue="Account Territory Type" value="{!opp.AccountTerType}"/>
+            <apex:column headerValue="Account Territory" value="{!opp.AccountTerName}"/>
+            <apex:column headerValue="Account Area" value="{!opp.AccountArea}"/>
+            <apex:column headerValue="Account Geo" value="{!opp.AccountGeo}"/>
+            <apex:column headerValue="Opportunity Territory Type" value="{!opp.oppTerType}"/>
+            <apex:column headerValue="Opportunity Territory" value="{!opp.oppTerritory}"/>
+            <apex:column headerValue="Opportunity Area" value="{!opp.oppArea}"/>
+            <apex:column headerValue="Opportunity Geo" value="{!opp.oppGEO}"/>
+            <apex:column headerValue="Split Owner Territory Type" value="{!opp.splitownerTerType}"/>
+            <apex:column headerValue="Split Owner Territory" value="{!opp.splitownerTerritory}"/>
+            <apex:column headerValue="Split Owner Area" value="{!opp.splitOwnerArea}"/>
+            <apex:column headerValue="Split Owner Geo" value="{!opp.splitOwnerGeo}"/>
+            <apex:column headerValue="Sales Territory Region" value="{!opp.territoryRegion}"/>
+            <apex:column headerValue="TCV" value="{!opp.TCV}"/>
+            <apex:column headerValue="Number of Users" value="{!opp.numofUsers}"/>
+            <apex:column headerValue="Contract Term" value="{!opp.contractTerm}"/>
+            <apex:column headerValue="Total ZIA ACV" value="{!opp.totalZIAACV}"/>
+            <apex:column headerValue="Total ZPA ACV" value="{!opp.totalZPAACV}"/>
+            <apex:column headerValue="Forecast Type" value="{!opp.forecastType}"/>
+            
+            <apex:column headerValue="SE" value="{!opp.SEName}"/>
+            <apex:column headerValue="SO#" value="{!opp.SOnumber}"/>
+            <apex:column headerValue="Parent Id" value="{!opp.NetsuiteParentID}"/>
+        </apex:dataTable>
+    </apex:pageBlock>
+</apex:page>

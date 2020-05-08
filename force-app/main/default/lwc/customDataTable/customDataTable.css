@@ -1,0 +1,50 @@
+.datagrid {
+    position: relative;   
+}
+.datagrid-header {
+    height: 25rem;
+}
+.datagrid-footer {
+    position: absolute;
+    text-align: center;
+    width: 100%;
+    font-weight: 700;
+    border-bottom: 0.0625rem solid rgb(221, 219, 218);
+}
+.datagrid .datagrid-header table span {    
+    text-transform: capitalize !important; 
+}
+.card-bottom {
+    padding-bottom: .35rem;
+}
+.slds-modal__footer {
+    padding: .25rem;
+    max-height: 2.65rem;
+    background: #e7e8ef !important;
+}
+
+.slds-scrollable_y {
+    height: 20rem;
+}
+
+.datagrid-table {
+    /* border-top: 0.0625rem solid #ccc;
+    border-left: 0.0625rem solid #ccc; */
+    margin-top: 0.5rem;
+}
+.pointer {
+    cursor: pointer;
+    text-align: center;
+}
+
+.tableCell{
+    line-height: 20px;
+}
+
+.slds-table thead th{
+    background-color: #e7e8ef !important;
+    color: rgb(81, 79, 77);
+    padding: 0.25rem 0.5rem;
+    font-weight: 700;
+    line-height: normal;
+}

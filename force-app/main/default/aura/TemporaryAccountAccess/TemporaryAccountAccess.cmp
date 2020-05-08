@@ -1,0 +1,754 @@
+<aura:component controller="TemporaryAccountAccessController" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId" access="global" >
+    
+    <aura:attribute name="selTabId" type="String" default="tab1" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:attribute name="isAccessCoverage" type="boolean" default="true"/>
+    <aura:attribute name="territoriesList" type="list"></aura:attribute>
+    <aura:attribute name="managerList" type="list"></aura:attribute>
+    <aura:attribute name="userManagerList" type="list"></aura:attribute>
+    <aura:attribute name="vacationManagerList" type="list"></aura:attribute>
+    <aura:attribute name="isRep" type="boolean" default="false"></aura:attribute>
+    <aura:attribute name="userRecord" type="user" ></aura:attribute>
+    
+    
+    <aura:attribute name="areaList" type="list"></aura:attribute>
+    
+
+    <aura:attribute name="coverageType" type="string" default="Temporary Account Access"/>
+    <aura:attribute name="howLongDate" type="Date" default=""/>
+    <aura:attribute name="vacationEndDate" type="Date" default=""/>
+    <aura:attribute name="selectedArea" type="string" default=""/>
+    <aura:attribute name="selectedTBHTerritorie" type="string" default=""/>
+    <aura:attribute name="selectedTBHTerritorieLabel" type="string" default=""/>
+    <aura:attribute name="selectedTBHManager" type="string" default=""/>
+    <aura:attribute name="selectedTBHManagerLabel" type="string" default=""/>
+    <aura:attribute name="selectedRemovaTBHManager" type="string" default=""/>
+    <aura:attribute name="selectedRemovaTBHManagerLabel" type="string" default=""/>
+    <aura:attribute name="selectedVacationManager" type="string" default=""/>
+    <aura:attribute name="selectedVacationManagerLabel" type="string" default=""/>
+    <aura:attribute name="selectedRemovaVacationManager" type="string" default=""/>
+    <aura:attribute name="selectedRemovaVacationManagerLabel" type="string" default=""/>
+    <aura:attribute name="selectedCoveringManager" type="string" default=""/>
+    <aura:attribute name="selectedCoveringManagerLabel" type="string" default=""/>
+    <aura:attribute name="spinner" type="boolean" default="FALSE"/>
+    <aura:attribute name="options" type="List" default="[{'label': 'New', 'value': 'new'},{'label': 'In Progress', 'value': 'inProgress'},{'label': 'Finished', 'value':'finished'},]"/>
+    <aura:attribute name="RelatedTo" type="String" />
+    <aura:attribute name="isAreaError" type="boolean" default="false"/>
+    <aura:attribute name="isTerritorieError" type="boolean" default="false" />
+    <aura:attribute name="isManagerError" type="boolean" default="false" />
+    <aura:attribute name="isHowLongError" type="boolean" default="false" />
+    <aura:attribute name="isRemovaTBHManagerError" type="boolean" default="false" />
+    <aura:attribute name="isVacationManagerError" type="boolean"  default="false"/>
+    <aura:attribute name="isRemovaVacationManagerError" type="boolean" default="false" />
+    <aura:attribute name="isCoveringManagerError" type="boolean" default="false" />
+    <aura:attribute name="isVacationDateError" type="boolean" default="false" />
+    <aura:attribute name="iswhovacationError" type="boolean" default="false" />
+    <aura:attribute name="iswhoCoveringError" type="boolean" default="false" />
+    <aura:attribute name="isvacationEndDateError" type="boolean" default="false" />
+    <aura:attribute name="isvacationFieldsSame" type="boolean" default="false" />
+    <aura:attribute name="TBHCoverageCaseList" type="list"/>
+    <aura:attribute name="TBHCoverageList" type="list"/>
+    <aura:attribute name="VacationCoverageList" type="list"/>
+    <aura:attribute name="VacationCoverageCaseList" type="list"/>
+    <aura:attribute name="HowLongValidationError" type="boolean" />
+    <aura:attribute name="HowLongValidationErrorMsg" type="string" default=""/>
+    <aura:attribute name="vacationEndDateValidationError" type="boolean" />
+    <aura:attribute name="vacationEndDateValidationErrorMsg" type="string" default=""/>
+    
+    
+    <aura:attribute name="showError" type="boolean" default="false" />
+    <aura:attribute name="errorMessage" type="string" default="" />
+    <aura:attribute name="showSuccess" type="boolean" default="false" />
+    <aura:attribute name="successMessage" type="string" default="" />
+    
+    <!--
+    {!v.selectedArea}<br/>
+    {!v.selectedTBHTerritorie}<br/>
+    {!v.selectedTBHManager}<br/>
+    {!v.selectedRemovaTBHManager}<br/>
+    {!v.selectedVacationManager}<br/>
+    {!v.selectedCoveringManager}<br/>
+ -->
+    
+    <!--loading spinner start-->
+    <aura:if isTrue="{!v.spinner}">
+        <div aura:id="spinnerId" class="slds-spinner_container">
+            <div class="slds-spinner--brand  slds-spinner slds-spinner--medium slds-is-relative" role="alert">
+                <span class="slds-assistive-text">Loading...</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+    </aura:if>
+    <!-- Loading spinner end-->  
+    
+    <div id="scrollerTop">
+    <aura:if isTrue="{!v.showError}">
+        <!-- Show the message to ui -->
+        <div class="slds-m-bottom--small slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error" role="alert">
+            <span class="slds-assistive-text">success</span>
+            <h2>{!v.errorMessage}</h2>
+        </div>
+    </aura:if>
+    
+    <aura:if isTrue="{!v.showSuccess}">
+        <!-- Show the message to ui -->
+        <div class="slds-m-bottom--small slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_success" role="alert">
+            <span class="slds-assistive-text">error</span>
+            <h2>{!v.successMessage}</h2>
+        </div>
+    </aura:if>
+    </div>
+    
+    
+    <div style = "slds">
+        <div class="slds-page-header">
+            <div class="slds-page-header__row">
+                <div class="slds-page-header__col-title">
+                    <div class="slds-media">
+                        <div class="slds-media__figure">
+                            <span class="slds-icon_container slds-icon-standard-account" title="account">
+                                
+                                <span class="slds-assistive-text">Account</span>
+                            </span>
+                        </div>
+                        <div class="slds-media__body">
+                            <div class="slds-page-header__name">
+                                <div class="slds-page-header__name-title">
+                                    <h1>
+                                        <span class="slds-page-header__title slds-truncate" title="{!v.coverageType}">{!v.coverageType}</span>
+                                    </h1>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        
+        <!-- Coverage section Div-->
+        <aura:if isTrue="{!v.isAccessCoverage}">
+        <div class="slds-grid slds-wrap">
+            <div class="slds-col slds-size_1-of-1 slds-small-size_1-of-2 slds-medium-size_1-of-4">
+                <div class="slds-col slds-col--padded slds-p-top--large">
+                    <div aria-labelledby="newform">
+                        <form class="slds-form--stacked">
+                            <div class="slds-form-element slds-is-required">
+                                <div class="slds-form-element__control">
+                                    <lightning:select label="Select Coverage" name="coverage" aura:id="coverageid" value="{!v.coverageType}" onchange="{!c.changeCoverage}">
+                                        <option value="">----Select----</option>
+                                        <option value="TBH Coverage">TBH Coverage</option>
+                                        <option value="Vacation Coverage">Vacation Coverage</option>
+                                    </lightning:select>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </aura:if>
+        <!-- Coverage section Div End-->
+        <br/>
+        <aura:if isTrue="{! or (v.coverageType == 'TBH Coverage',v.coverageType == 'Vacation Coverage')}">
+            <aura:if isTrue="{!if (v.coverageType == 'TBH Coverage',true,false)}">
+                <lightning:tabset class="slds-p-around--small" onselect="{!c.tabSelected}" variant="default" selectedTabId="{!v.selTabId}" >
+                    <lightning:tab label="TBH Coverage" aura:id="tab1" tabindex="1" id="tab1" title="TBH Coverage">
+                        <div class ="slds slds-p-around--small">
+                            <div class="slds-grid slds-wrap">
+                                <div class="slds-col slds-size_1-of-1 slds-small-size_1-of-2 slds-medium-size_1-of-2">
+                                    <div class="slds-grid slds-wrap">
+                                        <div class="slds-col slds-size_1-of-1 slds-small-size_1-of-1 slds-medium-size_1-of-2">
+                                            <div class="slds-form-element slds-is-required slds-p-around--small">
+                                                <label class="slds-form-element__label">Area</label>
+                                                <div class="slds-form-element__control">
+                                                    <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click" id="areaId" aura:id="areaId" data-name="combobox-area" aria-expanded="false" aria-haspopup="listbox" role="combobox" onclick="{!c.toggleVisibility}" >
+                                                        <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
+                                                            <lightning:icon class="slds-icon slds-input__icon slds-input__icon_right slds-icon-text-default" iconName="utility:search" size="x-small" alternativeText="Search address"/>
+                                                            <input type="text" class="slds-input slds-combobox__input" aura:id="combobox-area" id="combobox-area" aria-autocomplete="list" value="{!v.selectedArea}" onkeyup="{!c.serverCall}" autoComplete="on" role="textbox" placeholder="Search..." onblur="{!c.blurtoggleVisibility}"/>
+                                                        </div>
+                                                        <aura:if isTrue="{!v.isAreaError}">
+                                                            <div class="slds-text-color_error slds-p-left_x-small">
+                                                                Error:Please select the area value.
+                                                            </div>
+                                                        </aura:if>
+                                                        <div class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid" role="listbox">
+                                                            <ul id="ulDropArea" class="slds-listbox slds-listbox_vertical" role="presentation">
+                                                                <aura:iteration items="{!v.areaList}" var="item" indexVar="i">
+                                                                    <li role="presentation" class="slds-listbox__item" data-name="combobox-area" onclick="{!c.itemSelected}"  data-id="{#item.value}" data-index="{#item.label}">                            
+                                                                        <span id="{#'listbox-option-unique-id-'+i+1}" class="slds-media slds-listbox__option slds-listbox__option_entity slds-listbox__option_has-meta" role="option">
+                                                                            <span class="slds-media__body singleRow">
+                                                                                <span class="optionTitle slds-listbox__option-text slds-listbox__option-text_entity" title="{#item.label}">{#item.label}</span>
+                                                                            </span>
+                                                                        </span>
+                                                                    </li>
+                                                                </aura:iteration>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!--
+                                                    <lightning:select label="Area (Type Ahead)" name="area" aura:id="areaid" value="{!v.selectedArea}" onchange="{!c.changeArea}">
+                                                        <option value=""></option>
+                                                        <aura:iteration items="{!v.accountAccessWrap.areaList}" var="recArea">
+                                                            <option value="{!recArea.value}" selected="{!recArea.value == v.selectedArea}">{!recArea.label}</option>
+                                                        </aura:iteration>
+                                                    </lightning:select>
+                                                    -->
+                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="slds-col slds-size_1-of-1 slds-small-size_1-of-1 slds-medium-size_1-of-2">
+                                            <div class="slds-form-element slds-is-required slds-p-around--small">
+                                                <label class="slds-form-element__label">Territory</label>
+                                                <div class="slds-form-element__control">
+                                                    <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click" data-name="combobox-Territorie" id="TerritorieId" aura:id="TerritorieId" aria-expanded="false" aria-haspopup="listbox" role="combobox" onclick="{!c.toggleVisibility}" >
+                                                        <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
+                                                            <lightning:icon class="slds-icon slds-input__icon slds-input__icon_right slds-icon-text-default" iconName="utility:search" size="x-small" alternativeText="Search address"/>
+                                                            <input type="text" class="slds-input slds-combobox__input" aura:id="combobox-Territorie" id="combobox-Territorie" aria-autocomplete="list" value="{!v.selectedTBHTerritorieLabel}" onkeyup="{!c.serverCall}" autoComplete="on" role="textbox" placeholder="Search..." onblur="{!c.blurtoggleVisibility}"/>
+                                                        </div>
+                                                        <aura:if isTrue="{!v.isTerritorieError}">
+                                                            <div class="slds-text-color_error slds-p-left_x-small">
+                                                                Error:Please select the territory value.
+                                                            </div>
+                                                        </aura:if>
+                                                        <div class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid" role="listbox">
+                                                            <ul id="ulDropTerritorie" class="slds-listbox slds-listbox_vertical" role="presentation">
+                                                                <aura:iteration items="{!v.territoriesList}" var="item" indexVar="i">
+                                                                    <li role="presentation" class="slds-listbox__item" data-id="{#item.value}" data-name="combobox-Territorie" onclick="{!c.itemSelected}" data-index="{#item.label}">                            
+                                                                        <span id="{#'listbox-option-unique-id-'+i+1}" class="slds-media slds-listbox__option slds-listbox__option_entity slds-listbox__option_has-meta" role="option">
+                                                                            <span class="slds-media__body singleRow">
+                                                                                <span class="optionTitle slds-listbox__option-text slds-listbox__option-text_entity" title="{#item.label}">{#item.label}</span>
+                                                                            </span>
+                                                                        </span>
+                                                                    </li>
+                                                                </aura:iteration>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!--
+                                                    <lightning:select label="Territories (which has rep TBH)" name="territories" aura:id="territorieid" value="{!v.selectedTBHTerritorie}" onchange="{!c.changeTerritorie}">
+                                                        <option value=""></option>
+                                                        <aura:iteration items="{!v.territoriesList}" var="recterritorie">
+                                                            <option value="{!recterritorie.value}" selected="{!recterritorie.value == v.selectedTBHTerritorie}">{!recterritorie.label}</option>
+                                                        </aura:iteration>
+                                                    </lightning:select>
+                                                    -->
+                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="slds-grid slds-wrap">
+                                        <div class="slds-col slds-size_1-of-1 slds-small-size_1-of-1 slds-medium-size_1-of-2">
+                                            <div class="slds-form-element slds-is-required slds-p-around--small">
+                                                <label class="slds-form-element__label">Who will be covering it</label>
+                                                <div class="slds-form-element__control">
+                                                    <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click" data-name="combobox-Manager" id="ManagerId" aura:id="ManagerId" aria-expanded="false" aria-haspopup="listbox" role="combobox"  onclick="{!c.toggleVisibility}">
+                                                        <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
+                                                            <lightning:icon class="slds-icon slds-input__icon slds-input__icon_right slds-icon-text-default" iconName="utility:search" size="x-small" alternativeText="Search address"/>
+                                                            <input type="text" class="slds-input slds-combobox__input" aura:id="combobox-Manager" id="combobox-Manager" aria-autocomplete="list" value="{!v.selectedTBHManagerLabel}" onkeyup="{!c.serverCall}" autoComplete="on" role="textbox" placeholder="Search..." onblur="{!c.blurtoggleVisibility}"/>
+                                                        </div>
+                                                        <aura:if isTrue="{!v.isManagerError}">
+                                                            <div class="slds-text-color_error slds-p-left_x-small">
+                                                                Error:Please select the manager value.
+                                                            </div>
+                                                        </aura:if>
+                                                        <div class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid" role="listbox">
+                                                            <ul id="ulDropManager" class="slds-listbox slds-listbox_vertical" role="presentation">
+                                                                <aura:iteration items="{!v.managerList}" var="item" indexVar="i">
+                                                                    <li role="presentation" class="slds-listbox__item" data-id="{#item.value}" data-name="combobox-Manager" onclick="{!c.itemSelected}" data-index="{#item.label}">                            
+                                                                        <span id="{#'listbox-option-unique-id-'+i+1}" class="slds-media slds-listbox__option slds-listbox__option_entity slds-listbox__option_has-meta" role="option">
+                                                                            <span class="slds-media__body singleRow">
+                                                                                <span class="optionTitle slds-listbox__option-text slds-listbox__option-text_entity" title="{#item.label}">{#item.label}</span>
+                                                                            </span>
+                                                                        </span>
+                                                                    </li>
+                                                                </aura:iteration>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!--
+                                                    <lightning:select label="Who will be covering it" name="manager" aura:id="managerid" value="{!v.selectedTBHManager}" onchange="{!c.changeManager}">
+                                                        <aura:iteration items="{!v.managerList}" var="recmanager">
+                                                            <option value="{!recmanager.value}" selected="{!recmanager.value == v.selectedTBHManager}">{!recmanager.label}</option>
+                                                        </aura:iteration>
+                                                    </lightning:select>
+                                                    -->
+                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="slds-col slds-size_1-of-1 slds-small-size_1-of-1 slds-medium-size_1-of-2">
+                                            <div class="slds-form-element slds-is-required slds-p-around--small">
+                                                <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon_right">
+                                                    <!--<lightning:input type="date" aura:id="howLongdate" label="How Long" format="MM/dd/yyyy" class="{! v.HowLongValidationError ? 'slds-has-error field' : 'field'}" value="{!v.howLongDate}" displayDatePicker="true" onchange="{!c.dateValidateForHowlong}"/> 
+													-->
+                                                    <lightning:icon size="small" class="front slds-input__icon slds-input__icon_right" iconName="utility:event"/>
+
+                                                    <ui:inputDate aura:id="howLongdate" class="slds-input" value="{!v.howLongDate}" label="How Long" displayDatePicker="true" format="MM/dd/yyyy" change="{!c.dateValidateForHowlong}"/>
+
+                                                    <aura:if isTrue="{!v.isHowLongError}">
+                                                        <div class="slds-text-color_error slds-p-left_x-small">
+                                                            Error:Please select the date.
+                                                        </div>
+                                                    </aura:if>
+                                                    <aura:if isTrue="{!v.HowLongValidationError}">
+                                                        <div class="slds-text-color_error slds-p-left_x-small">
+                                                            {!v.HowLongValidationErrorMsg}
+                                                        </div>
+                                                    </aura:if>  
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="slds-grid slds-wrap">
+                                        <div class="slds-col slds-size_1-of-1 slds-small-size_1-of-1 slds-medium-size_1-of-1">
+                                            <div class="slds-form-element slds-is-required slds-p-around--small">
+                                                <div class="slds-form-element__control">
+                                                    <lightning:button variant="brand" label="Create TBH Coverage" title="Create TBH Coverage" onclick="{! c.createTBHCoverage }" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-col slds-size_1-of-1 slds-small-size_1-of-2 slds-medium-size_1-of-2">
+                                    <aura:if isTrue="{!not(empty(v.TBHCoverageList))}">
+                                        <div class="slds-p-around--large">
+                                            <table style="border: 1px solid black;" class="slds-table slds-table_bordered">
+                                                        <thead>
+                                                            <tr class="slds-text-title_caps">
+                                                                <th scope="col" style="width=20%">
+                                                                    <div class="slds-truncate" title="Territorie">Territory</div>
+                                                                </th>
+                                                                <th scope="col" style="width:40%">
+                                                                    <div class="slds-truncate" title="Who covered">Who covered</div>
+                                                                </th>
+                                                                <th scope="col" style="width:20%">
+                                                                    <div class="slds-truncate" title="Status">Status</div>
+                                                                </th>
+                                                                <th scope="col" style="width:20%">
+                                                                    <div class="slds-truncate" title="Access End Date">Access End Date</div>
+                                                                </th>
+                                                                
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <aura:iteration items="{!v.TBHCoverageList}" var="rec">
+                                                                <tr>
+                                                                    <th scope="row" data-label="Territorie"  style="width:20%">
+                                                                        <div class="slds-truncate" title="{!rec.salesTerritoryName}">
+                                                                            {!rec.salesTerritoryName}
+                                                                        </div>
+                                                                    </th>
+                                                                    <td data-label="Who covered" style="width:40%">
+                                                                        <div class="slds-truncate" title="{!rec.userName}">{!rec.userName}</div>
+                                                                    </td>
+                                                                     <td data-label="Status" style="width:20%">
+                                                                        <div class="slds-truncate" title="{!rec.status}">{!rec.status}</div>
+                                                                    </td>
+                                                                    <td data-label="Access End Date" style="width:20%">
+                                                                        <div class="slds-truncate" title="{!rec.closedDate}">{!rec.closedDate}</div>
+                                                                    </td>
+                                                                </tr>
+                                                            </aura:iteration>
+                                                        </tbody>
+                                                    </table>
+          
+                                        </div>
+                                    </aura:if>
+                                </div>
+                            </div>
+                        </div>
+                    </lightning:tab>
+                    
+                    <lightning:tab label="Removal of Access" aura:id="tab2" tabindex="2" id="tab2" title="Removal of Access">
+                        <div class ="slds slds-p-around--small">
+                            <div class="slds-grid slds-wrap">
+                                <div class="slds-col slds-size_1-of-1 slds-small-size_1-of-2 slds-medium-size_1-of-4">
+                                    <div class="slds-form-element slds-is-required slds-p-around--small">
+                                        <label class="slds-form-element__label">Removal of TBH Access</label>
+                                        <div class="slds-form-element__control">
+                                            <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click" data-name="combobox-removalTBH" id="removalTBHId" aura:id="removalTBHId" aria-expanded="false" aria-haspopup="listbox" role="combobox"  onclick="{!c.toggleVisibility}">
+                                                <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
+                                                    <lightning:icon class="slds-icon slds-input__icon slds-input__icon_right slds-icon-text-default" iconName="utility:search" size="x-small" alternativeText="Search address"/>
+                                                    <input type="text" class="slds-input slds-combobox__input" aura:id="combobox-removalTBH" id="combobox-removalTBH" aria-autocomplete="list" value="{!v.selectedRemovaTBHManagerLabel}" onkeyup="{!c.serverCall}" autoComplete="on" role="textbox" placeholder="Search..." onblur="{!c.blurtoggleVisibility}"/>
+                                                </div>
+                                                <aura:if isTrue="{!v.isRemovaTBHManagerError}">
+                                                    <div class="slds-text-color_error slds-p-left_x-small">
+                                                        Error:Please select the Removal of TBH Access.
+                                                    </div>
+                                                </aura:if>
+                                                <div class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid" role="listbox">
+                                                    <ul id="ulDropremovalTBH" class="slds-listbox slds-listbox_vertical" role="presentation">
+                                                        <aura:iteration items="{!v.managerList}" var="item" indexVar="i">
+                                                            <li role="presentation" class="slds-listbox__item" data-id="{#item.value}" data-name="combobox-removalTBH" onclick="{!c.itemSelected}" data-index="{#item.label}">                            
+                                                                <span id="{#'listbox-option-unique-id-'+i+1}" class="slds-media slds-listbox__option slds-listbox__option_entity slds-listbox__option_has-meta" role="option">
+                                                                    <span class="slds-media__body singleRow">
+                                                                        <span class="optionTitle slds-listbox__option-text slds-listbox__option-text_entity" title="{#item.label}">{#item.label}</span>
+                                                                    </span>
+                                                                </span>
+                                                            </li>
+                                                        </aura:iteration>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            
+                                            <!--
+                                            <lightning:select label="Removal of TBH Access" name="removalTBH" aura:id="removalTBH" value="{!v.selectedRemovaTBHManager}" onchange="{!c.changeRemovalTBH}">
+                                                <aura:iteration items="{!v.managerList}" var="recremoval">
+                                                    <option value="{!recremoval.value}" selected="{!recremoval.value == v.selectedRemovaTBHManager}">{!recremoval.label}</option>
+                                                </aura:iteration>
+                                            </lightning:select>
+                                            -->
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-col slds-size_1-of-1 slds-small-size_1-of-2 slds-medium-size_3-of-4">
+                                    <div class="slds-float_right slds-p-top--large">
+                                        <lightning:button variant="brand" label="Remove Selected TBH Access" title="Remove Selected TBH Access" onclick="{!c.removeSelectedTBHAccess}" />
+                                        <lightning:button variant="brand" label="Remove All TBH Access" title="Remove All TBH Access" onclick="{!c.removeTBHAccess}" />
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                        
+                        
+                        <!-- Table start -->
+                        <aura:if isTrue="{!not(empty(v.TBHCoverageCaseList))}">
+                            <div class="slds-p-around--medium">
+                                
+                                <table style="border: 1px solid black;" class="slds-table slds-table_bordered">
+                                    <thead>
+                                        <tr class="slds-text-title_caps">
+                                            <th scope="col">
+                                                <div class="slds-truncate" title="Action">Action</div>
+                                            </th>
+                                            <th scope="col">
+                                                <div class="slds-truncate" title="Sales Territory">Sales Territory</div>
+                                            </th>
+                                            <th scope="col">
+                                                <div class="slds-truncate" title="Status">Status</div>
+                                            </th>
+                                            <th scope="col">
+                                                <div class="slds-truncate" title="Access End Date">Access End Date</div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <aura:iteration items="{!v.TBHCoverageCaseList}" var="rec">
+                                            <tr>
+                                                <th scope="row" data-label="Action">
+                                                    <div class="slds-truncate" title="Action">
+                                                        <ui:inputCheckbox value="{!rec.isSelected}"/>
+                                                    </div>
+                                                </th>
+                                                <th scope="row" data-label="Sales Territory">
+                                                    <div class="slds-truncate" title="{!rec.salesTerritory}">{!rec.salesTerritory}</div>
+                                                </th>
+                                                <td data-label="Status">
+                                                    <div class="slds-truncate" title="{!rec.status}">{!rec.status}</div>
+                                                </td>
+                                                <td data-label="Access End Date">
+                                                    <div class="slds-truncate" title="{!rec.closedDate}">{!rec.closedDate}</div>
+                                                </td>
+                                            </tr>
+                                        </aura:iteration>
+                                    </tbody>
+                                </table>
+                                
+                            </div>
+                        </aura:if>
+                        <!-- Table End -->
+                        
+                    </lightning:tab>      
+                </lightning:tabset>
+            </aura:if>
+            <aura:if isTrue="{!if (v.coverageType == 'Vacation Coverage',true,false)}">
+                <lightning:tabset class="slds-p-around--small" onselect="{!c.tabSelected}" variant="default" selectedTabId="{!v.selTabId}" >
+                    <lightning:tab label="Vacation Coverage" aura:id="tab1" tabindex="1" id="tab1" title="Vacation Coverage">
+                        <div style = "slds slds-p-around--small">
+                            <div class="slds-grid slds-wrap">
+                                <div class="slds-col slds-size_1-of-1 slds-small-size_1-of-2 slds-medium-size_1-of-2">
+                                    <div class="slds-grid slds-wrap">
+                                        <div class="slds-col slds-size_1-of-1 slds-small-size_1-of-1 slds-medium-size_1-of-2">
+                                            <div class="slds-form-element slds-is-required slds-p-around--small">
+                                                <label class="slds-form-element__label">Who is on vacation</label>
+                                                <div class="slds-form-element__control">
+                                                    <aura:if isTrue="{!v.isRep}">
+                                                        {!v.selectedVacationManagerLabel}
+                                                        <aura:set attribute="else">
+                                                            <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click" data-name="combobox-whovacation" id="whovacationId" aura:id="whovacationId" aria-expanded="false" aria-haspopup="listbox" role="combobox"  onclick="{!c.toggleVisibility}">
+                                                                <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
+                                                                    <lightning:icon class="slds-icon slds-input__icon slds-input__icon_right slds-icon-text-default" iconName="utility:search" size="x-small" alternativeText="Search address"/>
+                                                                    <input type="text" class="slds-input slds-combobox__input" aura:id="combobox-whovacation" id="combobox-whovacation" aria-autocomplete="list" value="{!v.selectedVacationManagerLabel}" onkeyup="{!c.serverCall}" autoComplete="on" role="textbox" placeholder="Search..." onblur="{!c.blurtoggleVisibility}"/>
+                                                                </div>
+                                                                <aura:if isTrue="{!v.iswhovacationError}">
+                                                                    <div class="slds-text-color_error slds-p-left_x-small">
+                                                                        Error:Please select the vacation value.
+                                                                    </div>
+                                                                </aura:if>
+                                                                <div class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid" role="listbox">
+                                                                    <ul id="ulDropwhovacation" class="slds-listbox slds-listbox_vertical" role="presentation">
+                                                                        <aura:iteration items="{!v.userManagerList}" var="item" indexVar="i">
+                                                                            <li role="presentation" class="slds-listbox__item" data-id="{#item.value}" data-name="combobox-whovacation" onclick="{!c.itemSelected}" data-index="{#item.label}">                            
+                                                                                <span id="{#'listbox-option-unique-id-'+i+1}" class="slds-media slds-listbox__option slds-listbox__option_entity slds-listbox__option_has-meta" role="option">
+                                                                                    <span class="slds-media__body singleRow">
+                                                                                        <span class="optionTitle slds-listbox__option-text slds-listbox__option-text_entity" title="{#item.label}">{#item.label}</span>
+                                                                                    </span>
+                                                                                </span>
+                                                                            </li>
+                                                                        </aura:iteration>
+                                                                    </ul>
+                                                                </div>
+                                                            </div>
+                                                        </aura:set>
+                                                    </aura:if>
+                                                    <!--
+                                                    <lightning:select label="Who is on vacation" name="whovacation" aura:id="whovacation" value="{!v.selectedVacationManager}" onchange="{!c.changeVacation}">
+                                                        <aura:iteration items="{!v.managerList}" var="recvacation">
+                                                            <option value="{!recvacation.value}" selected="{!recvacation.value == v.selectedVacationManager}">{!recvacation.label}</option>
+                                                        </aura:iteration>
+                                                    </lightning:select>
+                                                    -->
+                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="slds-col slds-size_1-of-1 slds-small-size_1-of-1 slds-medium-size_1-of-2">
+                                            <div class="slds-form-element slds-is-required slds-p-around--small">
+                                                <label class="slds-form-element__label">Who is covering</label>
+                                                <div class="slds-form-element__control">
+                                                    <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click" data-name="combobox-whoCovering" id="whoCoveringId" aura:id="whoCoveringId" aria-expanded="false" aria-haspopup="listbox" role="combobox"  onclick="{!c.toggleVisibility}">
+                                                        <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
+                                                            <lightning:icon class="slds-icon slds-input__icon slds-input__icon_right slds-icon-text-default" iconName="utility:search" size="x-small" alternativeText="Search address"/>
+                                                            <input type="text" class="slds-input slds-combobox__input" aura:id="combobox-whoCovering" id="combobox-whoCovering" aria-autocomplete="list" value="{!v.selectedCoveringManagerLabel}" onkeyup="{!c.serverCall}" autoComplete="on" role="textbox" placeholder="Search..." onblur="{!c.blurtoggleVisibility}"/>
+                                                        </div>
+                                                        <aura:if isTrue="{!v.iswhoCoveringError}">
+                                                            <div class="slds-text-color_error slds-p-left_x-small">
+                                                                Error:Please select the covering value.
+                                                            </div>
+                                                        </aura:if>
+                                                        <aura:if isTrue="{!v.isvacationFieldsSame}">
+                                                            <div class="slds-text-color_error slds-p-left_x-small">
+                                                                Error:Vacation manager and covering manager can't be same.
+                                                            </div>
+                                                        </aura:if>
+                                                        <div class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid" role="listbox">
+                                                            <ul id="ulDropwhoCovering" class="slds-listbox slds-listbox_vertical" role="presentation">
+                                                                <aura:iteration items="{!v.userManagerList}" var="item" indexVar="i">
+                                                                    <li role="presentation" class="slds-listbox__item" data-id="{#item.value}" data-name="combobox-whoCovering" onclick="{!c.itemSelected}" data-index="{#item.label}">                            
+                                                                        <span id="{#'listbox-option-unique-id-'+i+1}" class="slds-media slds-listbox__option slds-listbox__option_entity slds-listbox__option_has-meta" role="option">
+                                                                            <span class="slds-media__body singleRow">
+                                                                                <span class="optionTitle slds-listbox__option-text slds-listbox__option-text_entity" title="{#item.label}">{#item.label}</span>
+                                                                            </span>
+                                                                        </span>
+                                                                    </li>
+                                                                </aura:iteration>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                    <!--
+                                                    <lightning:select label="Who is covering " name="whoCovering" aura:id="whoCovering" value="{!v.selectedCoveringManager}" onchange="{!c.changeCovering}">
+                                                        <aura:iteration items="{!v.managerList}" var="recCovering">
+                                                            <option value="{!recCovering.value}"  selected="{!recCovering.value == v.selectedCoveringManager}">{!recCovering.label}</option>
+                                                        </aura:iteration>
+                                                    </lightning:select>
+                                                    -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="slds-grid slds-wrap">
+                                        <div class="slds-col slds-size_1-of-1 slds-small-size_1-of-1 slds-medium-size_1-of-2">
+                                            <div class="slds-form-element slds-is-required slds-p-around--small">
+                                                <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon_right">
+                                                    <!--<lightning:input type="date" aura:id="vacationEndDate" label="Vacation End Date" class="field" value="{!v.vacationEndDate}" displayDatePicker="true" /> 
+                                                    -->
+                                                    <lightning:icon size="small" class="front slds-input__icon slds-input__icon_right" iconName="utility:event"/>
+														<ui:inputDate aura:id="howLongdate" class="slds-input" value="{!v.vacationEndDate}" label="Vacation End Date" displayDatePicker="true" format="MM/dd/yyyy" change="{!c.dateValidateForEndDate}"/>
+                                                    <aura:if isTrue="{!v.isvacationEndDateError}">
+                                                        <div class="slds-text-color_error slds-p-left_x-small">
+                                                            Error:Please select the Vacation end date
+                                                        </div>
+                                                    </aura:if>
+                                                    <aura:if isTrue="{!v.vacationEndDateValidationError}">
+                                                        <div class="slds-text-color_error slds-p-left_x-small">
+                                                            {!v.vacationEndDateValidationErrorMsg}
+                                                        </div>
+                                                    </aura:if>  
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="slds-grid slds-wrap">
+                                        <div class="slds-col slds-size_1-of-1 slds-small-size_1-of-1 slds-medium-size_1-of-1">
+                                            <div class="slds-form-element slds-is-required slds-p-around--small">
+                                                <div class="slds-form-element__control">
+                                                    <lightning:button variant="brand" label="Create Vacation Coverage" title="Create Vacation Coverage" onclick="{! c.createVacationCoverage }" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-col slds-size_1-of-1 slds-small-size_1-of-2 slds-medium-size_1-of-2">
+                                    <aura:if isTrue="{!not(empty(v.VacationCoverageList))}">
+                                        <div class="slds-p-around--large">
+                                            <table style="border: 1px solid black;" class="slds-table slds-table_bordered">
+                                                <thead>
+                                                    <tr class="slds-text-title_caps">
+                                                        <th scope="col" style="width=25%">
+                                                            <div class="slds-truncate" title="Status">Who is on vacation</div>
+                                                        </th>
+                                                        <th scope="col" style="width=25%">
+                                                            <div class="slds-truncate" title="Status">Who is covering</div>
+                                                        </th>
+                                                        <th scope="col" style="width=25%">
+                                                            <div class="slds-truncate" title="Status">Status</div>
+                                                        </th>
+                                                        <th scope="col" style="width:25%">
+                                                            <div class="slds-truncate" title="Access End Date">Access End Date</div>
+                                                        </th>
+                                                        
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <aura:iteration items="{!v.VacationCoverageList}" var="rec">
+                                                        <tr>
+                                                            <th scope="row" data-label="Status"  style="width:25%">
+                                                                <div class="slds-truncate" title="{!rec.status}">
+                                                                    {!rec.vacationManager}
+                                                                </div>
+                                                            </th>
+                                                            <th scope="row" data-label="Status"  style="width:25%">
+                                                                <div class="slds-truncate" title="{!rec.status}">
+                                                                    {!rec.coveringManager}
+                                                                </div>
+                                                            </th>
+                                                            <th scope="row" data-label="Status"  style="width:25%">
+                                                                <div class="slds-truncate" title="{!rec.status}">
+                                                                    {!rec.status}
+                                                                </div>
+                                                            </th>
+                                                            <td data-label="Access End Date" style="width:25%">
+                                                                <div class="slds-truncate" title="{!rec.closedDate}">{!rec.closedDate}</div>
+                                                            </td>
+                                                        </tr>
+                                                    </aura:iteration>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </aura:if>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </lightning:tab>
+                    <lightning:tab label="Removal of Access" aura:id="tab2" tabindex="2" id="tab2" title="Removal of Access">
+                        <div class ="slds slds-p-around--small">
+                            <div class="slds-grid slds-wrap">
+                                <div class="slds-col slds-size_1-of-1 slds-small-size_1-of-2 slds-medium-size_1-of-4">
+                                    <div class="slds-form-element slds-is-required slds-p-around--small">
+                                        <label class="slds-form-element__label">Removal of Vacation Access</label>
+                                        <div class="slds-form-element__control">
+                                            <aura:if isTrue="{!v.isRep}">
+                                                {!v.selectedRemovaVacationManagerLabel}
+                                                <aura:set attribute="else">
+                                                    <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click" data-name="combobox-removalVacation" id="removalVacationId" aura:id="removalVacationId" aria-expanded="false" aria-haspopup="listbox" role="combobox"  onclick="{!c.toggleVisibility}">
+                                                        <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
+                                                            <lightning:icon class="slds-icon slds-input__icon slds-input__icon_right slds-icon-text-default" iconName="utility:search" size="x-small" alternativeText="Search address"/>
+                                                            <input type="text" class="slds-input slds-combobox__input" aura:id="combobox-removalVacation" id="combobox-removalVacation" aria-autocomplete="list" value="{!v.selectedRemovaVacationManagerLabel}" onkeyup="{!c.serverCall}" autoComplete="on" role="textbox" placeholder="Search..." onblur="{!c.blurtoggleVisibility}"/>
+                                                        </div>
+                                                        <aura:if isTrue="{!v.isRemovaVacationManagerError}">
+                                                            <div class="slds-text-color_error slds-p-left_x-small">
+                                                                Error:Please select the Removal of Vacation Access.
+                                                            </div>
+                                                        </aura:if>
+                                                        <div class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid" role="listbox">
+                                                            <ul id="ulDropremovalVacation" class="slds-listbox slds-listbox_vertical" role="presentation">
+                                                                <aura:iteration items="{!v.vacationManagerList}" var="item" indexVar="i">
+                                                                    <li role="presentation" class="slds-listbox__item" data-id="{#item.value}" data-name="combobox-removalVacation" onclick="{!c.itemSelected}" data-index="{#item.label}">                            
+                                                                        <span id="{#'listbox-option-unique-id-'+i+1}" class="slds-media slds-listbox__option slds-listbox__option_entity slds-listbox__option_has-meta" role="option">
+                                                                            <span class="slds-media__body singleRow">
+                                                                                <span class="optionTitle slds-listbox__option-text slds-listbox__option-text_entity" title="{#item.label}">{#item.label}</span>
+                                                                            </span>
+                                                                        </span>
+                                                                    </li>
+                                                                </aura:iteration>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </aura:set>
+                                            </aura:if>
+                                        </div>
+                                        </div>
+                                </div>
+                                <div class="slds-col slds-size_1-of-1 slds-small-size_1-of-2 slds-medium-size_3-of-4">
+                                    <div class="slds-float_right slds-p-top--large">
+                                        <lightning:button variant="brand" onclick="{!c.removeSelectedVacationAccess}" label="Remove Selected Vacation Access" title="Remove Selected Vacation Access" />
+                                        <lightning:button variant="brand" onclick="{!c.removeVacationAccess}" label="Remove All Vacation Access" title="Remove All Vacation Access"  />
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                      <!-- Table start -->
+                        <aura:if isTrue="{!not(empty(v.VacationCoverageCaseList))}">
+                            <div class="slds-p-around--medium">
+                                
+                                <table style="border: 1px solid black;" class="slds-table slds-table_bordered">
+                                    <thead>
+                                        <tr class="slds-text-title_caps">
+                                            <th scope="col" style="width:10%">
+                                                <div class="slds-truncate" title="Action">Action</div>
+                                            </th>
+                                            <th scope="col" style="width:20%">
+                                                <div class="slds-truncate" title="Requested For">Requested For</div>
+                                            </th>
+                                            <th scope="col" style="width:20">
+                                                <div class="slds-truncate" title="Requested To">Requested To</div>
+                                            </th>
+                                            <th scope="col" style="width=10%">
+                                                <div class="slds-truncate" title="Access End Date">Access End Date</div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <aura:iteration items="{!v.VacationCoverageCaseList}" var="rec">
+                                            <tr>
+                                                <th scope="row" data-label="Action"  style="width:10%">
+                                                    <div class="slds-truncate" title="Action">
+                                                        <ui:inputCheckbox value="{!rec.isSelected}"/>
+                                                    </div>
+                                                </th>
+                                                <th scope="row" data-label="Requested For" style="width:20%">
+                                                    <div class="slds-truncate" title="{!rec.requestedFor}">{!rec.requestedFor}</div>
+                                                </th>
+                                                <td data-label="Requested To" style="width:20%">
+                                                    <div class="slds-truncate" title="{!rec.requestedTo}">{!rec.requestedTo}</div>
+                                                </td>
+                                                <td data-label="Access End Date" style="width:10%">
+                                                    <div class="slds-truncate" title="Access End Date">{!rec.closedDate}</div>
+                                                </td>
+                                            </tr>
+                                        </aura:iteration>
+                                    </tbody>
+                                </table>
+                                
+                            </div>
+                        </aura:if>
+                        <!-- Table End -->
+                        
+                        
+                    </lightning:tab>
+                </lightning:tabset>
+            </aura:if>
+        </aura:if>
+    </div>
+</aura:component>

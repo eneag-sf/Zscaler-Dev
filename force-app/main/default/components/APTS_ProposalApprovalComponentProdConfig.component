@@ -1,0 +1,170 @@
+<apex:component access="global" controller="APTS_ProposalApprovalControllerProdConf" >
+
+    <apex:attribute name="InputProdConfigID" description="This field is used Get the Product COnfiguration" 
+                     type="ID" assignTo="{!prodConfigID}" />
+    
+    <apex:attribute name="InputProposal" description="This field is used to display list of Proposal products" 
+                     type="string" assignTo="{!proposalID}" />  
+        
+    <!--
+    <apex:attribute name="InputInstanceURL" description="This field is used to get instance URL" 
+                     type="string" assignTo="{!InstanceURL}" />
+        *ProdConfig ID:{!prodConfigID}<br />
+        *ProdConfigSO :{!prodConfigSO} <br />  
+        *Prop ID :{!proposalID}<br />
+        *PropSO:{!proposalSO}<br />
+        *Instance URL:{!InstanceURL}<br />
+        *LINE item :{!ListOfLineItems}<br />
+        *LoR:{!ListOfReasons}<br />
+        -->
+    <b>This Approval Request is for the following exceptions:</b><br/>
+        <apex:repeat value="{!ListOfReasons}" var="reas"> 
+            {!reas}<br/>
+        </apex:repeat><br/><br/>     
+        
+        <b>Approval Reason: </b>{!proposalSO.APTS_Approval_Reason__c} <br/><br/>             
+        <b>Quote/Proposal Details : </b><br/><br/>
+        <table border="1" style="border-collapse: collapse;" >
+            <tr>
+                <td width="30%">Quote/Proposal ID</td><td width="30%">{!ProposalSO.Name}</td>
+            </tr>
+            <tr>
+                <td>Quote/Proposal Name</td><td><apex:outputField value="{!proposalSO.Apttus_Proposal__Proposal_Name__c}"/></td>
+            </tr>
+            <tr>
+                <td>Opportunity Name</td><td><apex:outputField value="{!proposalSO.Apttus_Proposal__Opportunity__r.Name}"/></td>
+            </tr>
+            <tr>
+                <td>Bill To</td><td><apex:outputField value="{!proposalSO.Apttus_QPConfig__BillToAccountId__r.Name}"/></td>
+            </tr>
+            <tr>
+                <td>Term</td><td><apex:outputField value="{!proposalSO.APTS_Subscription_Term__c}"/></td>
+            </tr>
+            <tr>
+                <td>No of Users</td><td><apex:outputField value="{!proposalSO.No_of_Users__c}"/></td>
+            </tr>
+            <tr>
+                <td>Payment Term</td><td><apex:outputField value="{!proposalSO.Apttus_Proposal__Payment_Term__c}"/></td>
+            </tr>
+            <tr>
+                <td>Billing Frequency</td><td><apex:outputField value="{!proposalSO.APTS_Billing_Frequency__c}"/></td>
+            </tr>
+            <tr>
+                <td>TCV</td><td><apex:outputField value="{!proposalSO.APTS_Proposal_Net_Price__c}"/></td>
+            </tr>
+            <tr>
+                <td>ACV</td><td><apex:outputField value="{!proposalSO.APTS_ACV__c}"/></td>
+            </tr>
+            <tr>
+                <td>MRR</td><td><apex:outputField value="{!proposalSO.APTS_Current_Quote_MRR__c}"/></td>
+            </tr>
+            <tr>
+                <td>PPU Per Month</td><td><apex:outputText value="${0, number, ###,###.##}">
+                <apex:param value="{!IF(AND(NOT(ISNULL(proposalSO.APTS_Proposal_Net_Price__c)), NOT(ISNULL(proposalSO.No_of_Users__c)), proposalSO.No_of_Users__c > 0), (proposalSO.APTS_Proposal_Net_Price__c / proposalSO.APTS_Subscription_Term__c) / proposalSO.No_of_Users__c, 0.0)}" /></apex:outputText></td>
+            </tr>
+            <tr>
+                <td>VMO Play</td><td><apex:outputField value="{!proposalSO.Apttus_Proposal__Opportunity__r.VMO_Play__c}"/></td>
+            </tr>
+            <tr>
+                <td>Previous MRR</td><td><apex:outputField value="{!proposalSO.APTS_Original_Quote_MRR__c}"/></td>
+            </tr>
+        </table>
+        <br/><br/><b>Special Terms : </b><br/><br/>
+        {!proposalSO.Apttus_Proposal__Special_Terms__c}
+        <br/><br/><b>Line Item Details : </b><br/><br/>
+        <table border="1" style="border-collapse: collapse;">
+                   <tr style="font-weight:bold;">
+                        <td>Product Name</td>
+                        <!--<td>List Price</td>-->
+                        <td>Quantity</td>                                                                        
+                        <td>Start Date</td>
+                        <td>End Date</td>
+                        <!--<td>Term</td>-->
+                        <td>Partner Discount</td>
+                        <!--<td>Deal Reg Disc</td>-->
+                        <!--<td>New Logo Disc</td>-->
+                        <td>Total Discount</td>
+                        <!--<td>Discount Type</td>-->
+                        <td>Net Price</td>
+                        <td>MRR</td>
+                        <td>Prev MRR</td> 
+                        <!--<td>Guidance</td>  -->                      
+                    </tr>
+            <apex:repeat value="{!ListOfLineItems}" var="Item">
+                <tr >
+                    <td ><apex:outputField value="{!Item.Apttus_Config2__ProductId__r.Name}"/> </td>
+                    <!--<td >
+                        <apex:outputText value="{0, number,currency}" >
+                            <apex:param value="{!Item.Apttus_Config2__ListPrice__c}"/>
+                        </apex:outputText>
+                    </td>-->
+                    <td >
+                        <apex:outputText value="{0, number,###,###,##0}" >
+                            <apex:param value="{!Item.Apttus_Config2__Quantity__c}"/>
+                        </apex:outputText>
+                    </td>
+                    <td ><apex:outputField value="{!Item.Apttus_Config2__StartDate__c}"/> </td>
+                    <td ><apex:outputField value="{!Item.Apttus_Config2__EndDate__c}"/> </td>                    
+                    <!--<td ><apex:outputField value="{!Item.APTS_Selling_Term__c}"/> </td>-->
+                    <td >
+                        <apex:outputText value="{0,number,0}%" >
+                            <apex:param value="{!Item.APTS_Total_Partner_Discount__c}"/>
+                        </apex:outputText>
+                    </td>
+                    <!--<td >
+                        <apex:outputText value="{0,number,0}%" >
+                            <apex:param value="{!Item.APTS_Deal_Reg_Disc__c}"/>
+                        </apex:outputText>
+                    </td>
+                    <td >
+                        <apex:outputText value="{0,number,0}%" >
+                            <apex:param value="{!Item.APTS_New_Logo_Disc__c}"/>
+                        </apex:outputText>
+                    </td>-->
+                    <td >
+                        <apex:outputText value="{0,number,0}%" >
+                            <apex:param value="{!Item.APTS_Total_Discount_Percentage__c}"/>
+                        </apex:outputText>
+                    </td>
+                    <!--<td ><apex:outputField value="{!Item.Apttus_Config2__AdjustmentType__c}"/> </td>-->
+                    <td >
+                        <apex:outputText value="{0, number,currency}" >
+                            <apex:param value="{!Item.Apttus_Config2__NetPrice__c}"/>
+                        </apex:outputText>
+                    </td>
+                    <td ><apex:outputField value="{!Item.APTS_MRR__c}"/> </td>
+                    <td ><apex:outputField value="{!Item.APTS_Prev_MRR__c}"/> </td>
+                    <!--<td ><div style="width: 100%; background-color:{!Item.Apttus_Config2__Guidance__c}; display:block;">&nbsp;</div>  </td>  -->                                                              
+                </tr>
+            </apex:repeat>
+        </table><br/><br/>
+        
+        <!--<br/><br/>
+        <b>Approvals Details: </b><br/><br/>
+        
+        <table border="1" width="100%" style="border-collapse: collapse;">
+                   <tr style="font-weight:bold;">
+                        <td >Step Name</td>
+                        <td >Approval Status</td>
+                        <td >Date</td>                                                                        
+                        <td >Assigned To</td>
+                        <td >Depends On</td> 
+                        <td >Actual Approver</td>
+                        <td >Approver Comments</td>
+                        <td >Requestor Comments</td>                      
+                    </tr>
+            <apex:repeat value="{!ApprovalHistory}" var="Item">
+                <tr>
+                    <td><apex:outputField value="{!Item.Apttus_Approval__Step_Name__c}"/> </td>
+                    <td><apex:outputField value="{!Item.Apttus_Approval__Approval_Status__c}"/></td>                                                
+                    <td><apex:outputField value="{!Item.Apttus_Approval__Date__c}"/></td>                                                                    
+                    <td><apex:outputField value="{!Item.Apttus_Approval__Assigned_To_Name__c}"/></td> 
+                    <td><apex:outputField value="{!Item.Apttus_Approval__DependsOn__c}"/></td> 
+                    <td><apex:outputField value="{!Item.Apttus_Approval__Actual_Approver__c}"/></td> 
+                    <td><apex:outputField value="{!Item.Apttus_Approval__Approver_Comments__c}"/></td>  
+                    <td><apex:outputField value="{!Item.Apttus_Approval__SubmissionComment1__c}"/></td>                                                              
+                </tr>
+            </apex:repeat>
+        </table><br/><br/>-->
+         
+</apex:component>

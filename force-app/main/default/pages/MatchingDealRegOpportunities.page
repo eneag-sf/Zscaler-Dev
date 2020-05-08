@@ -1,0 +1,34 @@
+<apex:page standardController="Deal_Reg__c" extensions="MatchingOpportunityControllerExt"> 
+
+    <apex:form >
+        <apex:pageBlock id="block" mode="edit">
+            <apex:pageMessages />
+
+            <apex:pageBlockSection columns="1" rendered="{!matchingOpportunityList.size > 0}">
+                <apex:pageBlockSectionItem >
+                    <apex:pageBlockTable value="{!matchingOpportunityList}" var="o" >
+                    <apex:column headerValue="Name">
+                        
+                        <a href="/{!o.Id}" target="_blank">{!o.Name}</a>
+                    </apex:column>
+                    <apex:column headerValue="Primary partner company name">                        
+                        <apex:outputPanel rendered="{!o.OpportunityPartnersFrom.size > 0}">
+                            {!o.OpportunityPartnersFrom[0].AccountTo.Name}
+                        </apex:outputPanel>
+                    </apex:column>
+                    <apex:column headerValue="Partner Contact">                        
+                        {!o.Partner_Contact__r.Name}
+                    </apex:column>
+                    <apex:column value="{!o.StageName}"/>
+                    <apex:column value="{!o.Amount}"/>
+                    <apex:column value="{!o.CloseDate}"/>
+                    </apex:pageBlockTable> 
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection rendered="{!NOT(matchingOpportunityList.size > 0)}">
+                No Matching Opportunity Found.
+            </apex:pageBlockSection>
+            
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

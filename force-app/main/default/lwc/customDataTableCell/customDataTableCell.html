@@ -1,0 +1,165 @@
+<template>
+
+    <lightning-input if:true={isBoolean} type="Checkbox" title={cellData} onchange={handleChange} checked={cellData}
+        class="checkbox-background" disabled>
+    </lightning-input>
+
+    <!--For Button-->
+    <div if:true={isButton}>
+        <lightning-button label={cellData} title={cellData} values={cellData} onclick={handleButtonClick}>
+        </lightning-button>
+    </div>
+
+    <!--For ButtonIcon-->
+    <!--icon-name={config.iconName}-->
+    <div if:true={isButtonIcon}>
+        <lightning-button-icon label={cellData} title={cellData} values={cellData} onclick={handleButtonClick}>
+        </lightning-button-icon>
+    </div>
+
+    <!--For Currency-->
+    <lightning-formatted-number if:true={isCurrency} currency-code={currencyCode} format-style="currency"
+        title={cellData} label={cellData} value={cellData} class="number-right">
+    </lightning-formatted-number>
+
+    <!--FOR DATE-->
+    <div if:true={isDate}>
+        <lightning-formatted-text title={cellData} value={cellData} class="slds-truncate">
+        </lightning-formatted-text>
+    </div>
+
+
+
+
+    <!--FOR DATETIME-->
+    <div if:true={isDateTime}>
+        <lightning-formatted-text title={cellData} value={cellData} class="slds-truncate">
+        </lightning-formatted-text>
+    </div>
+
+    <!--FOR EMAIL-->
+    <div if:true={isEmail}>
+        <lightning-formatted-email title={cellData} value={cellData} class="slds-truncate">
+        </lightning-formatted-email>
+    </div>
+
+    <!--FOR Number-->
+    <lightning-formatted-number if:true={isNumber} title={cellData} value={cellData} class="number-right">
+    </lightning-formatted-number>
+
+    <!--FOR Percent-->
+    <lightning-formatted-number if:true={isPercent} title={cellData} value={cellData} format-style="percent"
+        maximum-fraction-digits="2" class="number-right">
+    </lightning-formatted-number>
+
+    <!--For Phone-->
+    <div if:true={isPhone}>
+        <lightning-formatted-phone if:true={isPhone} title={cellData} value={cellData}>
+        </lightning-formatted-phone>
+    </div>
+
+    <!--FOR TEXT-->
+    <div if:true={isText}>
+        <lightning-formatted-text title={cellData} value={cellData} >
+        </lightning-formatted-text>
+    </div>
+    <!--FOR URL-->
+    <div if:true={isURL}>
+        <lightning-formatted-url title={cellData} value={cellData} target={cellData} class="slds-truncate">
+        </lightning-formatted-url>
+    </div>
+
+    <!--For location-->
+    <lightning-formatted-location if:true={isLocation} latitude={locationLatitude} longitude={locationLongitude}
+        class="slds-truncate">
+    </lightning-formatted-location>
+
+    <!--FOR HTML TYPE-->
+    <div if:true={isHTML} lwc:dom="manual" class="html-container "></div>
+
+    <!-- FOR LINK TYPE -->
+    <template if:true={isLink}>
+        <div>
+            <a href="javascript:void(0);" onclick={handleValueChange}>{cellData}</a>
+        </div>
+    </template>
+
+
+    <!-- FOR CUSTOM Image LINK TYPE -->
+    <template if:true={isCustomImageLink}>
+        <div>
+            <template if:true={imageLinkVisibility}>
+                <p style={imageHeaderCSS}>
+                    {imageHeader}
+                </p>
+                <template if:true={imageLinkDisable}>
+                    <p style={imageCSS}>
+                        <image src={imageURL} alt={imageAlt} height={imageHeight} width={imageWidth} />
+                    </p>
+                </template>
+                <template if:false={imageLinkDisable}>
+                    <p style={imageCSS}>
+                        <a  data-id={fldDataVal} onclick={handleCustomImageLink}>
+                            <image src={imageURL} alt={imageAlt} height={imageHeight} width={imageWidth} />
+                        </a>
+                    </p>
+                </template>
+            </template>
+        </div>
+    </template>
+
+
+    <!-- FOR CUSTOM RECORD LINK TYPE -->
+    <template if:true={isCustomButton}>
+        <div>
+            <template if:true={custombuttonVisibility}>
+                <template if:true={buttonDisable}>
+                    <button disabled style={buttonCSS} data-id={fldDataVal} title={cellData} type="button"
+                        class={buttonClass}>{cellData}</button>
+                </template>
+                <template if:false={buttonDisable}>
+                    <button style={buttonCSS} data-id={fldDataVal} title={cellData} type="button"
+                        onclick={handleCustomButtonClick} class={buttonClass}>{cellData}</button>
+                </template>
+            </template>
+        </div>
+    </template>
+
+
+    <!-- FOR CUSTOM BUTTON TYPE -->
+    <template if:true={isRecordLink}>
+        <div>
+            <a href={navigareRecordURL} target="_blank">{cellData}</a>
+        </div>
+    </template>
+
+    <!-- FOR CUSTOM PICKLISt TYPE -->
+    <template if:true={isPicklist}>
+
+        <!-- Edit Icon -->
+        <lightning-icon if:false={isEditPicklist} icon-name="utility:edit" aria-hidden="true" alternative-text="Edit"
+            size="x-small" onclick={checkIsEditable} style="padding-right: 0.3rem;">
+        </lightning-icon>
+
+        <!-- Field Value -->
+        <lightning-formatted-text if:false={isEditPicklist} title={selectedOption} value={selectedOption}
+            class="slds-truncate">
+        </lightning-formatted-text>
+
+        <select if:true={isEditPicklist} size="medium" style="padding-right: 0.3rem;"
+            onchange={onSelectPickListValueChange}>
+            <template for:each={cellData} for:item="option">
+                <option key={option.value} value={option.value} selected={option.selected}>{option.label}</option>
+            </template>
+        </select>
+
+        <lightning-icon if:true={isEditPicklist} icon-name="utility:check" aria-hidden="true" alternative-text="Edit"
+            size="xx-small" onclick={handlePickListValueChange} style="padding-left: 0.3rem; padding-right: 0.3rem;">
+        </lightning-icon>
+
+        <lightning-icon if:true={isEditPicklist} icon-name="utility:close" aria-hidden="true" alternative-text="Edit"
+            size="xx-small" onclick={checkIsEditable} style="padding-right: 0.3rem;">
+        </lightning-icon>
+
+    </template>
+</template>

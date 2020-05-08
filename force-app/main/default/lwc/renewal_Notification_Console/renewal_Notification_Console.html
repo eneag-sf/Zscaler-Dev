@@ -1,0 +1,638 @@
+<template>
+    <div class="slds-tabs_default ">
+        <template if:false={isLoaded}>
+            <lightning-spinner class="slds-is-fixed" variant="brand" alternative-text="Loading" size="medium">
+            </lightning-spinner>
+        </template>
+        <!-- Error Messages-->
+        <template if:true={hasError}>
+            <p class="slds-text-color_error"> {errorMessage}</p>
+        </template>
+
+        <ul class="slds-tabs_default__nav" role="tablist">
+            <li class={upcomingRenewalsTabCSS} title="Upcoming Renewals" role="renewalNotification">
+                <a class="slds-tabs_default__link" href="#" role="tab" tabindex="0" aria-selected="true"
+                    aria-controls="tab-default-1" onclick={changeActiveTabtoUR} id="tab-default-1__item">Upcoming
+                    Renewals</a>
+            </li>
+            <li class={manageExtensionsTabCSS} title="Manage Extensions" role="renewalNotification">
+                <a class="slds-tabs_default__link" href="#" role="tab" tabindex="-1" aria-selected="false"
+                    aria-controls="tab-default-2" onclick={changeActiveTabtoME} id="tab-default-2__item">Manage
+                    Extensions</a>
+            </li>
+        </ul>
+
+
+        <!-- Upcoming Renewals -->
+        <div id="tab-default-1" class={upcomingRenewalsItemCSS} role="tabpanel" aria-labelledby="tab-default-1__item">
+            <article class="slds-tile">
+                <h3 class="slds-tile__title slds-truncate" title={title}>
+                    <div class="titleWrapper slds-m-around_small">
+                        <p class="slds-p-around_small">{title}</p>
+                        <p class="slds-p-horizontal_small">Viewing Upcoming Renewals for next 100 days</p>
+                    </div>
+                </h3>
+                <div class="slds-tile__detail">
+                    <div class="slds-container slds-m-around_small slds-p-left_small">
+                        <div class="ContentWrapper">
+
+                            <div class="ActionWrapper">
+                                <div class="slds-p-around_small slds-align_absolute-center">
+                                    <!-- Refresh button-->
+                                    <lightning-button variant="brand" label="Refresh" title="Refresh Records"
+                                        onclick={refreshPage}></lightning-button>
+                                </div>
+                            </div>
+
+                            <!-- Opportunity Filter Logic here-->
+                            <div class="FilterWrapper">
+                                <div class="FilterComponnetWarpper slds-box">
+                                    <div>
+                                        <div class="slds-p-around_x-small" style="display: inline-block;">
+                                            <c-filter-component fldlabel="Deal Band:" fldorigin="UpcomingRenewals"
+                                                fldname="DB" fldtype="PickList" fldoptions={dealband}
+                                                onfiltervaluechange={handleOnFilterValueChange}>
+                                            </c-filter-component>
+
+                                        </div>
+                                        <template if:true={showGeoAndRepFilter}>
+                                            <!-- Show Geo Filter -->
+                                            <div class="slds-p-around_x-small" style="display: inline-block;">
+                                                <c-filter-component fldlabel="GEO:" fldorigin="UpcomingRenewals"
+                                                    fldname="GEO" fldtype="PickList" fldoptions={geovals}
+                                                    onfiltervaluechange={handleOnGeoFilterValueChange}>
+                                                </c-filter-component>
+                                            </div>
+                                            <!-- Show Rep Filter -->
+                                            <div class="slds-p-around_x-small" style="display: inline-block;">
+                                                <c-filter-component fldlabel="Rep:" fldorigin="UpcomingRenewals"
+                                                    fldname="REP" fldtype="PickList" fldoptions={repvals}
+                                                    onfiltervaluechange={handleOnFilterValueChange}>
+                                                </c-filter-component>
+                                            </div>
+                                        </template>
+                                        <div class="slds-p-around_x-small" style="display: inline-block;">
+                                            <c-filter-component fldlabel="Notifications:" fldorigin="UpcomingRenewals"
+                                                fldname="Renewal_Notification_Status_Formula__c" fldtype="PickList"
+                                                fldoptions={sendnotification}
+                                                onfiltervaluechange={handleOnFilterValueChange}>
+                                            </c-filter-component>
+                                        </div>
+
+                                        <div class="slds-p-around_x-small" style="display: inline-block;">
+                                            <c-filter-component fldlabel="FC:" fldorigin="UpcomingRenewals" fldname="FC"
+                                                fldtype="PickList" fldoptions={fcvals}
+                                                onfiltervaluechange={handleOnFilterValueChange}>
+                                            </c-filter-component>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <div class="slds-p-around_x-small" style="display: inline-block;">
+                                            <c-filter-component labelvarint="label-hidden" fldlabel="Close Date Range:"
+                                                fldorigin="UpcomingRenewals" fldisrange='true' fldname="CloseDate"
+                                                fldtype="Date" onfiltervaluechange={handleOnFilterValueChange}>
+                                            </c-filter-component>
+                                        </div>
+                                        <div class="slds-p-around_x-small" style="display: inline-block;">
+                                            <c-filter-component labelvarint="label-hidden"
+                                                fldlabel="Next Notification Range:" fldorigin="UpcomingRenewals"
+                                                fldisrange='true' fldname="Next_Renewal_Notification_Date__c"
+                                                fldtype="Date" onfiltervaluechange={handleOnFilterValueChange}>
+                                            </c-filter-component>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="slds-p-around_x-small" style="display: inline-block;width: 20rem;">
+                                            <c-filter-component labelvarint="label-hidden"
+                                                fldlabel="Search by opportunity name:" fldorigin="UpcomingRenewals"
+                                                fldname="Name_Search" fldtype="Text"
+                                                onfiltervaluechange={handleOnFilterValueChange}>
+                                            </c-filter-component>
+                                        </div>
+                                        <div class="slds-p-around_x-small" style="display: inline-block;">
+                                            <c-filter-component labelvarint="label-hidden" fldlabel="Contarct End Date:"
+                                                fldorigin="UpcomingRenewals" fldisrange='true'
+                                                fldname="Contract_End_Date_New__c" fldtype="Date"
+                                                onfiltervaluechange={handleOnFilterValueChange}>
+                                            </c-filter-component>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="FilterButtonWrapper slds-box" style="border: unset;">
+                                    <!-- Filter opportunity Records -->
+                                    <lightning-button variant="brand" label="Filter" title="Filter Records"
+                                        onclick={getFilterItems}></lightning-button>
+                                </div>
+                            </div>
+                            <!-- Opportunity list here-->
+                            <div class="OpportunityListWrapper slds-box">
+
+
+                                <!-- If No Errors-->
+                                <template if:false={hasError}>
+                                    <!-- If No Records-->
+                                    <template if:true={recordListUREmpty}>
+                                        <template if:true={isLoaded}>
+                                            <p class="slds-text-color_weak">No records to show.</p>
+                                        </template>
+                                    </template>
+                                    <!-- If Records available-->
+                                    <template if:false={recordListUREmpty}>
+                                        <div class="slds-p-vertical_small">
+                                            <c-paginator-l-w-c page-size={pagesize} total-records={totalrecords}
+                                                current-page-number={currentpageUR}
+                                                onselectedpage={handleOnselectedPageValueChangeUR}>
+                                            </c-paginator-l-w-c>
+                                        </div>
+                                        <div>
+                                            <c-custom-data-table values={recordListUR} columns={urfldList}
+                                                show-pagination=false show-row-number=true show-check-box=false
+                                                is-searchable=false row-size=25
+                                                onrecordvaluechange={handleDataTableRecordValueChangeEvent}>
+                                            </c-custom-data-table>
+                                        </div>
+                                    </template>
+                                </template>
+                            </div>
+
+                            <div class="ActionWrapper">
+                                <div class="slds-p-around_small slds-align_absolute-center">
+                                    <!-- Refresh button-->
+                                    <lightning-button variant="brand" label="Refresh" title="Refresh Records"
+                                        onclick={refreshPage}></lightning-button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <!-- Manage Extensions -->
+        <div id="tab-default-2" class={manageExtensionsItemCSS} role="tabpanel" aria-labelledby="tab-default-2__item">
+            <article class="slds-tile">
+                <h3 class="slds-tile__title slds-truncate" title={title}>
+                    <div class="titleWrapper slds-m-around_small">
+                        <p class="slds-p-around_small">{title}</p>
+                        <p class="slds-p-horizontal_small">Manage Extensions for opportunities expired in last 40 days
+                        </p>
+                    </div>
+                </h3>
+                <div class="slds-tile__detail">
+                    <div class="slds-container slds-m-around_small slds-p-left_small">
+                        <div class="ContentWrapper">
+
+                            <div class="ActionWrapper">
+                                <div class="slds-p-around_small slds-align_absolute-center">
+                                    <!-- Refresh button-->
+                                    <lightning-button variant="brand" label="Refresh" title="Refresh Records"
+                                        onclick={refreshPage}></lightning-button>
+                                </div>
+                            </div>
+
+                            <!-- Opportunity Filter Logic here-->
+                            <div class="FilterWrapper">
+                                <div class="FilterComponnetWarpper slds-box">
+                                    <div>
+                                        <!--Notification-->
+                                        <div class="slds-p-around_x-small" style="display: inline-block;">
+                                            <c-filter-component fldlabel="Notifications:" fldorigin="ManageExtentions"
+                                                fldname="Past_Due_Notification_Status_Formula__c" fldtype="PickList"
+                                                fldoptions={sendnotification}
+                                                onfiltervaluechange={handleOnFilterValueChange}>
+                                            </c-filter-component>
+                                        </div>
+
+                                        <template if:true={showGeoAndRepFilter}>
+                                            <!-- Show Geo Filter -->
+                                            <div class="slds-p-around_x-small" style="display: inline-block;">
+                                                <c-filter-component fldlabel="GEO:" fldorigin="ManageExtentions"
+                                                    fldname="GEO" fldtype="PickList" fldoptions={geovals}
+                                                    onfiltervaluechange={handleOnGeoFilterValueChange}>
+                                                </c-filter-component>
+                                            </div>
+                                            <!-- Show Rep Filter -->
+                                            <div class="slds-p-around_x-small" style="display: inline-block;">
+                                                <c-filter-component fldlabel="Rep:" fldorigin="ManageExtentions"
+                                                    fldname="REP" fldtype="PickList" fldoptions={repvals}
+                                                    onfiltervaluechange={handleOnFilterValueChange}>
+                                                </c-filter-component>
+                                            </div>
+                                        </template>
+
+                                        <!--Close Date Range-->
+                                        <div class="slds-p-around_x-small" style="display: inline-block;">
+                                            <c-filter-component labelvarint="label-hidden" fldlabel="Close Date Range:"
+                                                fldorigin="ManageExtentions" fldisrange='true' fldname="CloseDate"
+                                                fldtype="Date" onfiltervaluechange={handleOnFilterValueChange}>
+                                            </c-filter-component>
+                                        </div>
+
+                                        <!--Days Past Due-->
+                                        <div class="slds-p-around_x-small" style="display: inline-block;">
+                                            <c-filter-component fldlabel="Days Past Due:" fldorigin="ManageExtentions"
+                                                fldname="DAYSDUE" fldtype="PickList" fldoptions={dayspastduevals}
+                                                onfiltervaluechange={handleOnFilterValueChange}>
+                                            </c-filter-component>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <!--Opportunity Search-->
+                                        <div class="slds-p-around_x-small" style="display: inline-block;width: 20rem;">
+                                            <c-filter-component labelvarint="label-hidden"
+                                                fldlabel="Search by opportunity name:" fldorigin="ManageExtentions"
+                                                fldname="Name_Search" fldtype="Text"
+                                                onfiltervaluechange={handleOnFilterValueChange}>
+                                            </c-filter-component>
+                                        </div>
+                                        <!--Next Notification Range-->
+                                        <div class="slds-p-around_x-small" style="display: inline-block;">
+                                            <c-filter-component labelvarint="label-hidden"
+                                                fldlabel="Next Notification Range:" fldorigin="ManageExtentions"
+                                                fldisrange='true' fldname="Next_Renewal_Notification_Date__c"
+                                                fldtype="Date" onfiltervaluechange={handleOnFilterValueChange}>
+                                            </c-filter-component>
+                                        </div>
+                                        <!--No of Extension:-->
+                                        <div class="slds-p-around_x-small" style="display: inline-block;">
+                                            <c-filter-component fldlabel="No of Extension:" fldorigin="ManageExtentions"
+                                                fldname="NOE" fldtype="PickList" fldoptions={noOfExtensionvals}
+                                                onfiltervaluechange={handleOnFilterValueChange}>
+                                            </c-filter-component>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="FilterButtonWrapper slds-box" style="border: unset;">
+                                    <!-- Filter opportunity Records -->
+                                    <lightning-button variant="brand" label="Filter" title="Filter Records"
+                                        onclick={getFilterItems}></lightning-button>
+                                </div>
+                            </div>
+                            <!-- Opportunity list here-->
+                            <div class="OpportunityListWrapper slds-box">
+                                <!-- If No Errors-->
+                                <template if:false={hasError}>
+                                    <!-- If No Records-->
+                                    <template if:true={recordListMEEmpty}>
+                                        <template if:true={isLoaded}>
+                                            <p class="slds-text-color_weak">No records to show.</p>
+                                        </template>
+                                    </template>
+                                    <!-- If Records available-->
+                                    <template if:false={recordListMEEmpty}>
+                                        <div class="slds-p-vertical_small">
+                                            <c-paginator-l-w-c page-size={pagesize} total-records={totalrecords}
+                                                current-page-number={currentpageME}
+                                                onselectedpage={handleOnselectedPageValueChangeME}>
+                                            </c-paginator-l-w-c>
+                                        </div>
+                                        <div>
+                                            <c-custom-data-table values={recordListME} columns={mefldList}
+                                                show-pagination=false show-row-number=true show-check-box=false
+                                                is-searchable=false row-size=25
+                                                onrecordvaluechange={handleDataTableRecordValueChangeEvent}>
+                                            </c-custom-data-table>
+                                        </div>
+                                    </template>
+                                </template>
+                            </div>
+
+                            <div class="ActionWrapper">
+                                <div class="slds-p-around_small slds-align_absolute-center">
+                                    <!-- Refresh button-->
+                                    <lightning-button variant="brand" label="Refresh" title="Refresh Records"
+                                        onclick={refreshPage}></lightning-button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </div>
+
+    <!--Add Extention-->
+    <template if:true={openExtentionModal}>
+        <div class="" style="height: 640px;">
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+                aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <lightning-record-edit-form object-api-name="Contract_Extension_Request__c"
+                        onload={handleAddExtentionLoad} onsubmit={handleAddExtentionSubmit}>
+
+                        <header class="slds-modal__header">
+                            <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                                title="Close" onclick={closeAddExtentionModal}>
+                                <lightning-icon icon-name="utility:close" size="medium">
+                                </lightning-icon>
+                                <span class="slds-assistive-text">Close</span>
+                            </button>
+                            <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Add New Extension
+                                Request</h2>
+                        </header>
+                        <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+
+                            <div class="addExtentionHolder">
+                                <!--Add Extention Spinner-->
+                                <template if:false={addExtentionLoaded}>
+                                    <lightning-spinner variant="brand" alternative-text="Loading" size="medium">
+                                    </lightning-spinner>
+                                </template>
+
+                                <!--Add Extention Error Messages-->
+                                <template if:true={addExtentionHasError}>
+                                    <div class="slds-align_absolute-center slds-text-color_error">
+                                        {addExtentionErrorMessage}
+                                    </div>
+                                </template>
+
+                                <div class="slds-m-around_medium">
+                                    <template for:each={extentionfldWrapper} for:item="wrap">
+                                        <div key={wrap.fieldAPIName}>
+                                            <template if:true={wrap.isRequired}>
+                                                <lightning-input-field required={wrap.isRequired}
+                                                    field-name={wrap.fieldAPIName}></lightning-input-field>
+                                            </template>
+                                            <template if:false={wrap.isRequired}>
+                                                <lightning-input-field field-name={wrap.fieldAPIName}>
+                                                </lightning-input-field>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                        <footer class="slds-modal__footer">
+                            <lightning-button if:true={addExtentionLoaded} variant="brand" type="submit" name="save"
+                                label="Create Request">
+                            </lightning-button>&nbsp;&nbsp;&nbsp;&nbsp;
+                            <lightning-button label="Cancel" variant="neutral" onclick={closeAddExtentionModal}>
+                            </lightning-button>&nbsp;&nbsp;&nbsp;&nbsp;
+                        </footer>
+                    </lightning-record-edit-form>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </template>
+
+
+    <!--Add Contact -->
+    <template if:true={openAddContact}>
+        <div style="height: 640px;">
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+                aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                            title="Close" onclick={closeAddContactModal}>
+                            <lightning-icon icon-name="utility:close" size="medium">
+                            </lightning-icon>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <template if:true={isAddPartnerContact}>
+                            <h2 class="slds-text-heading_medium slds-hyphenate">
+                                Add Partner Contact
+                            </h2>
+                        </template>
+                        <template if:true={isAddCustomerContact}>
+                            <h2 class="slds-text-heading_medium slds-hyphenate">
+                                Add Customer Contact
+                            </h2>
+                        </template>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-2">
+
+
+                        <!-- Add new Contact -->
+                        <template if:true={showAddNewContact}>
+
+                            <div class="addNewContactHolder">
+
+                                <!--Add Contact Spinner-->
+                                <template if:false={addNewContactLoaded}>
+                                    <lightning-spinner variant="brand" alternative-text="Loading" size="medium">
+                                    </lightning-spinner>
+                                </template>
+
+                                <lightning-record-edit-form object-api-name="Contact" onload={handleAddNewContactLoad}
+                                    onsubmit={handleAddNewContactSubmit} onsuccess={handleAddNewContactSuccess}>
+                                    <lightning-messages></lightning-messages>
+                                    <div class="slds-grid slds-wrap">
+                                        <template for:each={addNewContactfldWrapper} for:item="wrap">
+                                            <div key={wrap.fieldAPIName}
+                                                class="slds-col slds-size_1-of-2 slds-p-horizontal_x-small">
+                                                <template if:true={wrap.isAccountID}>
+                                                    <lightning-input-field required={wrap.isRequired}
+                                                        field-name={wrap.fieldAPIName} value={addNewContactAccountID}>
+                                                    </lightning-input-field>
+                                                </template>
+                                                <template if:false={wrap.isAccountID}>
+                                                    <lightning-input-field required={wrap.isRequired}
+                                                        field-name={wrap.fieldAPIName}>
+                                                    </lightning-input-field>
+                                                </template>
+                                            </div>
+                                        </template>
+                                        <template if:true={addNewContactLoaded}>
+                                            <div class="slds-m-top_medium slds-p-horizontal_small">
+                                                <lightning-button variant="brand" type="submit" name="save"
+                                                    label="Create Contact">
+                                                </lightning-button>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </lightning-record-edit-form>
+                            </diV>
+
+                        </template>
+
+                        <!-- Contcat List -->
+                        <template if:false={showAddNewContact}>
+
+                            <div class="addContactListHolder">
+                                <!--Add Contact Spinner-->
+                                <template if:false={addContactLoaded}>
+                                    <lightning-spinner variant="brand" alternative-text="Loading" size="medium">
+                                    </lightning-spinner>
+                                </template>
+
+                                <!--Add Contact Error Messages-->
+                                <template if:true={addContactHasError}>
+                                    <div class="slds-align_absolute-center slds-text-color_error">
+                                        {addContactErrorMessage}
+                                    </div>
+                                </template>
+
+                                <!--Add Contact Success Messages-->
+                                <template if:true={addContactSuccess}>
+                                    <div class="slds-align_absolute-center slds-text-color_success">
+                                        {addContactSuccessMessage}
+                                    </div>
+                                </template>
+
+                                <template if:true={isContactlistAvailable}>
+                                    <template if:true={hasRenewalContactList}>
+                                        <div
+                                            style="margin: 11px; border: 1px solid grey; padding: 5px; background: black; color: white;">
+                                            Renewal Recipients</div>
+                                        <div class="slds-scrollable"
+                                            style="height: 5rem; margin: 11px; border: 1px solid grey;">
+                                            <table class="slds-table slds-table_bordered slds-table_resizable-cols">
+                                                <thead>
+                                                    <td style="width:3.25rem"></td>
+                                                    <td>Name</td>
+                                                    <td>Email</td>
+                                                </thead>
+                                                <tbody>
+                                                    <template for:each={contactListWrapper.RenewalRecipientList}
+                                                        for:item="renwContact">
+                                                        <tr key={renwContact.Id}>
+                                                            <td><input type="checkbox" name="isSelected"
+                                                                    value={renwContact.checked}
+                                                                    checked={renwContact.checked} data-type="Renewal"
+                                                                    data-id={renwContact.con.Id}
+                                                                    onchange={updateRecipientIsSelcted} />
+                                                            </td>
+                                                            <td>{renwContact.con.Name}</td>
+                                                            <td>{renwContact.con.Email}</td>
+                                                        </tr>
+                                                    </template>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </template>
+
+                                    <template if:true={hasNonRenewalContactList}>
+                                        <div
+                                            style="margin: 11px; border: 1px solid grey; padding: 5px; background: black; color: white;">
+                                            Other Contacts on Account</div>
+                                        <div class="slds-scrollable"
+                                            style="height: 5rem; margin: 11px; border: 1px solid grey;">
+                                            <table class="slds-table slds-table_bordered slds-table_resizable-cols">
+                                                <thead>
+                                                    <td style="width:5.25rem"></td>
+                                                    <td>Name</td>
+                                                    <td>Email</td>
+                                                </thead>
+                                                <tbody>
+                                                    <template for:each={contactListWrapper.NonRenewalRecipientList}
+                                                        for:item="nonrenwContact">
+                                                        <template if:true={nonrenwContact.con}>
+                                                            <tr key={nonrenwContact.Id}>
+                                                                <td><input type="checkbox" name="isSelected"
+                                                                        value={nonrenwContact.checked}
+                                                                        checked={nonrenwContact.checked}
+                                                                        data-type="NonRenewal"
+                                                                        data-id={nonrenwContact.con.Id}
+                                                                        onchange={updateRecipientIsSelcted} /></td>
+                                                                <td>{nonrenwContact.con.Name}</td>
+                                                                <td>{nonrenwContact.con.Email}</td>
+                                                            </tr>
+                                                        </template>
+                                                    </template>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </template>
+                                </template>
+                            </div>
+
+                        </template>
+                    </div>
+                    <footer class="slds-modal__footer">
+
+                        <template if:true={showAddNewContact}>
+                            <lightning-button label="Cancel" variant="neutral" onclick={closeNewContactModal}>
+                            </lightning-button>&nbsp;&nbsp;&nbsp;&nbsp;
+                        </template>
+
+                        <template if:false={showAddNewContact}>
+                            <lightning-button label="Add Contact" variant="neutral" onclick={openNewContactModal}>
+                            </lightning-button>&nbsp;&nbsp;&nbsp;&nbsp;
+                            <lightning-button label="Save" variant="neutral" onclick={saveAddContact}>
+                            </lightning-button>&nbsp;&nbsp;&nbsp;&nbsp;
+                            <lightning-button label="Cancel" variant="neutral" onclick={closeAddContactModal}>
+                            </lightning-button>&nbsp;&nbsp;&nbsp;&nbsp;
+                        </template>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </template>
+
+
+
+    <!-- Teminate Subscription -->
+    <template if:true={openTerminateSubscription}>
+        <div style="height: 500px;">
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-03" aria-modal="true"
+                aria-describedby="modal-content-id-3" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                            title="Close" onclick={closeTerminateSubscriptionModal}>
+                            <lightning-icon icon-name="utility:close" variant="inverse" alternative-text="Close"
+                                size="medium">
+                            </lightning-icon>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-03" class="slds-text-heading_medium slds-hyphenate">Terminate Subscription
+                        </h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-3">
+                        <div class="slds-text-heading_small slds-text-align_center">
+                            Are you sure to Terminate Subscription?
+                        </div>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <span class="slds-p-horizontal_medium">
+                            <lightning-button label="Yes" variant="neutral" onclick={terminateSubscription}>
+                            </lightning-button>
+                        </span>
+                        <lightning-button label="No" variant="neutral" onclick={closeTerminateSubscriptionModal}>
+                        </lightning-button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </template>
+
+
+    <!-- Notify Now -->
+    <template if:true={openNotifyNow}>
+        <div style="height: 500px;">
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-04" aria-modal="true"
+                aria-describedby="modal-content-id-3" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container notifyModal">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                            title="Close" onclick={closeNotifyModal}>
+                            <lightning-icon icon-name="utility:close" variant="inverse" alternative-text="Close"
+                                size="medium">
+                            </lightning-icon>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-04" class="slds-text-heading_medium slds-hyphenate">Notify Now</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-4">
+                        <c-compose-email from-address={fromAdd} to-address={toAdd} additional-to={additionalTo}
+                            cc-address={ccAdd} bcc-address={bccAdd} template-id={emailTemplateId}
+                            related-id={relatedTmplateId} onemailsent={emailSentSuccess}>
+                        </c-compose-email>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning-button label="No" variant="neutral" onclick={closeNotifyModal}></lightning-button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </template>
+
+
+</template>

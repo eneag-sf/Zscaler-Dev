@@ -1,0 +1,21 @@
+<apex:page standardController="Focus_Accounts__c" extensions="MonthlyPolicyConfigsListController" showHeader="false" sidebar="false">
+    <apex:form >
+        <apex:pageblock >
+            <apex:pageBlockTable var="config" value="{!configs}" rendered="{!configs.size > 0}">
+                <apex:column headerValue="Monthly Policy Configurations Name">
+                    <a target="_blank" href="/{!config.configId}">{!config.name}</a>
+                </apex:column>
+                <apex:column headerValue="O365 One Click" value="{!config.O365OneClick}" />
+                <apex:column headerValue="Number of GRE Tunnels" value="{!config.numberOfGRETunnels}" />
+                <apex:column headerValue="Number of IPSEC Tunnels" value="{!config.numberOfIPTunnels}" />
+                <apex:column headerValue="Max Licenses" value="{!config.maxLicenses}" />
+                <apex:column headerValue="IPs without Location" value="{!config.ipsWithoutLocation}" />
+                <apex:column headerValue="Authentication Frequency" value="{!config.authenticationFrequency}" />
+            </apex:pageBlockTable>
+            <apex:outputPanel rendered="{!configs.size == 0}">
+                No records to display
+            </apex:outputPanel>
+        </apex:pageblock>
+        <apex:commandLink action="{!showMore}" rendered="{!configs.size > 0 && limitValue < recordCount}">Show {!limitValue} More »</apex:commandLink>
+    </apex:form>
+</apex:page>

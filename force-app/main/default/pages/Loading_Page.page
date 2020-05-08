@@ -1,0 +1,11 @@
+<apex:page showHeader="false" sidebar="false">
+    <apex:slds />
+  <div  id="LoadingvfDIV" class="slds-spinner_container" style="position: fixed;">
+                <div role="status" class="slds-spinner slds-spinner_medium slds-spinner_brand">
+                    <span class="slds-assistive-text">Loading...</span>
+                    <div class="slds-spinner__dot-a"></div>
+                    <div class="slds-spinner__dot-b"></div>
+                </div>
+                <div style="position: absolute;top: 60%;left: 42%;">Please Wait for the Email page to Load...</div>
+            </div>
+</apex:page>

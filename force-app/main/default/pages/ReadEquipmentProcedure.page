@@ -1,0 +1,5 @@
+<apex:page >
+  <!-- Begin Default Content REMOVE THIS -->
+  <font color="red"><b>Please DO NOT attempt to fill out this form without first reading through the <a href="https://internal.zscaler.com/sites/default/files/CloudOperations/Cloud-Ops-Private-Hardware-Process-2012-02-v13.pdf" target="_blank">Equipment Request Procedure</a>.</b></font>
+  <!-- End Default Content REMOVE THIS -->
+</apex:page>

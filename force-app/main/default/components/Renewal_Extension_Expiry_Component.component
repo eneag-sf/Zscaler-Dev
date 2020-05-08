@@ -1,0 +1,45 @@
+<apex:component access="global" controller="Renewal_Notification_EmailController">
+    <apex:attribute name="Opptyrecord1" description="This field is used to display list of Proposal products" 
+                     type="String" assignTo="{!oppId}" />
+    <apex:attribute name="dayofexpiry1" description="This field is used to get instance URL" 
+                     type="Boolean" assignTo="{!dayofexpiry}" />
+    <apex:attribute name="isextensiontermination1" description="This field is used to get instance URL" 
+                     type="Boolean" assignTo="{!isextensiontermination}" />
+    
+    <table width="100%">
+        <tbody>
+            <tr>
+                <td align="left"><a style="vertical-align: baseline;" href="http://www.zscaler.com"><img style="" src="http://info.zscaler.com/rs/zscaler/images/zlogo-pms306-200x44.png" border="0" alt="Zscaler" height="36" /></a></td>
+                <td style="padding-right: 20px;" align="right"></td>
+            </tr>
+        </tbody>
+    </table>
+    <br/><br/>
+    <b>Hello,</b><br/><br/>      
+    <apex:outputPanel rendered="{!dayofexpiry}">
+        Subscription to the Zscaler services on the opportunity : {!opp.Name} which was previously extended will expire Today&nbsp;(<apex:outputField value="{!opp.New_Extended_Contract_Date__c}"/>)<br/><br/>
+    </apex:outputPanel>  
+    <apex:outputPanel rendered="{!isextensiontermination}">
+        Subscription to the Zscaler services on the opportunity : {!opp.Name} which expired on&nbsp;(<apex:outputField value="{!opp.New_Extended_Contract_Date__c}"/>) would be terminated today.<br/><br/>
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!dayofexpiry}">
+        What would happen next?<br/>
+        <b>If the opportunity is not extended further by requesting for approval OR if subscription on the opportunity is not terminated by pressing the "Terminate Subscription" button on the renewal console, Finance team would begin the process of terminating the subscription.</b><br/><br/>
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!isextensiontermination}">
+        What should you do to stop the termination of subscription services?<br/>
+        <b>Request for further extension by pressing the "Request Approval" Button on the renewal console AND reach out to opindia@zscaler.com notifying them not to terminate services as the request for extension is inflight.</b><br/><br/>
+    </apex:outputPanel>
+    
+    <b>Sincerely,</b><br/>
+    <b>Zscaler Billings Team</b><br/><br/>
+    
+    <table class="twelve columns" style="border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:center; width:900px; padding:0;background: #252d34;">
+        <tbody>
+            <tr style="vertical-align:top; text-align:center; padding:0;" align="center">
+                <td class="wrapper last" style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:center; position:relative; color:#999999; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:11px; margin:0; padding:10px 0px 0px;" align="center" valign="top">Copyright ©{!yearVal} Zscaler, Inc.<br />
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</apex:component>

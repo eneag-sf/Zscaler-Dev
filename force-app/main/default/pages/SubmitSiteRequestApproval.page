@@ -1,0 +1,11 @@
+<apex:page controller="SubmitSiteRequestApproval" showHeader="true" sidebar="true">
+    <apex:form >
+    <apex:actionFunction action="{!submitForApproval}" id="submitForApproval" name="submitForApproval" oncomplete="" />
+    </apex:form>
+    <script>
+        (function() {
+            submitForApproval();
+            alert('Site Approval Request has been sent successfully');
+        })();
+    </script>
+</apex:page>

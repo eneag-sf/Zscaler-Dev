@@ -1,0 +1,648 @@
+<apex:component access="global" controller="Executive_Briefing_Email_Controller">
+    <apex:attribute name="ebId1" description="This field is used to display list of Proposal products" type="String" assignTo="{!ebId}"/>
+    <apex:attribute type="String" name="typeofTemplate1" assignTo="{!typeofTemplate}" description="Type of template" />
+    <apex:attribute type="String" name="approverName1" assignTo="{!approverName}" description="Type of template" />
+    
+    <table class="body" style="border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:left; height:100%; width:100%; color:#222222; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:14px; margin:0; padding:0; ">
+        <tbody>
+            <tr style="vertical-align:top; text-align:left; padding:0; " align="left">
+                <td class="center" align="center" valign="top" style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:center; color:#222222; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:14px; margin:0; padding:0; ">
+                    <center style="width:100%; min-width:900px; ">
+                        <table width="100%" border="0" cellspacing="0" cellpadding="0" class="hide-for-small">
+                            <tbody>
+                                <tr>
+                                    <td style="color:#555555; font-size:11px; line-height:11px; font-family:Arial, Helvetica, sans-serif; word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:center; font-weight:normal; margin:0; padding:0px;"
+                                        align="center" valign="top"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table class="container" style="border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:inherit; width:900px; margin:0 auto; padding:0; border:1px solid #bcc0be; background-color:#FFFFFF; ">
+                            <tbody>
+                                <tr style="vertical-align:top; text-align:left; padding:0; " align="left">
+                                    <td style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:left; color:#222222; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:14px; margin:0; padding:0; "
+                                        align="left" valign="top">
+                                        <table class="row" style="border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:left; width:100%; position:relative; display:block; padding:0px; ">
+                                            <tbody>
+                                                <tr style="vertical-align:top; text-align:left; padding:0; " align="left">
+                                                    <td class="wrapper last" style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:left; position:relative; color:#222222; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:14px; margin:0; padding:0px; "
+                                                        align="left" valign="top">
+                                                        <table class="twelve columns" style="border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:left; width:600px; padding:0; ">
+                                                            <tbody>
+                                                                <tr style="vertical-align:top; text-align:left; padding:0; " align="left">
+                                                                    <td align="left" valign="top" style="padding-top:8px; padding-bottom:8px; ">
+                                                                        <div class="mktEditable" id="logo" style="margin:0 0 0 10px; ">
+                                                                            <table width="100%">
+                                                                                <tbody>
+                                                                                    <tr>
+                                                                                        <td align="left">
+                                                                                            <a style="vertical-align: baseline;" href="http://www.zscaler.com">
+                                                                                                <img style="margin-left: 12px;" src="http://info.zscaler.com/rs/zscaler/images/zlogo-pms306-200x44.png" border="0" alt="Zscaler"
+                                                                                                     height="36" />
+                                                                                            </a>
+                                                                                        </td>
+                                                                                        <td style="padding-right: 20px;" align="right"></td>
+                                                                                    </tr>
+                                                                                </tbody>
+                                                                            </table>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td class="expander" style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:bottom; text-align:right; width:0px; color:#009DD0; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:10px; margin:0; padding:0; "
+                                                                        align="right" valign="bottom">
+                                                                        <table width="100%" border="0" cellspacing="0" cellpadding="0" class="hide-for-small">
+                                                                            <tbody>
+                                                                                <tr>
+                                                                                    <td class="expander" style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:bottom; text-align:right; width:0px; color:#009DD0; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:10px; margin:0; padding:0 12px 0 0; "
+                                                                                        align="right" valign="bottom">
+                                                                                        <div class="mktEditable" id="contact"></div>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr style="vertical-align:top; text-align:left; padding:0; " align="left">
+                                    <td style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:left; color:#222222; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:14px; margin:0; padding:0; "
+                                        align="left" valign="top">
+                                        <table class="row" style="display:table !important; border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:left; width:100%; position:relative; padding:0px; ">
+                                            <tbody>
+                                                <tr style="vertical-align:top; text-align:left; padding:0; background:#00b3e3; " class="bg-white" align="left">
+                                                    <td class="wrapper" style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:left; position:relative; color:#222222; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:14px; margin:0; padding:0px; "
+                                                        align="left" valign="top">
+                                                        <table width="780" class="six columns" style="border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:left; width:900px; padding:0; ">
+                                                            <tbody>
+                                                                <tr style="vertical-align:top; text-align:left; padding:0; " align="left">
+                                                                    <td width="330" align="left" valign="top" class="center-table" style="color:#fff; font-size:15px; font-family:Arial, Helvetica, sans-serif; line-height:22px; word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:left; font-weight:normal; margin:0; padding:0px 0px 0px 20px; ">
+                                                                        <div class="mktEditable" id="content-one">
+                                                                            <p style="color: #bed62f; font-family: Helvetica,Arial,sans-serif; font-weight: 500; text-align: left; word-break: normal; font-size: 16px; margin: 10px 0px 0px; margin-top: 10px; margin-bottom: 10px;"
+                                                                               align="left">
+                                                                                <span style="font-size: 27px; color: #fff; font-weight: 100; line-height: 49px;">
+                                                                                    <apex:outputPanel rendered="{!typeofTemplate == 'ApprovalRequired'}">Approval Request: {!EB.Name} - {!parentName}</apex:outputPanel>
+                                                                                    <apex:outputPanel rendered="{!typeofTemplate == 'Approved'}">Executive Request: {!EB.Name}
+                                                                                        - {!parentName} is now APPROVED</apex:outputPanel>
+                                                                                    <apex:outputPanel rendered="{!typeofTemplate == 'Rejected'}">Executive Request: {!EB.Name}
+                                                                                        - {!parentName} was REJECTED</apex:outputPanel>
+                                                                                    <apex:outputPanel rendered="{!typeofTemplate == 'Remainder'}">Executive Meeting request reminder for {!parentName}
+                                                                                    </apex:outputPanel>
+                                                                                </span>
+                                                                            </p>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr style="vertical-align:top; text-align:left; padding:0; " align="left">
+                                    <td style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:left; color:#222222; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:14px; margin:0; padding:0; "
+                                        align="left" valign="top">
+                                        <table class="row" style="border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:left; width:100%; position:relative; display:block; padding:0px; ">
+                                            <tbody>
+                                                <tr style="vertical-align:top; text-align:left; padding:0; " align="left">
+                                                    
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr style="vertical-align:top; text-align:left; padding:0; background-color:#ededed; " align="left">
+                                    <td style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:left; color:#222222; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:14px; margin:0; padding:0; "
+                                        align="left" valign="top">
+                                        <table class="row" style="border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:left; width:100%; position:relative; display:block; padding:0px; ">
+                                            <tbody>
+                                                <tr style="vertical-align:top; text-align:left; padding:0; " align="left">
+                                                    
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr style="vertical-align:top; text-align:left; padding:0; " align="left">
+                                    <td style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:left; color:#222222; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:14px; margin:0; padding:0; "
+                                        align="left" valign="top">
+                                        <table class="row" style="border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:left; width:100%; position:relative; display:block; padding:0px; ">
+                                            <tbody>
+                                                <tr style="vertical-align:top; text-align:left; padding:0; " align="left">
+                                                    <td class="wrapper" style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:left; position:relative; color:#222222; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:14px; margin:0; padding:0px;"
+                                                        align="left" valign="top">
+                                                        <div style="padding:6px;">&nbsp;</div>
+                                                    </td>
+                                                    <td class="wrapper last" style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:left; position:relative; color:#222222; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:14px; margin:0; padding:0px; "
+                                                        align="left" valign="top">
+                                                        <table class="twelve columns" style="border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:left; width:880px; padding:0; ">
+                                                            <tbody>
+                                                                <tr style="vertical-align:top; text-align:left; padding:0; " align="left">
+                                                                    <td style="color:#555555; font-size:14px; line-height:18px; font-family:Arial, Helvetica, sans-serif; word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:left; font-weight:normal; margin:0; padding:0px 15px 10px; "
+                                                                        align="left" valign="top">
+                                                                        <div class="mktEditable" id="content-under-gray">
+                                                                            
+                                                                            <br />
+                                                                            
+                                                                            <p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">
+                                                                                Hello 
+                                                                                <apex:outputPanel rendered="{!typeofTemplate == 'ApprovalRequired'}">
+                                                                                    {!approverName},
+                                                                                </apex:outputPanel>
+                                                                                <apex:outputPanel rendered="{!typeofTemplate == 'Rejected'}">
+                                                                                    {!EB.Owner.name},
+                                                                                </apex:outputPanel>
+                                                                                <apex:outputPanel rendered="{!typeofTemplate == 'Approved'}">
+                                                                                    {!EB.Owner.name},
+                                                                                </apex:outputPanel>
+                                                                                <apex:outputPanel rendered="{!typeofTemplate == 'Remainder'}">
+                                                                                    {!executiveName},
+                                                                                </apex:outputPanel>
+                                                                            </p>
+                                                                            
+                                                                            <!-- Request Reminder -->
+                                                                            <apex:outputPanel rendered="{!typeofTemplate == 'Remainder'}">
+                                                                                <div style="padding-bottom:5px;">
+                                                                                    <p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">
+                                                                                        <apex:outputPanel >This is a reminder that you have an upcoming Executive meeting with {!EB.Customer__r.name} on 
+                                                                                            <apex:outputPanel rendered="{!isMeetingConfirmed}">
+                                                                                                {!meetingDate}.
+                                                                                            </apex:outputPanel>
+                                                                                            <apex:outputPanel rendered="{!!isMeetingConfirmed}">
+                                                                                                {!meetingStartDate} to {!meetingEndDate}.
+                                                                                            </apex:outputPanel>
+                                                                                        </apex:outputPanel>
+                                                                                    </p>
+                                                                                    
+                                                                                    <p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Executive Request Link: &nbsp; <apex:outputLink value="{!url+'/'+ebId}">{!EB.Name}</apex:outputLink></p>
+                                                                                    
+                                                                                    <apex:outputPanel rendered="{!isOpportunityExist}">
+                                                                                        <p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Opportunity Record Link: &nbsp; <apex:outputLink value="{!url+'/'+oppId}">{!EB.Opportunity__r.Name}</apex:outputLink></p>
+                                                                                    </apex:outputPanel>
+                                                                                    
+																					<div>
+																						<p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">
+																							<b>Reason for Request</b>
+																						</p>
+																						<p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">
+																							{!EB.Reason_for_Request__c}
+																						</p>
+																					</div>
+                                                                                    <div >
+																						<p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">
+																							<b>Requested By: &nbsp;</b>{!EB.Owner.name}
+																						</p>
+																					</div>
+                                                                                </div>
+                                                                                
+                                                                                <div style="padding-bottom:5px;">
+                                                                                    <p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">
+                                                                                        <b>Meeting With</b>
+                                                                                    </p>
+                                                                                    <table style="display:table !important; border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:left; width:100%; ">
+                                                                                        <tbody>
+                                                                                            <tr>
+                                                                                                <td style="padding-top: 5px;width: 25%;vertical-align: top;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Account:  </span></td>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!EB.Customer__r.Name}</span></td>
+                                                                                            </tr>
+                                                                                            <apex:repeat value="{!attendeeList}" var="atdName">
+                                                                                                <apex:outputPanel layout="none" rendered="{!if(atdName.isFirst==true , true ,false)}">  
+                                                                                                    <tr>
+                                                                                                        <td style="padding-top: 5px;width: 25%;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Attendees:</span></td>
+                                                                                                        <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!atdName.name}, {!atdName.title}</span></td>
+                                                                                                    </tr>
+                                                                                                </apex:outputPanel>	
+                                                                                                <apex:outputPanel layout="none" rendered="{!if(atdName.isFirst==false , true ,false)}">  
+                                                                                                    <tr>
+                                                                                                        <td style="padding-top: 5px;width: 25%;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;"></span></td>
+                                                                                                        <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!atdName.name}, {!atdName.title}</span></td>
+                                                                                                    </tr>
+                                                                                                </apex:outputPanel>
+                                                                                            </apex:repeat>
+                                                                                        </tbody>
+                                                                                    </table>
+                                                                                </div> 
+                                                                                
+                                                                                <div style="padding-bottom:5px;">
+                                                                                    <p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">
+                                                                                        <b>Meeting Details</b>
+                                                                                    </p>
+                                                                                    <table style="display:table !important; border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:left; width:100%; ">
+                                                                                        <tbody>
+                                                                                            <apex:outputPanel layout="none" rendered="{!isMeetingConfirmed}">
+                                                                                                <tr>
+                                                                                                    <td style="padding-top: 5px;width: 25%;vertical-align: top;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Date:  </span></td>
+                                                                                                    <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!meetingDate}</span></td>
+                                                                                                </tr>
+                                                                                                <tr>
+                                                                                                    <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Time:  </span></td>
+                                                                                                    <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!meetingStartTime} to {!meetingEndTime}</span></td>
+                                                                                                </tr>
+                                                                                            </apex:outputPanel>
+                                                                                            <apex:outputPanel layout="none" rendered="{!!isMeetingConfirmed}">
+                                                                                                <tr>
+                                                                                                    <td style="padding-top: 5px;width: 25%;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Date:  </span></td>
+                                                                                                    <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!meetingStartDate} to {!meetingEndDate}</span></td>
+                                                                                                </tr>
+                                                                                            </apex:outputPanel>
+                                                                                            <tr>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Location:</span></td>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!EB.Location_Address__c}</span></td>
+                                                                                            </tr>
+                                                                                            <tr>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Conference Room Details:</span></td>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!EB.Conference_Room_Details__c}</span></td>
+                                                                                            </tr>
+                                                                                            <tr>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">F2F/Remote:</span></td>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!EB.F2F_Webex__c}</span></td>
+                                                                                            </tr>
+                                                                                            <tr>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Travel Required:</span></td>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!EB.Travel_Required__c}</span></td>
+                                                                                            </tr>
+                                                                                        </tbody>
+                                                                                    </table>
+                                                                                </div>
+                                                                                
+                                                                                <div style="padding-bottom:5px;">
+                                                                                    <p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">
+                                                                                        <b>Here are some key information about the meeting</b>
+                                                                                    </p>
+                                                                                    <table style="display:table !important; border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:left; width:100%;">
+                                                                                        <tbody>
+                                                                                            <tr>
+                                                                                                <td style="padding-top: 5px;width: 25%;vertical-align: top;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Account Type:</span></td>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!EB.Customer__r.Type}</span></td>
+                                                                                            </tr>
+                                                                                            
+                                                                                            <apex:outputPanel layout="none" rendered="{!!isOpportunityExist}">
+                                                                                                <tr>
+                                                                                                    <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">ARR:  </span></td>
+                                                                                                    <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;"> <apex:outputText value="{0, number, Currency}"><apex:param value="{!EB.ARR__c}" /></apex:outputText></span></td>
+                                                                                                </tr>
+                                                                                                <tr>
+                                                                                                    <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Sentiment:  </span></td>
+                                                                                                    <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!EB.Customer_Sentiment__c}</span></td>
+                                                                                                </tr>
+                                                                                            </apex:outputPanel>
+                                                                                            
+                                                                                            <apex:outputPanel layout="none" rendered="{!isOpportunityExist}">
+                                                                                                <tr>
+                                                                                                    <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Opportunity Type:  </span></td>
+                                                                                                    <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!EB.Opportunity__r.Type}</span></td>
+                                                                                                </tr>
+                                                                                                <tr>
+                                                                                                    <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Opportunity ACV:  </span></td>
+                                                                                                    <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;"><apex:outputText value="{0, number, Currency}"><apex:param value="{!EB.ACV__c}" /></apex:outputText></span></td>
+                                                                                                </tr>
+                                                                                                <tr>
+                                                                                                    <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Opportunity Close Date:  </span></td>
+                                                                                                    <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!closeDate}</span></td>
+                                                                                                </tr>
+                                                                                            </apex:outputPanel>
+                                                                                        </tbody>
+                                                                                    </table>
+                                                                                </div>
+                                                                            
+                                                                                <div style="padding-bottom:5px;">
+                                                                                    <apex:outputPanel layout="none" rendered="{!isOpportunityExist}"> 
+                                                                                        <p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">
+                                                                                            <b>3 Whys</b>
+                                                                                        </p>
+                                                                                        <table style="display:table !important; border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:left; width:100%; ">
+                                                                                            <tbody>
+                                                                                                <tr>
+                                                                                                    <td style="padding-top: 5px;padding-bottom: 10px;width: 25%;vertical-align: top;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Why Anything:</span></td>
+                                                                                                    <td style="padding-top: 5px;padding-bottom: 10px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!EB.Why_Anything__c} </span></td>
+                                                                                                </tr>
+                                                                                                <tr>
+                                                                                                    <td style="padding-top: 5px;padding-bottom: 10px;width: 25%;vertical-align: top;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Why Zscaler:</span></td>
+                                                                                                    <td style="padding-top: 5px;padding-bottom: 10px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!EB.Why_Zscaler__c}</span></td>
+                                                                                                </tr>
+                                                                                                <tr>
+                                                                                                    <td style="padding-top: 5px;padding-bottom: 10px;width: 25%;vertical-align: top;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Why Now:</span></td>
+                                                                                                    <td style="padding-top: 5px;padding-bottom: 10px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!EB.Why_Now__c}</span></td>
+                                                                                                </tr>
+                                                                                            </tbody>
+                                                                                        </table>
+                                                                                    </apex:outputPanel>
+                                                                                </div>
+                                                                                
+                                                                                <div style="padding-bottom:5px;">
+                                                                                    <p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">
+                                                                                        <b>More information about the meeting</b>
+                                                                                    </p>
+                                                                                    <table style="display:table !important; border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:left; width:100%; ">
+                                                                                        <tbody>
+                                                                                            <tr>
+                                                                                                <td style="padding-top: 5px;width: 25%;vertical-align: top;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Purpose of Meeting:</span></td>
+                                                                                                <td style="padding-top: 5px;padding-bottom: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;"><apex:outputField value="{!EB.Purpose_of_Meeting_and_Agenda__c}" /></span></td>
+                                                                                            </tr>
+                                                                                            <tr>
+                                                                                                <td style="padding-top: 5px;vertical-align: top;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Desired Meeting Outcome:</span></td>
+                                                                                                <td style="padding-top: 5px;padding-bottom: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;"><apex:outputField value="{!EB.Desired_Meeting_Outcome__c}"/></span></td>
+                                                                                            </tr>
+                                                                                            <tr>
+                                                                                                <td style="padding-top: 5px;vertical-align: top;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Competitive Overview:</span></td>
+                                                                                                <td style="padding-top: 5px;padding-bottom: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;"><apex:outputField value="{!EB.Competitive_Overview__c}"/></span></td>
+                                                                                            </tr>
+                                                                                        </tbody>
+                                                                                    </table>
+                                                                                </div>
+                                                                                
+                                                                                <div style="padding-bottom:5px;">
+                                                                                    <apex:outputPanel layout="none"  rendered="{!NOT(ISNULL(EB.Customer__c))}">
+                                                                                        <apex:outputPanel layout="none"  rendered="{!NOT(ISNULL(EB.Value_Summary__c))}">
+                                                                                            <p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">
+                                                                                                <b>Zscaler Value Summary</b>
+                                                                                            </p>
+                                                                                            <table style="display:table !important; border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:left; width:100%; ">
+                                                                                                <tbody>
+                                                                                                    <tr>
+                                                                                                        <td style="padding-top: 5px;width: 25%;vertical-align: top;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">&nbsp;</span></td>
+                                                                                                        <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;"><apex:outputtext value="{!EB.Value_Summary__c}" escape="false"/></span></td>
+                                                                                                    </tr>
+                                                                                                </tbody>
+                                                                                            </table>
+                                                                                        </apex:outputPanel>
+                                                                                    </apex:outputPanel>
+                                                                                </div>
+                                                                                
+                                                                                
+                                                                            </apex:outputPanel>
+                                                                            
+                                                                            
+                                                                            <!-- Approval Request -->
+                                                                            <apex:outputPanel rendered="{!typeofTemplate == 'ApprovalRequired'}">
+                                                                                <div style="padding-bottom:5px;">
+                                                                                    <p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">
+                                                                                        {!EB.Owner.Name} has submitted an Executive request for your review.
+                                                                                    </p>
+                                                                                    
+                                                                                    <p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Executive Request Link: &nbsp; <apex:outputLink value="{!url+'/'+ebId}">{!EB.Name}</apex:outputLink></p>
+                                                                                    
+                                                                                    <apex:outputPanel rendered="{!isOpportunityExist}">
+                                                                                        <p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Opportunity Record Link: &nbsp; <apex:outputLink value="{!url+'/'+oppId}">{!EB.Opportunity__r.Name}</apex:outputLink></p>
+                                                                                    </apex:outputPanel>
+                                                                                    
+                                                                                    <apex:outputPanel rendered="{!EB.Is_Request_Already_Approved__c}">
+                                                                                        <p style="padding-Top:10px; padding-bottom:10px; color: red; font-family: Bell MT, Helvetica, sans-serif; font-size: 25px; font-weight: normal; line-height: 18px;">
+                                                                                            Alert: {!EB.Warning__c}
+                                                                                        </p>
+                                                                                    </apex:outputPanel>
+                                                                                </div>
+                                                                                
+                                                                                <div style="padding-bottom:5px;">
+                                                                                    <p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">
+                                                                                        <b>Reason for Request</b>
+                                                                                    </p>
+                                                                                    <p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">
+                                                                                        {!EB.Reason_for_Request__c}
+                                                                                    </p>
+                                                                                </div> 
+                                                                                
+                                                                                <div style="padding-bottom:5px;">
+                                                                                    <p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">
+                                                                                        <b>Meeting With</b>
+                                                                                    </p>
+                                                                                    
+                                                                                    <table style="display:table !important; border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:left; width:100%; ">
+                                                                                        <tbody>
+                                                                                            <tr>
+                                                                                                <td style="padding-top: 5px;width: 25%;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Account:  </span></td>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!EB.Customer__r.Name}</span></td>
+                                                                                            </tr>
+                                                                                            <apex:repeat value="{!attendeeList}" var="atdName">
+                                                                                                <apex:outputPanel layout="none" rendered="{!if(atdName.isFirst==true , true ,false)}">  
+                                                                                                    <tr>
+                                                                                                        <td style="padding-top: 5px;width: 25%;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Attendees:</span></td>
+                                                                                                        <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!atdName.name}, {!atdName.title}</span></td>
+                                                                                                    </tr>
+                                                                                                </apex:outputPanel>	
+                                                                                                <apex:outputPanel layout="none" rendered="{!if(atdName.isFirst==false , true ,false)}">  
+                                                                                                    <tr>
+                                                                                                        <td style="padding-top: 5px;width: 25%;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;"></span></td>
+                                                                                                        <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!atdName.name}, {!atdName.title}</span></td>
+                                                                                                    </tr>
+                                                                                                </apex:outputPanel>
+                                                                                            </apex:repeat>
+                                                                                        </tbody>
+                                                                                    </table>
+                                                                                </div> 
+                                                                                
+                                                                                <div style="padding-bottom:5px;">
+                                                                                    <p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">
+                                                                                        <b>Meeting Details</b>
+                                                                                    </p>
+                                                                                    <table style="display:table !important; border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:left; width:100%; ">
+                                                                                        <tbody>
+                                                                                            <apex:outputPanel layout="none" rendered="{!isMeetingConfirmed}">
+                                                                                                <tr>
+                                                                                                    <td style="padding-top: 5px;width: 25%;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Meeting Confirmed:</span></td>
+                                                                                                    <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Yes</span></td>
+                                                                                                </tr>
+                                                                                                <tr>
+                                                                                                    <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Date:  </span></td>
+                                                                                                    <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!meetingDate}</span></td>
+                                                                                                </tr>
+                                                                                                <tr>
+                                                                                                    <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Time:  </span></td>
+                                                                                                    <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!meetingStartTime} to {!meetingEndTime}</span></td>
+                                                                                                </tr>
+                                                                                            </apex:outputPanel>
+                                                                                            <apex:outputPanel layout="none" rendered="{!!isMeetingConfirmed}">
+                                                                                                <tr>
+                                                                                                    <td style="padding-top: 5px;width: 25%;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Meeting Confirmed:  </span></td>
+                                                                                                    <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">No</span></td>
+                                                                                                </tr>
+                                                                                                <tr>
+                                                                                                    <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Date:  </span></td>
+                                                                                                    <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!meetingStartDate} to {!meetingEndDate}</span></td>
+                                                                                                </tr>
+                                                                                            </apex:outputPanel>
+                                                                                            <tr>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Location:</span></td>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!EB.Location_Address__c}</span></td>
+                                                                                            </tr>
+                                                                                            <tr>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Conference Room Details:</span></td>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!EB.Conference_Room_Details__c}</span></td>
+                                                                                            </tr>
+                                                                                            <tr>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">F2F/Remote:</span></td>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!EB.F2F_Webex__c}</span></td>
+                                                                                            </tr>
+                                                                                            <tr>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Travel Required:</span></td>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!EB.Travel_Required__c}</span></td>
+                                                                                            </tr>
+                                                                                            <tr>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Time Zone:</span></td>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!timeZone}</span></td>
+                                                                                            </tr>
+                                                                                        </tbody>
+                                                                                    </table>
+                                                                                </div>
+                                                                                
+                                                                                <div style="padding-bottom:5px;">
+                                                                                    <p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">
+                                                                                        <b>Here is some key information about the meeting:</b>
+                                                                                    </p>
+                                                                                    <table style="display:table !important; border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:left; width:100%;">
+                                                                                        <tbody>
+                                                                                            <tr>
+                                                                                                <td style="padding-top: 5px;width: 25%;vertical-align: top;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Account Type:</span></td>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!EB.Customer__r.Type}</span></td>
+                                                                                            </tr>
+                                                                                            <tr>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">ARR:  </span></td>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;"> <apex:outputText value="{0, number, Currency}"><apex:param value="{!EB.ARR__c}" /></apex:outputText></span></td>
+                                                                                            </tr>
+                                                                                            <tr>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Number of Users:  </span></td>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;"><apex:outputText value="{!EB.Total_Number_of_users_at_Account__c}"></apex:outputText></span></td>
+                                                                                            </tr>
+                                                                                            
+                                                                                            <apex:outputPanel layout="none" rendered="{!!isOpportunityExist}">
+                                                                                                <tr>
+                                                                                                    <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Sentiment:  </span></td>
+                                                                                                    <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!EB.Customer_Sentiment__c}</span></td>
+                                                                                                </tr>
+                                                                                            </apex:outputPanel>
+                                                                                            <tr>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">PPU:   </span></td>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;"><apex:outputText value="{0, number, Currency}"><apex:param value="{!EB.Customer__r.PPU__c}" /></apex:outputText></span></td>
+                                                                                            </tr>
+                                                                                            
+                                                                                            <apex:outputPanel layout="none" rendered="{!isOpportunityExist}">
+                                                                                                <tr>
+                                                                                                    <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Opportunity Type:  </span></td>
+                                                                                                    <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!EB.Opportunity__r.Type}</span></td>
+                                                                                                </tr>
+                                                                                                <tr>
+                                                                                                    <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Opportunity ACV:  </span></td>
+                                                                                                    <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;"><apex:outputText value="{0, number, Currency}"><apex:param value="{!EB.ACV__c}" /></apex:outputText></span></td>
+                                                                                                </tr>
+                                                                                                <tr>
+                                                                                                    <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Opportunity Close Date:  </span></td>
+                                                                                                    <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!closeDate}</span></td>
+                                                                                                </tr>
+                                                                                            </apex:outputPanel>
+                                                                                            <tr>
+                                                                                                <td style="padding-top: 5px;vertical-align:top;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Purpose of Meeting:  </span></td>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;"><apex:outputField value="{!EB.Purpose_of_Meeting_and_Agenda__c}" /></span></td>
+                                                                                            </tr>
+                                                                                        </tbody>
+                                                                                    </table>
+                                                                                </div>
+                                                                            </apex:outputPanel>
+                                                                            
+                                                                            <!-- Approval Rejected -->
+                                                                            <apex:outputPanel rendered="{!typeofTemplate == 'Rejected'}">
+                                                                                <br />
+                                                                                <p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Your executive request &nbsp; <apex:outputLink value="{!url+'/'+ebId}">{!EB.Name}</apex:outputLink> is rejected.</p>
+                                                                                <p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Account Name: {!EB.Customer__r.name}</p>
+                                                                                <apex:outputPanel rendered="{!isOpportunityExist}">
+                                                                                    <p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Opportunity Type: {!EB.Opportunity__r.Type}</p>
+                                                                                </apex:outputPanel>
+                                                                                <p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Rejection Comments: {!comments}</p>
+                                                                            </apex:outputPanel>
+                                                                            
+                                                                            
+                                                                            <!-- Request Approved -->
+                                                                            <apex:outputPanel rendered="{!typeofTemplate == 'Approved'}">
+                                                                                
+                                                                                <p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Your executive request  &nbsp; <apex:outputLink value="{!url+'/'+ebId}">{!EB.Name}</apex:outputLink> is Approved.</p>
+                                                                                <p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Account Name: {!EB.Customer__r.name}</p>
+                                                                                <apex:outputPanel rendered="{!isOpportunityExist}">
+                                                                                    <p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Opportunity Type: {!EB.Opportunity__r.Type}</p>
+                                                                                </apex:outputPanel>
+                                                                                <br />
+                                                                                
+                                                                                <p style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;"><b>Meeting Details</b></p>
+                                                                                <table style="display:table !important; border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:left; width:100%; ">
+                                                                                    <tbody>
+                                                                                        <apex:outputPanel layout="none" rendered="{!isMeetingConfirmed}">
+                                                                                            <tr>
+                                                                                                <td style="padding-top: 5px;width: 25%;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Meeting Confirmed:</span></td>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Yes</span></td>
+                                                                                            </tr>
+                                                                                            <tr>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Date:  </span></td>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!meetingDate}</span></td>
+                                                                                            </tr>
+                                                                                            <tr>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Time:  </span></td>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!meetingStartTime} to {!meetingEndTime}</span></td>
+                                                                                            </tr>
+                                                                                        </apex:outputPanel>
+                                                                                        <apex:outputPanel layout="none" rendered="{!!isMeetingConfirmed}">
+                                                                                            <tr>
+                                                                                                <td style="padding-top: 5px;width: 25%;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Meeting Confirmed:  </span></td>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">No</span></td>
+                                                                                            </tr>
+                                                                                            <tr>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Date:  </span></td>
+                                                                                                <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!meetingStartDate} to {!meetingEndDate}</span></td>
+                                                                                            </tr>
+                                                                                        </apex:outputPanel>
+                                                                                        <tr>
+                                                                                            <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Location:  </span></td>
+                                                                                            <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!EB.Location_Address__c}</span></td>
+                                                                                        </tr>
+                                                                                        <tr>
+                                                                                            <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">F2F/Remote:  </span></td>
+                                                                                            <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!EB.F2F_Webex__c}</span></td>
+                                                                                        </tr>
+                                                                                        <tr>
+                                                                                            <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Travel Required:  </span></td>
+                                                                                            <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!EB.Travel_Required__c}</span></td>
+                                                                                        </tr>
+                                                                                        <tr>
+                                                                                            <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">Approval Comments:  </span></td>
+                                                                                            <td style="padding-top: 5px;"><span style="color: #555555; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: normal; line-height: 18px;">{!comments}</span></td>
+                                                                                        </tr>
+                                                                                    </tbody>
+                                                                                </table>
+                                                                            </apex:outputPanel>
+                                                                            <br />
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr style="vertical-align:top; text-align:left; padding:0;" align="left">
+                                    <td style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:left; color:#222222; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:14px; background:#252d34; margin:0; padding:0;"
+                                        align="left" bgcolor="#252D34" valign="top">
+                                        <table class="twelve columns" style="border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:center; width:900px; padding:0;">
+                                            <tbody>
+                                                <tr style="vertical-align:top; text-align:center; padding:0;" align="center">
+                                                    <td class="wrapper last" style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:center; position:relative; color:#999999; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:11px; margin:0; padding:10px 0px 0px;"
+                                                        align="center" valign="top">Copyright @{!yearVal} Zscaler, Inc.
+                                                        <br /> &nbsp;
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </center>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</apex:component>

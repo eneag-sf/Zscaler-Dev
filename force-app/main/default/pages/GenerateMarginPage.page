@@ -1,0 +1,297 @@
+<apex:page controller="GenerateMarginController">
+    <apex:slds />
+    <apex:includeScript id="jQuery" value="https://code.jquery.com/jquery-3.1.1.min.js" />
+    <style>
+        .pbHeader{
+            display:none;
+        }
+        .pbBody{
+            margin:0px !important;
+            background: #fff  !important;
+        }
+        body .bEditBlock .pbBottomButtons,
+        body .apexp .bPageBlock.apexDefaultPageBlock .pbBottomButtons,
+        body .bPageBlock{
+            margin-top: 0px;
+            border: none  !important;
+            background: #fff  !important;
+        }
+
+        .loadingIcon {
+            padding-left: 16px;
+            background-image: url("/img/loading.gif");
+            background-repeat: no-repeat;
+            background-size: 13px 13px;
+        }
+
+        .slds-table_bordered {
+            border-collapse: separate;
+            border-top: 1px solid rgb(217, 219, 221);
+            border-bottom: 1px solid rgb(217, 219, 221);
+            border-right: 1px solid rgb(217, 219, 221);
+            border-left: 1px solid rgb(217, 219, 221);
+        }
+        .btn-disabled {
+            color: gray !important;
+            cursor: not-allowed;
+        }
+        .bPageTitle {
+            margin-bottom:0px;
+        }
+        .content {
+            height: 3rem;
+        }
+        body .pbBody table.list tr.dataRow td {
+            height: 2rem;
+            padding: 5px 7px 4px 5px;
+        }
+        .colHeader {
+            padding-right: 7px !important;
+            padding-left: 7px !important;
+        }
+        /* The container */
+        .container {
+          position: absolute;
+          padding-left: 35px;
+          margin-bottom: 12px;
+          cursor: pointer;
+          font-size: 22px;
+          -webkit-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          user-select: none;
+          top: 6px;
+        }
+        
+        /* Hide the browser's default checkbox */
+        .container input {
+          position: absolute;
+          opacity: 0;
+          cursor: pointer;
+          height: 0;
+          width: 0;
+        }
+        
+        /* Create a custom checkbox */
+        .checkmark {
+          position: absolute;
+          top: 0;
+          left: 0;
+          height: 15px;
+          width: 15px;
+          border-radius: 50%;
+          border: 1px solid #ccc;
+          background-color: #eee;
+        }
+        
+        /* On mouse-over, add a grey background color */
+        .container:hover input ~ .checkmark {
+          background-color: #ccc;
+        }
+        
+        /* When the checkbox is checked, add a blue background */
+        .container input:checked ~ .checkmark {
+          background-color: #2196F3;
+        }
+        
+        /* Create the checkmark/indicator (hidden when not checked) */
+        .checkmark:after {
+          content: "";
+          position: absolute;
+          display: none;
+        }
+        
+        /* Show the checkmark when checked */
+        .container input:checked ~ .checkmark:after {
+          display: none;
+        }
+        
+        /* Style the checkmark/indicator */
+        .container .checkmark:after {
+          left: 9px;
+          top: 5px;
+          width: 5px;
+          height: 10px;
+          border: solid white;
+          border-width: 0 3px 3px 0;
+          -webkit-transform: rotate(45deg);
+          -ms-transform: rotate(45deg);
+          transform: rotate(45deg);
+        }
+    </style>
+    <apex:sectionHeader title="Generate Margin Template" subtitle="{!prop.Apttus_Proposal__Proposal_Name__c}"/>
+    <apex:form >
+        <apex:pageMessages id="errors"/>
+        <div style="text-align: right;">
+            <a href="/{!proposalId}">Back to Proposal</a>    
+        </div>
+        <h3 class="slds-section-title--divider slds-m-around--small" style="background-color: #21a0df;color: white;margin:0px;">
+            <b>Select Opportunity Partner</b>
+        </h3>
+        <br/>
+        <apex:pageBlock >
+            <!-- Picklist -->
+            <!--<apex:selectList value="{!selectedPartner}" size="1" >
+                <apex:selectOptions value="{!Options}" />
+                <apex:actionSupport event="onchange" action="{!selectedAccAction}" />
+            </apex:selectList>-->
+            
+            <!-- Radio button -->
+            <!--<apex:selectRadio value="{!selectedPartner}">
+                <apex:selectOptions value="{!Options}"/>
+                <apex:actionSupport event="onchange" rerender="selectedPartnerDetails" action="{!selectedAccAction}" />
+            </apex:selectRadio>-->
+            
+            <div class="slds-m-around--small">
+                <center>
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered" style="width:50%">
+                    <thead>
+                        <tr class="slds-text-title_caps">
+                            <th style="text-align:center;width: 40%;padding-left:7px;" class="" scope="col">
+                                <div class="slds-truncate" title="Partner">Partner</div>
+                            </th>
+                            <th style="text-align:center;width: 20%;padding-right:7px;" class="" scope="col">
+                                <div class="slds-truncate" title="Primary">Select</div>
+                            </th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <apex:repeat value="{!mapForUseUniqueAccount}" var="part" id="partnerRepeat">
+                            <tr class="slds-hint-parent">
+                                <td style="text-align:center;">
+                                    <a href="{!'/'+part}" target="_blank">{!mapForUseUniqueAccount[part].Account__r.Name}</a>
+                                </td>
+                                <td style="text-align:center;">
+                                    <label class="container">
+                                        <input type="checkbox" id="{!part}" name="partner" value="{!part}" onclick="accountSelectionJS('{!part}');" />
+                                        <span class="checkmark"></span>
+                                    </label>
+                                    
+                                </td>
+                            </tr>
+                        </apex:repeat>
+                    </tbody>
+                </table>
+                    </center>
+            </div>
+        </apex:pageBlock>
+        <br/>
+        <apex:outputpanel id="selectedPartnerDetails">
+            <h3 class="slds-section-title--divider slds-m-around--small" style="background-color: #21a0df;color: white;display:{!if(selectedPartner == '','none','block')};margin:0px;">
+                <b>{!selectedPartnerTitle}</b>
+            </h3>
+            <br/>
+            <apex:pageBlock rendered="{!if(selectedPartner == '',false,true)}">
+                <apex:pageBlockTable value="{!proposalLIList}" var="pli" >
+                    <apex:column value="{!pli.product}" headerValue="Product Name" style="font-weight: {!IF(pli.product == 'Grand Total',800,400)}" />
+                    <apex:column value="{!pli.SKU}" headerValue="SKU"/>
+                    <apex:column headerValue="Deal Registration Margin" style="text-align: right;width: 2rem; font-weight: {!IF(pli.product == 'Grand Total',800,400)}" headerClass="colHeader" rendered="{!isDealRegHasToShow}">
+                        <apex:outputText value="{0, number, currency}">
+                            <apex:param value="{!pli.dealRegMarginPrice}" />
+                        </apex:outputText>
+                    </apex:column>
+                    <apex:column headerValue="Architectural Workshop Margin" style="text-align: right;width: 2rem; font-weight: {!IF(pli.product == 'Grand Total',800,400)}" headerClass="colHeader" rendered="{!isAWHasToShow}">
+                        <apex:outputText value="{0, number, currency}">
+                            <apex:param value="{!pli.AWMarginPrice}" />
+                        </apex:outputText>
+                    </apex:column>
+                    <apex:column headerValue="Proof of Value  Margin" style="text-align: right;width: 2rem; font-weight: {!IF(pli.product == 'Grand Total',800,400)}" headerClass="colHeader" rendered="{!isPOVHasToShow}">
+                        <apex:outputText value="{0, number, currency}">
+                            <apex:param value="{!pli.POVMarginPrice}" />
+                        </apex:outputText>
+                    </apex:column>
+                    <apex:column headerValue="Total Margin" style="text-align: right;width: 2rem; font-weight: {!IF(pli.product == 'Grand Total',800,400)}" headerClass="colHeader">
+                        <apex:outputText value="{0, number, currency}">
+                            <apex:param value="{!pli.TotalMarginPrice}" />
+                        </apex:outputText>
+                    </apex:column>
+                </apex:pageBlockTable>
+                <!-- Button Section -->
+                <br/>
+                <div class="slds-align_absolute-center">
+                    <button class="slds-button slds-button--brand" value="Generate Document (PDF)" type="button" status="actionStatus" 
+                        onclick="generatePDFDocument()">Generate Document (PDF)</button>
+                    <button class="slds-button slds-button--brand" value="Generate Document (DOCX)" type="button" status="actionStatus"
+                        onclick="generateDOCXDocument();">Generate Document (DOCX)</button>
+                </div>
+                <br/>
+            </apex:pageBlock>
+        </apex:outputpanel>
+        
+        <!-- Apex Function -->
+        <apex:actionFunction action="{!selectedAccAction}" name="accountSelectionAF" rerender="selectedPartnerDetails,errors" status="actionStatus">
+            <apex:param name="selectedPartnerId" assignTo="{!selectedPartner}" value="" />
+        </apex:actionFunction>
+        <!-- Action Status -->
+        <apex:actionstatus id="actionStatus">
+            <apex:facet name="start">
+                <div class="slds-spinner_container">
+                    <div id="mySpinner" role="status" class="slds-spinner slds-spinner_medium">
+                        <span class="slds-assistive-text">Loading</span>
+                        <div class="slds-spinner__dot-a"></div>
+                        <div class="slds-spinner__dot-b"></div>
+                    </div>
+                </div>
+            </apex:facet>
+        </apex:actionstatus>
+    </apex:form>
+    <script>
+        function generatePDFDocument(){
+            console.log('{!$User.UIThemeDisplayed}');
+            var theme = '{!$User.UIThemeDisplayed}';
+            if(theme != 'Theme4d'){
+                window.open('/apex/GenerateMarginDocumentPage?type=pdf&id={!proposalId}','_blank');
+                return;
+            }else{
+                var mainUrl = window.location.origin +'/apex/GenerateMarginDocumentPage?type=pdf&id={!proposalId}';
+                var wrapperURL = '{"componentDef":"one:alohaPage","attributes":{"address":"'+mainUrl+'"},"state":{}}';
+                window.open('/one/one.app#' + window.btoa(wrapperURL),'_blank');
+                return;
+            }
+        }
+        function generateDOCXDocument(){
+            console.log('{!$User.UIThemeDisplayed}');
+            var theme = '{!$User.UIThemeDisplayed}';
+            if(theme != 'Theme4d'){
+                window.open('/apex/GenerateMarginDocumentPage?type=docx&id={!proposalId}','_blank');
+                return;
+            }else{
+                var mainUrl = window.location.origin +'/apex/GenerateMarginDocumentPage?type=docx&id={!proposalId}';
+                var wrapperURL = '{"componentDef":"one:alohaPage","attributes":{"address":"'+mainUrl+'"},"state":{}}';
+                window.open('/one/one.app#' + window.btoa(wrapperURL),'_blank');
+                return;
+            }
+        }
+        function accountSelectionJS(selectedPartnerId){
+            var checkBox = document.getElementById(selectedPartnerId);
+            if(checkBox.checked == false){
+                accountSelectionAF('');
+                return;
+            }
+            console.log(selectedPartnerId);
+            if(selectedPartnerId){
+                accountSelectionAF(selectedPartnerId);
+            }
+        }
+        $(document).ready(function(){
+            // the selector will match all input controls of type :checkbox
+            // and attach a click event handler 
+            $("input:checkbox").on('click', function() {
+              // in the handler, 'this' refers to the box clicked on
+              var $box = $(this);
+              if ($box.is(":checked")) {
+                // the name of the box is retrieved using the .attr() method
+                // as it is assumed and expected to be immutable
+                var group = "input:checkbox[name='" + $box.attr("name") + "']";
+                // the checked state of the group/box on the other hand will change
+                // and the current value is retrieved using .prop() method
+                $(group).prop("checked", false);
+                $box.prop("checked", true);
+              } else {
+                $box.prop("checked", false);
+              }
+            });
+        });
+    </script>
+</apex:page>

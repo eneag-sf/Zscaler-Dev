@@ -1,0 +1,33 @@
+tr:nth-child(even) {
+    background: #e8e8e8;
+}
+tbody th {
+    border-right: 1px solid #fff;
+}
+
+.slds-table thead th {
+    background: #e8e8e8;
+    border-right: 1px solid #b1acac;
+}
+
+.rectangle {
+	box-sizing: border-box;
+	border: 1px solid #D6D7DB;
+	border-radius: 5px;
+	background-color: #FFFFFF;
+	box-shadow: 0 2px 8px 0 rgba(42,44,48,0.08);
+}
+.app {
+    background-color: #fafaf9;
+    overflow: scroll;
+    font-family: "Helvetica Neue";
+}
+
+h1 {
+    color: rgb(0, 112, 210);
+}
+
+.case-summary {
+	color: #2A2C30;
+	font-family: "Helvetica Neue";
+}

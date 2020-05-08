@@ -1,0 +1,35 @@
+<apex:page standardController="Case"    extensions="LegacyCaseCommentsController" showHeader="false" sidebar="false">
+    
+    <style>
+        table  {
+            background-color: #F8F9F9;
+            width:100%;
+        }
+        td {
+            padding: 5px;
+            border: 1px solid #D8DCDE;
+            vertical-align: top;
+            font-family: Consolas, "Liberation Mono", Menlo, "Bitstream Vera Sans Mono", Courier, monospace !important;
+        }
+        body  {
+        font-family: Consolas, "Liberation Mono", Menlo, "Bitstream Vera Sans Mono", Courier, monospace !important;
+        padding:10px;
+        }
+    </style>
+    <apex:repeat value="{!lstT}" var="cmtObj">
+        <div style="border-bottom:1px dotted black">
+         <b>
+        <!--{!cmtObj.CreatedBy.FirstName} {!cmtObj.CreatedBy.LastName}  wrote at {!cmtObj.CreatedDate}-->
+        {!cmtObj.Legacy_Author__c} wrote at {!cmtObj.Created_At__c}
+         </b> 
+        <br/>   
+        <b> {!If(showCommentType , if(cmtObj.visibility__c == 'AllUsers', 'Comment Type : External' , 'Comment Type : Internal'  )  , '')}</b>
+        <br/>
+        <apex:outputText value="{!cmtObj.Comment_Body__c}" escape="false"/>  
+        
+
+        </div>
+        <br/><br/>
+    </apex:repeat>
+    
+</apex:page>

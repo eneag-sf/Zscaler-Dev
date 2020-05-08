@@ -1,0 +1,59 @@
+<template>
+
+    <!-- IF PickList-->
+    <template if:true={isPickList}>
+        <c-multi-pick-list label={fldlabel} options={filterOptions} showclearbutton={showclearbutton}
+            showfilterinput={showfilterinput} showrefreshbutton={showrefreshbutton}
+            onitemselected={handleOnMultiSelectItemSelected}></c-multi-pick-list>
+    </template>
+
+    <!-- IF Text-->
+    <template if:true={isText}>
+        <lightning-input variant={labelvarint} type="text" name="DateTime" label={fldlabel} value={selecttedValue}
+            onchange={handleValueChange} placeholder={placeholder}></lightning-input>
+    </template>
+
+
+
+    <!-- IF Date-->
+    <template if:true={isDate}>
+        <template if:true={isRange}>
+            {fldlabel}
+            <div class="slds-p-left_small" style="display: inline-block;">
+                <lightning-input variant={labelvarint} type="date" name="Date" label="From:" value={selecttedValueFrom}
+                    onchange={handleRangeValueChangeFrom} date-style="short"></lightning-input>
+            </div>
+            <div class="slds-p-left_small" style="display: inline-block;">
+                <lightning-input variant={labelvarint} type="date" name="Date" label="To:" value={selecttedValueTo}
+                    onchange={handleRangeValueChangeTo} date-style="short">
+                </lightning-input>
+            </div>
+        </template>
+        <template if:false={isRange}>
+            <lightning-input variant={labelvarint} type="date" name="Date" label={fldlabel} value={selecttedValue}
+                onchange={handleValueChange} date-style="short"></lightning-input>
+        </template>
+    </template>
+
+
+    <!-- IF dateTime-->
+    <template if:true={isDateTime}>
+        <template if:true={isRange}>
+            {fldlabel}
+            <div class="slds-p-left_small" style="display: inline-block;">
+                <lightning-input variant={labelvarint} type="DateTime" name="Date" label="From:"
+                    value={selecttedValueFrom} onchange={handleRangeValueChangeFrom}></lightning-input>
+            </div>
+            <div class="slds-p-left_small" style="display: inline-block;">
+                <lightning-input variant={labelvarint} type="DateTime" name="Date" label="To:" value={selecttedValueTo}
+                    onchange={handleRangeValueChangeTo}>
+                </lightning-input>
+            </div>
+        </template>
+        <template if:false={isRange}>
+            <lightning-input variant={labelvarint} type="datetime" name="DateTime" label={fldlabel}
+                value={selecttedValue} onchange={handleValueChange}></lightning-input>
+        </template>
+    </template>
+
+</template>

@@ -1,0 +1,16 @@
+<aura:component controller='MasterCaseFlow' implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader,lightning:actionOverride" access="global" >
+    <aura:handler name="change" value="{!v.record}" action="{!c.PushCommentstoChild}"/>
+    <aura:attribute name="record" type="Case"/>
+    <aura:attribute name="error" type="String"/>
+    <aura:attribute name="showSpinner" type="boolean" default="false"/>
+	
+     <force:recordData aura:id="recordHandler"
+                      recordId="{!v.recordId}"
+                      fields="Id,Share_with_Customer__c,Push_comment_to_child_cases__c"
+                      mode="EDIT"
+					  targetRecord="{!v.record}"
+                      targetError="{!v.error}" />
+    <aura:if isTrue="{!v.showSpinner}">
+            <lightning:spinner variant="brand" size="medium" />
+    </aura:if>
+</aura:component>

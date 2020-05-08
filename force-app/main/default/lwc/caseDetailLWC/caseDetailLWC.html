@@ -1,0 +1,122 @@
+<template>
+    <template for:each={caseData} for:item="cse">
+        <div key={cse.key} class="zs-case-details">
+            <div class="zs-case-info-comp">
+                <!--<div key={cse.key}>
+            <div class="slds-grid slds-gutters">
+                <div class="slds-col slds-size_4-of-12">
+                </div>
+                <div class="slds-col slds-size_4-of-12" style="text-align: right;">    
+                    <lightning-button style="height: 32px;width: 129px;" label="Escalate Case"></lightning-button>
+                </div>
+                <div class="slds-col slds-size_4-of-12">
+                    <lightning-button style="height: 32px;width: 109px;" label="Close Case" variant="destructive" onclick={handleCloseCase}></lightning-button>
+                </div>
+            </div>-->
+                <lightning-card>
+                    <h3 slot="title">
+                        <lightning-icon icon-name="action:info" size="x-small"></lightning-icon> &nbsp;&nbsp;
+                        Case Information
+                    </h3>
+                    <div class="slds-p-horizontal_small">
+
+
+                        <div class="slds-grid slds-gutters" style="margin-bottom: 5px;">
+                            <div class="slds-col slds-size_6-of-12 field-label">
+                                Requester
+                            </div>
+                            <div class="slds-col slds-size_6-of-12 field-label">
+                                Case Owner
+                            </div>
+                        </div>
+                        <div class="slds-grid slds-gutters" style="margin-bottom: 25px;">
+                            <div class="slds-col slds-size_6-of-12">
+                                <template if:true={cse.ContactId}>
+                                    {cse.Contact.Name}
+                                </template>
+                            </div>
+                            <div class="slds-col slds-size_6-of-12">
+                                {cse.Owner.Name}
+                            </div>
+                        </div>
+
+                        <div class="slds-grid slds-gutters" style="margin-bottom: 5px;">
+                            <div class="slds-col slds-size_6-of-12 field-label">
+                                Opened
+                            </div>
+                            <div class="slds-col slds-size_6-of-12 field-label">
+                                Last Activity
+                            </div>
+                        </div>
+                        <div class="slds-grid slds-gutters" style="margin-bottom: 25px;">
+                            <div class="slds-col slds-size_6-of-12">
+                                <lightning-formatted-date-time value={cse.CreatedDate} year="numeric" month="numeric"
+                                    day="numeric" hour="2-digit" minute="2-digit" time-zone="America/New_York">
+                                </lightning-formatted-date-time>
+                            </div>
+                            <div class="slds-col slds-size_6-of-12" style="margin-bottom: 5px;">
+                                <lightning-formatted-date-time value={cse.LastModifiedDate} year="numeric"
+                                    month="numeric" day="numeric" hour="2-digit" minute="2-digit"
+                                    time-zone="America/New_York">
+                                </lightning-formatted-date-time>
+                            </div>
+                        </div>
+
+                        <div class="slds-grid slds-gutters" style="margin-bottom: 5px;">
+                            <div class="slds-col slds-size_6-of-12 field-label">
+                                Product
+                            </div>
+                            <div class="slds-col slds-size_6-of-12 field-label">
+                                Type
+                            </div>
+                        </div>
+                        <div class="slds-grid slds-gutters" style="margin-bottom: 25px;">
+                            <div class="slds-col slds-size_6-of-12">
+                                {cse.Product_New__c}
+                            </div>
+                            <div class="slds-col slds-size_6-of-12">
+                                {cse.Case_Type__c}
+                            </div>
+                        </div>
+
+                        <div class="slds-grid slds-gutters" style="margin-bottom: 5px;">
+                            
+                            <div class="slds-col slds-size_6-of-12 field-label">
+                                Priority
+                            </div>
+                            <div class="slds-col slds-size_6-of-12 field-label">
+                                Legacy Case #
+                            </div>
+                        </div>
+                        <div class="slds-grid slds-gutters" style="margin-bottom: 25px;">
+                            
+                            <div class="slds-col slds-size_6-of-12">
+                                {cse.Priority}
+                            </div>
+                            <div class="slds-col slds-size_6-of-12">
+                                {cse.Zendesk_Reference_Id__c}
+                            </div>
+                        </div>
+                        <div class="slds-grid slds-gutters" style="margin-bottom: 5px;">
+                            <div class="slds-col slds-size_6-of-12 field-label">
+                                Preferred Contact Number
+                            </div>
+                            <div class="slds-col slds-size_6-of-12 field-label">
+                                Preferred Contact Time Zone
+                            </div>
+                        </div>
+                        <div class="slds-grid slds-gutters" style="margin-bottom: 5px;">
+                            
+                            <div class="slds-col slds-size_6-of-12">
+                                {cse.Preferred_Contact_Number__c}
+                            </div>
+                            <div class="slds-col slds-size_6-of-12">
+                                {cse.Preferred_Contact_Time_Zone__c}
+                            </div>
+                        </div>
+                    </div>
+                </lightning-card>
+            </div>
+        </div>
+    </template>
+</template>

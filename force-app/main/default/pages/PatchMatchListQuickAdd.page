@@ -1,0 +1,16 @@
+<apex:page showHeader="false" controller="PatchMatchListQuickAddController">
+  <apex:sectionHeader title="Match List" subtitle="Quick Add"/>
+  <apex:form >
+      <apex:pageMessages escape="false" />
+      <apex:pageBlock >
+          <apex:pageblockButtons location="bottom">
+              <apex:commandButton value="Save" action="{!save}"/>
+              <input type="button" class="btn" value="Cancel" />
+          </apex:pageblockButtons>
+          <apex:pageblockSection columns="1">
+              <apex:outputText >Input your entries with comma separated or one per row</apex:outputText>
+              <apex:inputtextarea value="{!Values}" style="width:250px;height:150px" />
+          </apex:pageblockSection>
+      </apex:pageBlock>
+  </apex:form>
+</apex:page>

@@ -1,0 +1,19 @@
+<apex:component controller="GetCasedetailsforCustomerEmail" access="global">
+    <apex:attribute type="String" name="equipmentRequestId" assignTo="{!equipmentRequestRecordId}" description="Equipment Request Id"/>
+    <apex:attribute type="String" name="typeofTemplate1" assignTo="{!typeofTemplate}" description="Type of template"/>
+        <br/>
+        <p>This is an automated email notifying you on a support case created by a Customer who is marked as a “Focus Account” Case. Please find details case details below</p>
+        <p>  Case #   :      {!ER.CaseNumber}</p>
+        <p>  Subject  :      {!ER.Subject}</p>
+        <p>  Product  :      {!ER.Product_New__c}</p>
+        <p>  Priority :      {!ER.Priority}</p>
+        <p>  Type     :          {!ER.Case_Type__c}</p>
+        
+        <p>  Description : </p>
+        <apex:outputText escape="false"  value="{!ER.Description}"/>
+        
+        <p>  Case URL :  {!url}/{!ER.id}</p>
+        <br/>
+        <p>Thanks</p>
+        <p>Zscaler Customer Support</p>      
+</apex:component>

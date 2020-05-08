@@ -1,0 +1,1012 @@
+<apex:page id="manageSciPage" showHeader="false" sidebar="false" standardStylesheets="false" standardController="Significant_Customer_Interaction__c" extensions="ManageSCIController" lightningStylesheets="true" tabStyle="Significant_Customer_Interaction__c">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <apex:slds />
+    <apex:includeScript id="jQuery" value="https://code.jquery.com/jquery-3.1.1.min.js" />
+    <apex:stylesheet id="jQuery-ui" value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css" />
+    <apex:includeScript id="jQuery-autocomplete" value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" />
+    <apex:includeScript id="momentjs" value="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment.min.js" />
+    <apex:stylesheet id="jquery-datepicker-css" value="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.4/jquery.datetimepicker.min.css" />
+    <apex:includeScript id="jquery-datepicker" value="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.4/jquery.datetimepicker.min.js" />
+    <script type="text/javascript">
+        'use strict';
+
+        window.hideInternalAttendeeMessage = !{!addMe};
+        function setFocusOnLoad() {}
+
+        var disableEnterKeypress = function(e) {
+            var eventHandle = e || event;
+            var target = eventHandle.target || eventHandle.srcElement;
+
+            if ("text" == target.type
+                && 13 == eventHandle.keyCode) {
+                eventHandle.stopPropagation();
+                return false;
+            }
+        }
+        document.onkeypress = disableEnterKeypress;
+
+        function disableAlphanumericKeyPress(e) {
+            var eventHandle = e || event;
+            var target = eventHandle.target || eventHandle.srcElement;
+            var key = eventHandle.key;
+            var pattern = /^([0-9]|[\/])$/;
+
+            if (pattern.test(key)) {
+                //Do nothing
+            } else {
+                eventHandle.preventDefault();
+                return false;
+            }
+        }
+
+        function disableButtons() {
+            $(".pageBlockButtons .previousBtn").attr("disabled", "true");
+            $(".pageBlockButtons .nextBtn").attr("disabled", "true");
+            $(".pageBlockButtons .saveBtn").attr("disabled", "true");
+        }
+
+        function enableButtons() {
+            $(".pageBlockButtons .previousBtn").removeAttr("disabled");
+            $(".pageBlockButtons .nextBtn").removeAttr("disabled");
+            $(".pageBlockButtons .saveBtn").removeAttr("disabled");
+        }
+
+        function fetchExistingSCIsOnChange() {
+            var selectedSCIType = $('[Id$=sciTypeSelect]')[0].value;
+            var selectedSCIDate = $('#datepicker').val();
+
+            var pattern = /^(\d{1}|\d{2})[\/](\d{1}|\d{2})[\/](19|20)\d{2}$/;
+
+            if (selectedSCIType && selectedSCIDate
+                && "" != selectedSCIType
+                && "" != selectedSCIDate
+                && pattern.test(selectedSCIDate)) {
+                fetchExistingSCIs(selectedSCIDate);
+            }
+        }
+
+        function redirectTo(sciId) {
+            var url = "/apex/ManageSCI?id=" + sciId + "&edit=true&retUrl={!retUrl}{!IF(NOT(ISBLANK(accountId)), '&accountId=' + accountId, '')}{!IF(NOT(ISBLANK(opportunityId)), '&opportunityId=' + opportunityId, '')}{!IF(NOT(ISBLANK(dealRegId)),'&dealRegId=' + dealRegId, '')}{!IF(NOT(ISBLANK(leadId)), '&leadId=' + leadId, '')}{!IF(NOT(ISBLANK(campaignId)), '&campaignId=' + campaignId, '')}&patchTeamId={!patchTeamId}&addMe=true";
+            window.location.href = url;
+            return true;
+        }
+
+        function handleAddMeClick(sciId, accountId, opportunityId, leadId, dealRegId, campaignId) {
+            handleAddMeClickFn();
+            var url = "/apex/ManageSCI?id=" + Id + "&edit=true&retUrl={!retUrl}&accountId=" + accountId + "&opportunityId=" + opportunityId+ "&dealRegId=" + dealRegId + "&leadId=" + leadId + "&campaignId=" + campaignId + "&patchTeamId={!patchTeamId}&addMe=true";
+            window.location.href = url;
+        }
+
+        function callHandleOrganizerChangeFn(el, userId) {
+            $(".organizerPicklist").hide();
+            $(".organizerLoadingIcon").show();
+
+            var newAttendeeType = $(el).val();
+            handleOrganizerChangeFn(userId, newAttendeeType);
+        }
+
+        function handleParticipationChange(el, userId) {
+            $(".participationPicklist").hide();
+            $(".participationPicklistRequiredBlock").hide();
+            $(".participationLoadingIcon").show();
+
+            var newParticipationType = $(el).val();
+            handleParticipationChangeFn(userId, newParticipationType);
+        }
+
+        window.onbeforeunload = function() {
+          return "Data will be lost if you leave the page, are you sure?";
+        }
+
+        function cancel() {
+            window.onbeforeunload = undefined;
+            return confirm('Are you sure? You will lose all data when cancel');
+        }
+
+        function handleSCIFieldValuesChange(fieldName) {
+            if ('recordtypeid' == fieldName.toLowerCase()) {
+                var sciType = $("[id$='inputSCIType'] option:selected").text();
+                var options = $("[id$='inputPrimaryTopicCovered']").html();
+                if ('f2f meeting' == sciType.toLowerCase()
+                    && $("[id$='inputPrimaryTopicCovered'] option[value='Solution Architecture']").length < 1) {
+                    var option = new Option("Solution Architecture", "Solution Architecture");
+                    $("[id$='inputPrimaryTopicCovered']").append(option);
+                } else {
+                    $("[id$='inputPrimaryTopicCovered'] option[value='Solution Architecture']").remove();
+                }
+            }
+        }
+
+        function toggleRequiredFields(e) {
+            console.log(e);
+            console.log($(e).val());
+            toggleRequiredFieldsFn($(e).val());
+        }
+
+        function togglePartnerAccountField(e) {
+            togglePartnerAccountFieldFn($(e).val());
+        }
+
+        function callSetSCIDate(date) {
+            var dateString = date;
+            //setSCIDateFn(dateString);
+            $("[id$='datepickerHidden']").val(dateString);
+        }
+
+        $(document).ready(function() {
+            $("[id$='datepicker']").keypress(function(e) {
+                disableAlphanumericKeyPress(e);
+            });
+
+            pageLoadFn();
+        });
+    </script>
+    <style type="text/css">
+        .notesInput textarea {
+            min-width: 50%;
+            height: 150px;
+            width: 80%;
+        }
+
+        .breadcrumb {
+            display: block;
+            clear: both;
+            align-content: center;
+        }
+        .autoCompleteBoxScrolling{
+            display:none !important;
+        }
+        
+        body .bPageTitle, .slds-vf-scope .bPageTitle{
+            padding:0rem !important;
+        }
+        
+        .breadcrumb .breadcrumb-item {
+            cursor: pointer;
+            display: block;
+            font-size: 1.1em;
+            font-weight: normal;
+            float: left;
+            width: 25%;
+            min-width: 250px;
+            margin: 5px 0px;
+            text-align: center;
+            background-color: darkgrey;
+            opacity: 1;
+        }
+
+        .breadcrumb .breadcrumb-item::after {
+            content: ' ';
+            width: 0px;
+            height: 0px;
+            border-top: 18px solid #FFF;
+            border-bottom: 18px solid #FFF;
+            border-left: 25px solid transparent;
+            position: relative;
+            float: right;
+        }
+
+        .breadcrumb .breadcrumb-item:nth-child(1)::before {
+            border: 0px;
+        }
+
+        .breadcrumb .breadcrumb-item:last-child::after {
+            border: 0px;
+        }
+
+        .breadcrumb .breadcrumb-item::before {
+            content: ' ';
+            width: 0px;
+            height: 0px;
+            border-top: 18px solid transparent;
+            border-bottom: 18px solid transparent;
+            border-left: 25px solid #FFF;
+            position: relative;
+            float: left;
+        }
+
+        .breadcrumb .breadcrumb-item.active {
+            background-color: #009CDA;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .breadcrumb .breadcrumb-item.disabled {
+            background-color: lightgrey;
+            color: darkgrey;
+            cursor: not-allowed;
+        }
+
+        .breadcrumb .breadcrumb-item .step-number {
+            border-radius: 45%;
+            border: 2px solid #000;
+            display: inline-block;
+            margin: 5px 5px;
+            padding: 2px 5px;
+            font-weight: bold;
+        }
+
+        .breadcrumb .breadcrumb-item.active .step-number {
+            border: 2px solid #FFF;
+            color: #FFF;
+        }
+
+        .breadcrumb .breadcrumb-item.disabled .step-number {
+            border: 2px solid darkgrey;
+        }
+
+        .breadcrumb .breadcrumb-item .step-name {
+            display: inline-block;
+            font-weight: bold;
+        }
+
+        .breadcrumb .breadcrumb-item.active .step-name {
+            color: #FFF;
+        }
+
+        .pageBlockButtons {
+            font-size: 1.1em;
+        }
+
+        .pageBlockButtons :disabled {
+            cursor: default;
+            color: grey;
+            background: none;
+        }
+
+        .loadingIcon {
+            padding-left: 16px;
+            background-image: url("/img/loading.gif");
+            background-repeat: no-repeat;
+            background-size: 13px 13px;
+        }
+
+        .organizerLoadingIcon {
+            margin-left: 15px;
+            height: 15px;
+            background-image: url("/img/loading.gif");
+            background-repeat: no-repeat;
+            background-size: 13px 13px;
+        }
+
+        .participationLoadingIcon {
+            margin-left: 15px;
+            height: 15px;
+            background-image: url("/img/loading.gif");
+            background-repeat: no-repeat;
+            background-size: 13px 13px;
+        }
+
+        .pageModalBackdrop {
+            background-color: #FFF;
+            position: absolute;
+            left: 0px;
+            top: 0px;
+            opacity: 0.5;
+            height: 100%;
+            width: 100%;
+        }
+
+        .pageLoadingIcon {
+            background-image: url("/img/loading32.gif");
+            background-repeat: no-repeat;
+            background-size: 30px 30px;
+            height: 50px;
+            width: 50px;
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            opacity: 1;
+            z-index: 9999;
+        }
+
+        .loadingIconSearch {
+            background-image: url("/img/loading.gif");
+            background-repeat: no-repeat;
+            background-position: 150px;
+        }
+
+        .ui-menu.ui-autocomplete.ui-front {
+            overflow-x: hidden;
+            overflow-y: auto;
+            min-height: 40px;
+            max-height: 200px;
+            max-width: 350px;
+        }
+
+        .ui-menu .ui-menu-item {
+            border-bottom:
+             1px solid grey;
+        }
+        .custPopup{
+            background-color: white;
+            border-width: 2px;
+            border-style: solid;
+            z-index: 9999;
+            left: 50%;
+            padding:10px;
+            position: absolute;
+            /* These are the 3 css properties you will need to change so the popup
+            displays in the center of the screen. First set the width. Then set
+            margin-left to negative half of what the width is. You can add
+            the height property for a fixed size pop up if you want.*/
+            width: 900px;
+            height: 300px;
+            margin-left: -450px;
+            top:50px;
+        }
+        .popupBackground{
+            background-color:black;
+            opacity: 0.20;
+            filter: alpha(opacity = 20);
+            position: absolute;
+            width: 100%;
+            height: 150%;
+            top: -200px;
+            left: 0;
+            z-index: 9998;
+        }
+    </style>
+
+    <apex:outputPanel id="messages">
+        <apex:pageMessages rendered="{!isError}"/>
+        <apex:outputPanel rendered="{!showValidationErrors}">
+            <div id="validationErrors" style="border: 1px solid #CC0000; border-radius: 3px; background-color: #FFFFCC; color: #000000; clear: both; padding: 8px 6px; margin: 5px 20px;">
+                <span style="font-weight: bold; color: #CC0000; padding-left: 5px;">Error(s):</span>
+                <ul style="margin: 0px; padding: 5px 15px;">
+                    <apex:repeat value="{!validationErrors}" var="error">
+                        <li>{!validationErrors[error]}</li>
+                    </apex:repeat>
+                </ul>
+            </div>
+        </apex:outputPanel>
+        <apex:outputPanel rendered="{!isFederal}">
+            <div id="FederalMsg" style="border: 1px solid #CC0000; border-radius: 3px; background-color: #FFFFCC; color: #000000; clear: both; padding: 8px 6px; margin: 5px 20px;">
+                <span style="font-weight: bold; color: #CC0000; padding-left: 5px;">SCI’s for Federal deal can only be created/edited in the Federal SFDC Instance</span>
+            </div>
+        </apex:outputPanel>
+    </apex:outputPanel>
+
+    <apex:outputPanel id="breadcrumbNav" rendered="{!NOT(isError) && NOT(isFederal)}" styleClass="breadcrumb">
+        <apex:repeat rows="4" value="{!navigationSteps.steps}" var="nav">
+            <div class="breadcrumb-item {!IF(nav.stepNumber == currentStep, 'active', '')} {!IF(nav.isEnabled == false, 'disabled', '')}" onclick="{!IF(AND(nav.isEnabled, nav.stepNumber <> currentStep), 'setCurrentStep(' + TEXT(nav.stepNumber) + ')', '')}">
+                <div class="step-number">{!nav.stepNumber}</div><div class="step-name">{!nav.stepName}</div>
+            </div>
+        </apex:repeat>
+    </apex:outputPanel>
+    <apex:outputPanel id="wizardBody" rendered="{!NOT(isError) && NOT(isFederal)}">
+        <apex:form id="wizard" rendered="{!NOT(isError)}" >
+            <apex:pageBlock title="{!pbSectionTitle}" id="wizardMain">
+                <div class="slds-page-header">
+                  <div class="slds-media">
+                    <!--<div class="slds-media__figure">
+                      <span class="slds-icon_container slds-icon-standard-opportunity" >
+                        <svg class="slds-icon slds-page-header__icon" aria-hidden="true">
+                          <use xlink:href="{!URLFOR($Asset.SLDS, 'assets/icons/standard-sprite/svg/symbols.svg#opportunity')}"></use>
+                        </svg>
+                      </span>
+                    </div>-->
+                    <div class="slds-media__body">
+                      <h1 class="slds-page-header__title slds-truncate slds-align-middle">{!pbSectionTitle}</h1>
+                      <p class="slds-text-body_small slds-line-height_reset">{!pbSectionSubtitle}</p>
+                    </div>
+                  </div>
+                </div>
+                <!-- Page buttons - Start -->
+                <apex:pageBlockButtons id="buttons" location="both" styleClass="pageBlockButtons" rendered="{!NOT(chooseSciTypeStep)}">
+                    <apex:commandButton action="{!cancel}" style="background: #009CDA; color: #F3F3EC;" rendered="true" value="Cancel" onclick="return cancel();" />
+                    <apex:commandButton styleClass="previousBtn" style="background: #009CDA; color: #F3F3EC;" action="{!goPrevious}" value="Previous" status="pageLoadingModal" rendered="{!AND(NOT(chooseSciTypeStep), NOT(sciDetailsStep))}" reRender="wizardBody, breadcrumbNav, messages" />
+                    <apex:commandButton styleClass="nextBtn" style="background: #009CDA; color: #F3F3EC;" action="{!goNext}" value="Next" status="pageLoadingModal" rendered="{!NOT(externalAttendeesStep)}" reRender="wizardBody, breadcrumbNav, messages" />
+                    <apex:commandButton styleClass="saveBtn" style="background: #009CDA; color: #F3F3EC;" onclick="window.onbeforeunload=undefined;" action="{!save}" value="Save" status="pageLoadingModal" reRender="messages, wizardBody, breadcrumbNav" rendered="{!externalAttendeesStep}" />
+                    <apex:actionStatus id="sciActionStatus" startText="Please wait..." stopText="" onstart="disableButtons()" onstop="enableButtons()" startStyleClass="loadingIcon" stopStyleClass=""></apex:actionStatus>
+                </apex:pageBlockButtons>
+                <!-- Page buttons - End -->
+
+                <!-- SCI Type Selection - Start -->
+                <apex:outputPanel rendered="{!chooseSciTypeStep}">
+                    <apex:pageBlockSection id="sciInitialDetail" collapsible="false" columns="1" rendered="{!chooseSciTypeStep}">
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel for="sciTypeSelect" value="Select SCI Type" />
+                            <apex:selectList id="sciTypeSelect" size="1" required="true" multiselect="false" tabindex="1" value="{!sciRecordTypeId}" onchange="toggleRequiredFields(this), fetchExistingSCIsOnChange();">
+                                <apex:selectOptions value="{!lstSelectSCITypeOptions}" rendered="true" />
+                            </apex:selectList>
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem id="datePickerContainer">
+                            <apex:outputLabel for="datepicker" value="Date Of Meeting" />
+                            <!-- <apex:inputField id="datepicker" value="{!sciRecord.Date__c}" label="Date of Meeting" onchange="fetchExistingSCIsOnChange();"></apex:inputField> -->
+                            <input id="datepicker" type="text" size="15" onchange="fetchExistingSCIsOnChange();" placeholder="MM/DD/YYYY" />
+                        </apex:pageBlockSectionItem>
+                        <script type="text/javascript">
+                            $("#datepicker").datepicker({"dateFormat":"mm/dd/yy"});
+                        </script>
+                    </apex:pageBlockSection>
+                    <apex:actionStatus id="existingSciActionStatus" startText="Fetching existing SCIs..." stopText="" startStyleClass="loadingIcon" stopStyleClass=""></apex:actionStatus>
+                    <apex:pageBlockSection rendered="{!AND(chooseSciTypeStep, foundExistingSCICount > 0)}" columns="1">
+                        <apex:outputLabel >Here are a few SCI's close to the chosen date. If you attended any of these meetings, just click 'Add Me', no need to create a new SCI. Otherwise, click Add New SCI.</apex:outputLabel>
+                    </apex:pageBlockSection>
+                    <apex:pageBlockSection rendered="{!AND(chooseSciTypeStep, foundExistingSCICount > 0)}" columns="1">
+                        <apex:pageBlockTable columns="9" value="{!lstExistingSCIs}" var="sci" width="100%">
+                            <apex:column headerValue="Action">
+                                <a href="/apex/ManageSCI?{!IF(ISBLANK(sci.Id), 'edit=false', 'id=' + sci.Id + '&edit=true')}&retUrl={!retUrl}{!IF(NOT(ISBLANK(accountId)), '&accountId=' + accountId, '')}{!IF(NOT(ISBLANK(opportunityId)), '&opportunityId=' + opportunityId, '')}{!IF(NOT(ISBLANK(dealRegId)),'&dealRegId=' + dealRegId, '')}{!IF(NOT(ISBLANK(leadId)), '&leadId=' + leadId, '')}{!IF(NOT(ISBLANK(campaignId)), '&campaignId=' + campaignId, '')}&patchTeamId={!patchTeamId}{!IF(NOT(ISBLANK(newExternalAttendeeId)), '&newExternalAttendeeId=' + newExternalAttendeeId, '')}{!IF(NOT(ISBLANK(gotoStepNumber)), '&step=' + TEXT(gotoStepNumber), '')}" target="_blank">Edit</a>
+                            </apex:column>
+                            <apex:column headerValue="SCI Id">
+                                <a href="/{!sci.Id}" target="_blank">{!sci.sciNumber}</a>
+                            </apex:column>
+                            <apex:column headerValue="Type" value="{!sci.sciType}">
+
+                            </apex:column>
+                            <apex:column headerValue="Date Of Meeting" value="{!sci.dateOfMeeting}">
+
+                            </apex:column>
+                            <apex:column headerValue="Interaction With" value="{!sci.interactionWith}">
+
+                            </apex:column>
+                            <apex:column headerValue="Method Of Interaction" value="{!sci.methodOfInteraction}">
+
+                            </apex:column>
+                            <apex:column headerValue="Primary Topic Covered" value="{!sci.primaryTopicCovered}">
+
+                            </apex:column>
+                            <apex:column headerValue="Organizer" value="{!sci.createdBy}">
+
+                            </apex:column>
+                            <apex:column headerValue="Was I Added As Organizer / Attendee?" width="10%">
+                                <apex:outputLabel value="{!IF(sci.wasIAdded == 'Y', 'Yes', 'No')}" style="width: 50%" />
+                            </apex:column>
+                            <apex:column >
+                                 <apex:outputPanel rendered="{!sci.wasIAdded <> 'Y'}" >
+                                    <!-- <a onclick="handleAddMeClick('{!sci.Id}', '{!sci.accountId}', '{!sci.opportunityId}', '{!sci.leadId}', '{!sci.dealRegId}', '{!sci.campaignId}')" oncomplete="" href="#" class="btn btn-blue" style="background: #009CDA; color: #F3F3EC; padding: 2px 10px; font-size: 1em; width: 50%; text-decoration: none;" >Add Me</a> -->
+                                    <apex:commandButton value="Add Me" styleClass="btn btn-blue" onclick="window.onbeforeunload=undefined;" action="{!handleAddMeClick}" status="pageLoadingModal" style="background: #009CDA; color: #F3F3EC; padding: 2px 10px; font-size: 1em; text-decoration: none;" oncomplete="" reRender="wizardMain">
+                                        <apex:param name="addMeToSCIId" assignTo="{!addMeToSCIId}" value="{!sci.Id}" />
+                                    </apex:commandButton>
+                                </apex:outputPanel>
+                            </apex:column>
+                        </apex:pageBlockTable>
+                    </apex:pageBlockSection>
+                    <apex:outputPanel rendered="{!AND(NOT(ISBLANK(sciRecordType)), NOT(ISBLANK(sciRecord.Date__c)), chooseSciTypeStep)}" style="display: block; margin: 10px 10px;">
+                        <div style="display: flex; justify-content: center;">
+                            <div style="float: left; padding: 0px 5px;">
+                                Never mind, I would like a
+                            </div>
+                            <div style="float: left;">
+                                <apex:commandLink id="addNewSCI" action="{!addNewSCI}" styleClass="btn btn-blue" style="background: #009CDA; color: #F3F3EC; text-decoration: none; font-size: 1.1em; padding: 5px 20px;" reRender="wizardBody, breadcrumbNav">
+                                    New SCI
+                                </apex:commandLink>
+                            </div>
+                        </div>
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!AND(chooseSciTypeStep, foundExistingSCICount == 0)}">
+                        <apex:pageBlockTable columns="2" value="{!mapRecordTypesAndDescriptions}" var="recordType">
+                            <apex:column headerValue="SCI Type" value="{!recordType}"></apex:column>
+                            <apex:column headerValue="Description" value="{!mapRecordTypesAndDescriptions[recordType]}"></apex:column>
+                        </apex:pageBlockTable>
+                    </apex:outputPanel>
+                </apex:outputPanel>
+                <!-- SCI Type Selection - End -->
+
+                <!-- SCI Details - Start -->
+                <apex:pageBlockSection id="sciInformation" title="Information" collapsible="false" columns="2" rendered="{!sciDetailsStep}">
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel for="dateOfMeeting" value="Date of Meeting"></apex:outputLabel>
+                        <!-- <apex:outputText id="dateOfMeeting" value="{0, Date, MM/dd/yyyy}">
+                            <apex:param value="{!sciRecord.Date__c}" />
+                        </apex:outputText> -->
+                        <apex:outputPanel >
+                            <input id="datepickerDetail" type="text" size="15" onchange="callSetSCIDate();" placeholder="MM/DD/YYYY" />
+                            <span style="display: none;">
+                            <apex:inputText id="datepickerHidden" value="{!newSCIDate}" ></apex:inputText>
+                            </span>
+                            <script type="text/javascript">
+                                $("#datepickerDetail").datepicker({
+                                    "dateFormat":"mm/dd/yy",
+                                    onSelect: function(date) {
+                                        callSetSCIDate(date);
+                                    }
+                                });
+                                $("#datepickerDetail").datepicker("setDate","{!SCIDate}");
+                            </script>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel for="inputSCIType" value="SCI Type"></apex:outputLabel>
+                        <!-- <apex:outputText id="inputSCIType" value="{!sciRecordType}"></apex:outputText> -->
+                        <apex:selectList id="inputSCIType" size="1" required="true" multiselect="false" tabindex="1" value="{!sciRecord.RecordTypeId}" onchange="toggleRequiredFields(this), handleSCIFieldValuesChange('RecordTypeId')">
+                            <apex:selectOptions value="{!lstSelectSCITypeOptionsEdit}" rendered="true" />
+                        </apex:selectList>
+                    </apex:pageBlockSectionItem>
+                    <apex:repeat value="{!$ObjectType.Significant_Customer_Interaction__c.FieldSets.SCI_Information_Fieldset}" var="sciField">
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="{!sciField.Label}" for="{!sciField.FieldPath}" />
+                            <apex:inputField value="{!sciRecord[sciField]}" required="{!OR(sciField.required, sciField.dbRequired)}" label="{!sciField.FieldPath}" onchange="handleSCIFieldValuesChange('{!sciField}')">
+                            </apex:inputField>
+                        </apex:pageBlockSectionItem>
+                    </apex:repeat>
+                    
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel for="inputPrimaryTopicCovered" value="Primary Topic Covered"></apex:outputLabel>
+                        <apex:inputField id="inputPrimaryTopicCovered" required="{!isPrimaryTopicRequired}" value="{!sciRecord.Primary_Topic_Covered__c}">
+                        </apex:inputField>
+                    </apex:pageBlockSectionItem>
+                    
+                    <apex:pageBlockSectionItem rendered="{!isZsranddisplayzsrlink}" helptext="{!$ObjectType.Significant_Customer_Interaction__c.fields.ZSR_link__c.InlineHelpText}">
+                        <apex:outputLabel for="zsrlink" value="{!$ObjectType.Significant_Customer_Interaction__c.fields.ZSR_link__c.Label}"></apex:outputLabel>
+                            <apex:inputField id="zsrlink" required="{!isZsranddisplayzsrlink}" value="{!sciRecord.ZSR_link__c}">
+                        </apex:inputField>
+                    </apex:pageBlockSectionItem>
+                    
+                    <apex:pageBlockSectionItem rendered="{!isawanddisplayawlink}">
+                        <apex:outputLabel for="awlink" value="Architecture Workshop Link"></apex:outputLabel>
+                            <apex:inputField id="awlink" required="{!isawanddisplayawlink}" value="{!sciRecord.Architecture_Workshop_Link__c}">
+                        </apex:inputField>
+                    </apex:pageBlockSectionItem>
+                    
+                    <!--<apex:pageBlockSectionItem rendered="{!isZsranddisplayzsrlink}">
+                        <apex:outputLabel for="zsrdate" value="{!$ObjectType.Significant_Customer_Interaction__c.fields.Next_ZSR_Date__c.Label}"></apex:outputLabel>
+                            <apex:inputField id="zsrdate" value="{!sciRecord.Next_ZSR_Date__c}">
+                        </apex:inputField>
+                    </apex:pageBlockSectionItem>
+                    
+                    <apex:pageBlockSectionItem rendered="{!isawanddisplayawlink}">
+                        <apex:outputLabel for="awarchdate" value="Next Architecture Workshop Date"></apex:outputLabel>
+                            <apex:inputField id="awarchdate" value="{!sciRecord.Next_Architecture_Workshop_Date__c}">
+                        </apex:inputField>
+                    </apex:pageBlockSectionItem>-->
+
+                    <apex:pageBlockSectionItem >
+                        <!-- <apex:outputLabel for="inputWasPartnerPresent" value="Was a partner present in this meeting?"></apex:outputLabel>
+                        <apex:inputField id="inputWasPartnerPresent" required="true" value="{!sciRecord.Partner_Present_In_The_Meeting__c}" onchange="togglePartnerAccountField(this), handleSCIFieldValuesChange('Partner_Present_In_The_Meeting__c');">
+                        </apex:inputField> -->
+                    </apex:pageBlockSectionItem>
+                    
+
+                    <apex:pageBlockSectionItem >
+                        <!-- <apex:outputLabel for="inputMethodOfInteraction" value="Method Of Interaction"></apex:outputLabel>
+                        <apex:outputLabel id="inputMethodOfInteraction" value="{!sciRecord.Method_of_Interaction__c}">
+                        </apex:outputLabel> -->
+                    </apex:pageBlockSectionItem>
+
+                    <apex:pageBlockSectionItem >
+                        <!-- <apex:outputLabel for="inputMethodOfInteraction" value="Partner Account"></apex:outputLabel>
+                        <apex:inputField id="inputMethodOfInteraction" required="{!isPartnerAccountRequired}" value="{!sciRecord.Partner_Account__c}">
+                        </apex:inputField> -->
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSection>
+                <apex:pageBlockSection title="Meeting Notes" collapsible="false" columns="2" rendered="{!sciDetailsStep}">
+                    <apex:repeat value="{!$ObjectType.Significant_Customer_Interaction__c.FieldSets.SCI_Meeting_Notes}" var="sciField">
+                        <apex:pageBlockSectionItem dataStyleClass="notesInput">
+                            <apex:outputLabel value="{!sciField.Label}" for="{!sciField.FieldPath}" />
+                            <apex:inputField value="{!sciRecord[sciField]}" required="{!OR(sciField.required, sciField.dbRequired)}" label="{!sciField.FieldPath}" onchange="handleSCIFieldValuesChange('{!sciField}')">
+                            </apex:inputField>
+                        </apex:pageBlockSectionItem>
+                    </apex:repeat>
+                </apex:pageBlockSection>
+                <apex:pageBlockSection title="Associations" collapsible="false" columns="2" rendered="{!sciDetailsStep}">
+                    <apex:repeat value="{!$ObjectType.Significant_Customer_Interaction__c.FieldSets.SCI_Related_To}" var="sciField">
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="{!sciField.Label}" for="{!sciField.FieldPath}" />
+                            <apex:inputField value="{!sciRecord[sciField]}" required="{!OR(sciField.required, sciField.dbRequired)}" label="{!sciField.FieldPath}" onchange="handleSCIFieldValuesChange('{!sciField}')">
+                            </apex:inputField>
+                        </apex:pageBlockSectionItem>
+                    </apex:repeat>
+                </apex:pageBlockSection>
+                <apex:pageBlockSection title="Inline POC Details" columns="2" collapsible="false" rendered="{!AND(sciDetailsStep, inlinePoc)}">
+                    <apex:repeat value="{!$ObjectType.Significant_Customer_Interaction__c.FieldSets.Inline_POC_Fields}" var="sciField">
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="{!sciField.Label}" for="{!sciField.FieldPath}" />
+                            <apex:inputField value="{!sciRecord[sciField]}" required="{!OR(sciField.required, sciField.dbRequired)}" label="{!sciField.FieldPath}" onchange="handleSCIFieldValuesChange('{!sciField}')">
+                            </apex:inputField>
+                        </apex:pageBlockSectionItem>
+                    </apex:repeat>
+                </apex:pageBlockSection>
+                <!-- SCI Details - End -->
+
+                <!-- Manage SCI Zscaler Attendees - Start -->
+                <apex:pageBlockSection columns="1" collapsible="false" rendered="{!AND(internalAttendeesStep)}">
+                    <div id="attendeeAddedMessage" style="border: 1px solid #407941; border-radius: 3px; background: #dff0d8; color: #407941; clear: both; font-size: 1.2em; padding: 15px 15px; display: none;">
+                        You have been added as an attendee successfully! Do not forget to click on <b>Save</b> button to save the changes.
+                    </div>
+                    <script type="text/javascript">
+                        console.log('>> window.hideInternalAttendeeMessage: ' + window.hideInternalAttendeeMessage);
+                        console.log('>> addMe: ' + {!addMe});
+                        if (window.hideInternalAttendeeMessage != undefined
+                            && window.hideInternalAttendeeMessage != true) {
+                            console.log('inside if');
+                            $("#attendeeAddedMessage").show();
+                            $("#attendeeAddedMessage").ready(function() {
+                                setTimeout(function() {
+                                    $("#attendeeAddedMessage").hide();
+                                    window.hideInternalAttendeeMessage = true;
+                                }, 10000);
+                            });
+                        } else {
+                            console.log('inside else');
+                            $("#attendeeAddedMessage").hide();
+                        }
+                    </script>
+                </apex:pageBlockSection>
+                <apex:pageBlockSection id="ManageInternalAttendees" title="Manage Internal Attendees" columns="1" rendered="{!internalAttendeesStep}" collapsible="false">
+                    <apex:outputPanel rendered="{!AND(InternalAttendees <> NULL, InternalAttendees.size > 0)}">
+                        <apex:pageBlockTable columns="5" value="{!InternalAttendees}" var="attendee">
+                            <apex:column headerValue="Action">
+                                <apex:commandLink value="Remove" rendered="{!NOT(attendee.isReadOnly)}" action="{!removeInternalAttendee}" reRender="wizardMain, MatchingInternalAttendeesList" status="pageLoadingModal">
+                                    <apex:param name="internalAttendeeToRemove" assignTo="{!internalAttendeeToRemove}" value="{!attendee.userId}" />
+                                </apex:commandLink>
+                            </apex:column>
+                            <apex:column headerValue="Name" value="{!attendee.name}">
+                            </apex:column>
+                            <apex:column headerValue="Department" value="{!attendee.department}">
+                            </apex:column>
+                            <apex:column headerValue="Attendee Type">
+                                <apex:selectList styleClass="organizerPicklist" value="{!attendee.isOrganizer}" size="1" required="true" onchange="callHandleOrganizerChangeFn(this, '{!attendee.userId}')">
+                                    <apex:selectOptions value="{!internalAttendeeTypeOptions}" />
+                                </apex:selectList>
+                                <div class="organizerLoadingIcon loadingIcon" style="display: none;"></div>
+                            </apex:column>
+                            <apex:column headerValue="Participation">
+                                <div class="requiredInput">
+                                    <div class="requiredBlock participationPicklistRequiredBlock"></div>
+                                    <apex:selectList styleClass="participationPicklist" value="{!attendee.participation}" size="1" disabled="{!attendee.isReadOnly}" style="display: inline-block; "
+                                        onchange="handleParticipationChange(this, '{!attendee.userId}');">
+                                        <apex:selectOptions value="{!participationTypeOptions}" />
+                                    </apex:selectList>
+                                    <div class="participationLoadingIcon loadingIcon" style="display: none;"></div>
+                                </div>
+                            </apex:column>
+                        </apex:pageBlockTable>
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!OR(InternalAttendees == NULL, InternalAttendees.size == 0)}">
+                        <div style="padding: 10px 10px; margin: 0 auto; ">
+                            No attendees were added. Use the below section to search and add attendees.
+                        </div>
+                    </apex:outputPanel>
+                </apex:pageBlockSection>
+                <apex:pageBlockSection id="InternalAttendeesSearch" title="Search" columns="1" collapsible="false" rendered="{!internalAttendeesStep}">
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Enter the attendee name" for="internalAttendeeSearchBox" style="line-height: 20px;" />
+                        <apex:outputPanel >
+                            <apex:inputText id="internalAttendeeSearchBox" value="{!internalAttendeesSearchText}" />
+                            <apex:inputHidden id="internalAttendeeSearchUserId" value="{!internalAttendeeToAdd}" />
+                            <script type="text/javascript">
+                                $("[id$='internalAttendeeSearchBox']").autocomplete({
+                                    minLength: 2,
+                                    appendTo: this,
+                                    source: function(request, response) {
+                                        $(this.element).addClass("loadingIconSearch");
+                                        var that = this;
+                                        ManageSCIController.searchInternalUsers(request.term, function(result, event) {
+                                            $(that.element).removeClass("loadingIconSearch");
+                                            if (event.type == 'exception' || result == null) {
+                                                response('No matching users found');
+                                            } else {
+                                                response(result);
+                                            }
+                                        });
+                                    },
+                                    change: function(event, ui) {
+                                        $("[id$=internalAttendeeSearchBox]").val('');
+
+                                        return false;
+                                    },
+                                    focus: function(event, ui) {
+                                        $("[id$=internalAttendeeSearchBox]").val(ui.item.Name);
+                                        return false;
+                                    },
+                                    select: function(event, ui) {
+                                        $("[id$=internalAttendeeSearchBox]").val(ui.item.Name);
+                                        $("[id$=internalAttendeeSearchUserId]").val(ui.item.Id);
+                                        return false;
+                                    }
+                                })
+                                .data('uiAutocomplete')._renderItem = function(ul, item) {
+                                    var department = "<span style='font-size: 0.75em; clear: both;'>" + (item.Department ? item.Department : "") + "</span>";
+                                    var entry = "<a onclick='$(\"[id$=internalAttendeeSearchBox]\").val(\"\"); addInternalAttendeeFn(\"" + item.Id + "\");'>" + item.Name;
+                                    entry = entry + "<br />" + department + "</a>";
+                                    var wrapper = "<div>" + entry + "</div>";
+                                    return $("<li></li>")
+                                        .append(wrapper)
+                                        .appendTo(ul);
+                                }
+                            </script>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSection>
+                <apex:pageBlockSection id="MatchingInternalAttendeesList" title="Suggested Attendees" columns="1" collapsible="false" rendered="{!AND(internalAttendeesStep, SuggestedInternalUsers <> NULL, foundMatchingInternalUsersCount > 0)}">
+                    <apex:outputText value="{!addInternalAttendeeMessage}" style="clear: both; color: red; " />
+                    <apex:pageBlockTable columns="3" value="{!SuggestedInternalUsers}" var="internalUser">
+                        <apex:column headerValue="Action">
+                            <apex:commandLink action="{!addInternalAttendee}" value="Add" reRender="ManageInternalAttendees, MatchingInternalAttendeesList" status="pageLoadingModal">
+                                <apex:param assignTo="{!internalAttendeeToAdd}" name="internalAttendeeToAdd" value="{!internalUser.Id}" />
+                            </apex:commandLink>
+                        </apex:column>
+                        <apex:column headerValue="Name" value="{!internalUser.Name}">
+
+                        </apex:column>
+                        <apex:column headerValue="Department" value="{!internalUser.Department}">
+
+                        </apex:column>
+                    </apex:pageBlockTable>
+                </apex:pageBlockSection>
+                <apex:pageBlockSection columns="1" rendered="{!internalAttendeesStep}">
+                    <div style="text-align: center; font-size: 1.2em;">Pause..., remember everybody from Zscaler in this meeting? Add them here.</div>
+                </apex:pageBlockSection>
+                <!-- Manage SCI Zscaler Attendees - End -->
+
+                <!-- Manage SCI External Attendees - Start -->
+                <apex:pageBlockSection columns="1" collapsible="false" rendered="{!AND(externalAttendeesStep)}">
+                    <div id="externalAttendeeAddedMessage" style="border: 1px solid #407941; border-radius: 3px; background: #dff0d8; color: #407941; clear: both; font-size: 1.2em; padding: 15px 15px; display: none;">
+                        {!newExtenalAttendeeName} has been added as an external attendee! Click <b>Save</b> button to save your changes.
+                    </div>
+                    <script type="text/javascript">
+                        window.hideExternalAttendeeMessage = (undefined == window.hideExternalAttendeeMessage) ? !{!addNewExternalAttendee} : window.hideExternalAttendeeMessage;
+                        console.log('>> window.hideExternalAttendeeMessage: ' + window.hideExternalAttendeeMessage);
+                        console.log('>> addNewExternalAttendee: ' + {!addNewExternalAttendee});
+                        if (window.hideExternalAttendeeMessage != undefined
+                            && window.hideExternalAttendeeMessage != true) {
+                            console.log('inside if');
+                            $("#externalAttendeeAddedMessage").show();
+                            $("#externalAttendeeAddedMessage").ready(function() {
+                                setTimeout(function() {
+                                    $("#externalAttendeeAddedMessage").hide();
+                                    window.hideExternalAttendeeMessage = true;
+                                }, 10000);
+                            });
+                        } else {
+                            console.log('inside else');
+                            $("#externalAttendeeAddedMessage").hide();
+                        }
+                    </script>
+                </apex:pageBlockSection>
+                <apex:pageBlockSection columns="1" rendered="{!externalAttendeesStep}">
+                    <div style="text-align: center; font-size: 1.2em;">Dont forget who you interacted with... We could use this data in so many useful ways...</div>
+                </apex:pageBlockSection>
+                <apex:pageBlockSection id="ManageExternalAttendees" collapsible="false" rendered="{!externalAttendeesStep}" title="Manage External Attendees" columns="1">
+                    <apex:outputPanel rendered="{!AND(ExternalAttendees <> NULL, ExternalAttendees.size > 0)}">
+                        <apex:pageBlockTable columns="7" rendered="true" value="{!ExternalAttendees}" var="externalAttendee">
+                            <apex:column headerValue="Action">
+                                <apex:commandLink value="Remove" action="{!removeExternalAttendee}" reRender="wizardMain, MatchingExternalAttendeesList, messages" status="pageLoadingModal">
+                                    <apex:param name="ExternalAttendeeToRemove" assignTo="{!externalAttendeeToRemove}" value="{!externalAttendee.ContactId}" />
+                                </apex:commandLink>
+                            </apex:column>
+                            <apex:column headerValue="Attendee Type">
+                                <apex:selectList value="{!externalAttendee.attendeeType}" size="1" required="true">
+                                    <apex:selectOptions value="{!attendeeTypeOptions}" />
+                                </apex:selectList>
+                            </apex:column>
+                            <apex:column headerValue="Name">
+                                <a href="/{!externalAttendee.Id}">{!externalAttendee.Name}</a>
+                            </apex:column>
+                            <apex:column headerValue="Account" value="{!externalAttendee.AccountName}">
+
+                            </apex:column>
+                            <apex:column headerValue="General Role/Title" value="{!externalAttendee.Title}">
+
+                            </apex:column>
+                            <apex:column headerValue="Email" value="{!externalAttendee.Email}">
+
+                            </apex:column>
+                            <apex:column headerValue="Phone" value="{!externalAttendee.Phone}">
+
+                            </apex:column>
+                        </apex:pageBlockTable>
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!OR(ExternalAttendees == NULL, ExternalAttendees.size == 0)}">
+                        <div style="padding: 10px 10px; margin: 0 auto; ">
+                            No attendees were added. Use the below section to search and add attendees.
+                        </div>
+                    </apex:outputPanel>
+                </apex:pageBlockSection>
+                <apex:pageBlockSection id="ExternalAttendeesSearch" title="Search Contacts" columns="1" collapsible="false" rendered="{!externalAttendeesStep}">
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Enter the contact name" for="externalAttendeeSearchBox" style="line-height: 20px;" />
+                        <apex:outputPanel >
+                            <div style="display: inline;">
+                                <apex:inputText id="externalAttendeeSearchBox" value="{!externalAttendeesSearchText}" />
+                            </div>
+                            <div style="display: inline; margin: 0px 5px;">OR</div>
+                            <div style="display: inline;">
+                                <apex:commandLink action="{!showNewContactPopup}" reRender="wizardMain" styleClass="btn btn-blue" style="background: #009CDA; color: #F3F3EC;" value="Create New Contact">
+                                </apex:commandLink>
+                                <apex:outputPanel id="tstpopup">
+                                    <apex:outputPanel styleClass="popupBackground" layout="block" rendered="{!showPopup}"/>
+                                    <apex:outputPanel styleClass="custPopup" layout="block" rendered="{!showPopup}">
+                                    <apex:outputPanel id="hasError">
+                                        {!popupMessage}
+                                    </apex:outputPanel>
+                                      <apex:pageblocksection columns="2"   id="condtl">
+                                        <apex:repeat value="{!$ObjectType.contact.FieldSets.NewContactForAttendees}" var="f">
+                                            <apex:inputfield value="{!newContact[f]}" required="{!OR(f.required, f.dbrequired)}">
+                                            </apex:inputfield>
+                                        </apex:repeat>
+                                        </apex:pageblocksection>
+                                        <br/>
+                                        <apex:commandButton value="Create & Add" action="{!createAndAddExternalAttendee}" reRender="wizardMain" style="position:relative;left:360px;background: #009CDA; color: #F3F3EC; padding: 2px 10px; font-size: 1em; text-decoration: none;" status="popupActionStatus"/>
+                                        <apex:actionStatus id="popupActionStatus" startText="Please wait..." stopText="" startStyleClass="loadingIcon" stopStyleClass=""></apex:actionStatus>
+                                        <apex:commandButton value="Cancel" action="{!cancelPopup}" immediate="true" rerender="tstpopup" style="background: #009CDA; color: #F3F3EC; padding: 2px 10px; font-size: 1em;  text-decoration: none; position:relative;left:365px;"/>
+                                    </apex:outputPanel>
+                                </apex:outputPanel>
+                            </div>
+                            <apex:inputHidden id="externalAttendeeSearchUserId" value="{!externalAttendeeToAdd}" />
+                            <script type="text/javascript">
+                                $("[id$='externalAttendeeSearchBox']").autocomplete({
+                                    minLength: 2,
+                                    appendTo: this,
+                                    source: function(request, response) {
+                                        $(this.element).addClass("loadingIconSearch");
+                                        var that = this;
+                                        ManageSCIController.searchExternalUsers(request.term, function(result, event) {
+                                            $(that.element).removeClass("loadingIconSearch");
+                                            if (event.type == 'exception' || result == null) {
+                                                response('No matching users found');
+                                            } else {
+                                                response(result);
+                                            }
+                                        });
+                                    },
+                                    change: function(event, ui) {
+                                        $("[id$=externalAttendeeSearchBox]").val('');
+                                        return false;
+                                    },
+                                    focus: function(event, ui) {
+                                        $("[id$=externalAttendeeSearchBox]").val(ui.item.Name);
+                                        return false;
+                                    },
+                                    select: function(event, ui) {
+                                        $("[id$=externalAttendeeSearchBox]").val(ui.item.Name);
+                                        $("[id$=externalAttendeeSearchUserId]").val(ui.item.Id);
+                                        return false;
+                                    }
+                                })
+                                .data('uiAutocomplete')._renderItem = function(ul, item) {
+                                    var account = "";
+                                    if (undefined != item.Account && undefined != item.Account.Name) {
+                                        account = "<br /><span style='font-size: 0.75em; clear: both;'>" + item.Account.Name + "</span>";
+                                    }
+
+                                    var entry = "<a onclick='$(\"[id$=externalAttendeeSearchBox]\").val(\"\"); addExternalAttendeeFn(\"" + item.Id + "\");'>" + item.Name;
+                                    entry = entry + account + "</a>";
+                                    var wrapper = "<div>" + entry + "</div>";
+                                    return $("<li></li>")
+                                        .append(wrapper)
+                                        .appendTo(ul);
+                                }
+                            </script>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSection>
+
+                <apex:pageBlockSection id="MatchingExternalAttendeesList" title="Suggested Contacts" columns="1" collapsible="false" rendered="{!AND(externalAttendeesStep, SuggestedExternalUsers <> NULL, foundMatchingExternalUsersCount > 0)}">
+                    <apex:outputText value="{!addExternalAttendeeMessage}" style="clear: both; color: red; " />
+                    <apex:pageBlockTable columns="6" value="{!SuggestedExternalUsers}" var="externalUser">
+                        <apex:column headerValue="Action">
+                            <apex:commandLink action="{!addExternalAttendee}" value="Add" reRender="wizardMain, ManageExternalAttendees, MatchingExternalAttendeesList, messages" status="pageLoadingModal">
+                                <apex:param assignTo="{!externalAttendeeToAdd}" name="externalAttendeeToAdd" value="{!externalUser.Id}" />
+                            </apex:commandLink>
+                        </apex:column>
+                        <apex:column headerValue="Name">
+                            <a href="/{!externalUser.Id}">{!externalUser.Name}</a>
+                        </apex:column>
+                        <apex:column headerValue="Account" value="{!externalUser.Account.Name}">
+
+                        </apex:column>
+                        <apex:column headerValue="Genral Role/Title" value="{!externalUser.Title}">
+
+                        </apex:column>
+                        <apex:column headerValue="Email" value="{!externalUser.Email}">
+
+                        </apex:column>
+                        <apex:column headerValue="Phone" value="{!externalUser.Phone}">
+
+                        </apex:column>
+                    </apex:pageBlockTable>
+                </apex:pageBlockSection>
+                
+                <apex:pageBlockSection id="ExternalAttendeesLeadSearch" title="Search Leads" columns="1" collapsible="false" rendered="{!externalAttendeesStep}">
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Enter the lead name" for="externalAttendeeLeadSearchBox" style="line-height: 20px;" />
+                        <apex:outputPanel >
+                            <div style="display: inline;">
+                                <apex:inputText id="externalAttendeeLeadSearchBox" value="{!externalAttendeesLeadSearchText}" />
+                            </div>
+                            
+                            <apex:inputHidden id="externalAttendeeSearchLeadId" value="{!externalAttendeeToAdd}" />
+                            <script type="text/javascript">
+                                $("[id$='externalAttendeeLeadSearchBox']").autocomplete({
+                                    minLength: 2,
+                                    appendTo: this,
+                                    source: function(request, response) {
+                                        $(this.element).addClass("loadingIconSearch");
+                                        var that = this;
+                                        ManageSCIController.searchLeads(request.term, function(result, event) {
+                                            $(that.element).removeClass("loadingIconSearch");
+                                            if (event.type == 'exception' || result == null) {
+                                                response('No matching Leads found');
+                                            } else {
+                                                response(result);
+                                            }
+                                        });
+                                    },
+                                    change: function(event, ui) {
+                                        $("[id$=externalAttendeeLeadSearchBox]").val('');
+                                        return false;
+                                    },
+                                    focus: function(event, ui) {
+                                        $("[id$=externalAttendeeLeadSearchBox]").val(ui.item.Name);
+                                        return false;
+                                    },
+                                    select: function(event, ui) {
+                                        $("[id$=externalAttendeeLeadSearchBox]").val(ui.item.Name);
+                                        $("[id$=externalAttendeeSearchLeadId]").val(ui.item.Id);
+                                        return false;
+                                    }
+                                })
+                                .data('uiAutocomplete')._renderItem = function(ul, item) {
+
+                                    var entry = "<a onclick='$(\"[id$=externalAttendeeLeadSearchBox]\").val(\"\"); addExternalAttendeeFn(\"" + item.Id + "\");'>" + item.Name;
+                                    entry = entry + "</a>";
+                                    var wrapper = "<div>" + entry + "</div>";
+                                    return $("<li></li>")
+                                        .append(wrapper)
+                                        .appendTo(ul);
+                                }
+                            </script>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSection>
+                <!-- Manage SCI External Attendees - End -->
+            </apex:pageBlock>
+            <apex:outputPanel id="dummy"></apex:outputPanel>
+            <!-- Action functions -->
+            <apex:actionFunction id="fetchExistingSCIFn" name="fetchExistingSCIs" action="{!fetchExistingSCIs}" reRender="wizardMain, breadcrumbNav" status="existingSciActionStatus">
+                <apex:param assignTo="{!sciDateText}" name="Date" value="" />
+            </apex:actionFunction>
+            <apex:actionFunction id="setCurrentPageFn" name="setCurrentStep" action="{!setCurrentStep}" status="pageLoadingModal" reRender="wizardBody, breadcrumbNav, setCurrentStep, messages">
+                <apex:param assignTo="{!gotoStepNumber}" name="gotoStepNumber" value="" />
+            </apex:actionFunction>
+            <apex:actionFunction id="addInternalAttendeeFn" name="addInternalAttendeeFn" action="{!addInternalAttendee}" reRender="wizardMain, messages" status="pageLoadingModal">
+                <apex:param assignTo="{!internalAttendeeToAdd}" name="internalAttendeeToAdd" value="" />
+            </apex:actionFunction>
+            <apex:actionFunction id="addExternalAttendeeFn" name="addExternalAttendeeFn" action="{!addExternalAttendee}" reRender="wizardMain, messages" status="pageLoadingModal">
+                <apex:param assignTo="{!externalAttendeeToAdd}" name="externalAttendeeToAdd" value="" />
+            </apex:actionFunction>
+            <apex:actionFunction id="handleOrganizerChangeFn" name="handleOrganizerChangeFn" action="{!handleOrganizerChange}" reRender="wizardMain, messages">
+                <apex:param assignTo="{!organizerId}" name="organizerId" value="" />
+                <apex:param assignTo="{!newAttendeeType}" name="newAttendeeType" value="" />
+            </apex:actionFunction>
+            <apex:actionFunction id="handleAddMeClickFn" name="handleAddMeClickFn" action="{!handleAddMeClick}">
+                <apex:param assignTo="{!addMeToSCIId}" name="addMeToSCIId" value="" />
+            </apex:actionFunction>
+            <apex:actionFunction id="validationFn" name="validationFn" action="{!validate}" reRender="messages"></apex:actionFunction>
+            <apex:actionFunction id="handleParticipationChangeFn" name="handleParticipationChangeFn" action="{!handleParticipationChange}" reRender="wizardMain, messages">
+                <apex:param assignTo="{!participantId}" name="participantId" value="" />
+                <apex:param assignTo="{!newparticipationType}" name="newparticipationType" value="" />
+            </apex:actionFunction>
+            <apex:actionFunction id="toggleRequiredFieldsFn" name="toggleRequiredFieldsFn" action="{!toggleRequiredFields}" immediate="true" reRender="sciInformation">
+                <apex:param assignTo="{!selectedSCIRecordTypeId}" name="selectedSCIRecordTypeId" value="" />
+            </apex:actionFunction>
+            <apex:actionFunction id="togglePartnerAccountFieldFn" name="togglePartnerAccountFieldFn" action="{!togglePartnerAccountField}" immediate="true" reRender="sciInformation">
+                <apex:param assignTo="{!wasPartnerPresentInMeeting}" name="wasPartnerPresentInMeeting" value="" />
+            </apex:actionFunction>
+            <apex:actionFunction id="pageLoadFn" name="pageLoadFn" action="{!pageLoad}" status="pageLoadingModal" reRender="wizardMain, breadcrumbNav, messages"></apex:actionFunction>
+
+            <!-- Loading Modal -->
+            <apex:actionStatus id="pageLoadingModal">
+                <apex:facet name="start">
+                    <!--<div class="pageModalBackdrop">
+                    </div>
+                    <div class="pageLoadingIcon">
+                    </div>-->
+                    <div class="demo-only demo-only demo-only_viewport demo--inverse" style="height:6rem">
+                        <div class="slds-spinner_container slds-is-fixed">
+                            <div role="status" class="slds-spinner slds-spinner_medium slds-spinner_brand">
+                                <span class="slds-assistive-text">Loading</span>
+                                <div class="slds-spinner__dot-a"></div>
+                                <div class="slds-spinner__dot-b"></div>
+                            </div>
+                        </div>
+                    </div>
+                </apex:facet>
+            </apex:actionStatus>
+        </apex:form>
+    </apex:outputPanel>
+    </html>
+</apex:page>

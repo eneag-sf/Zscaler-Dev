@@ -1,0 +1,194 @@
+<!--
+  @File Name          : CreateProposalFromOpportunity.page
+  @Description        : 
+  @Author             : ChangeMeIn@UserSettingsUnder.SFDoc
+  @Group              : 
+  @Last Modified By   : ChangeMeIn@UserSettingsUnder.SFDoc
+  @Last Modified On   : 6/3/2020, 4:25:35 pm
+  @Modification Log   : 
+  Ver       Date            Author      		    Modification
+  1.0    4/3/2020   ChangeMeIn@UserSettingsUnder.SFDoc     Initial Version
+-->
+<apex:page StandardController="Opportunity" extensions="CreateProposalFromOpportunityController" action="{!checkOpportunityReseller}" standardStylesheets="false"  sidebar="false" applyBodyTag="false" ShowHeader="false" docType="html-5.0" applyHtmlTag="false" lightningStyleSheets="true">
+    <apex:form >
+        <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" lang="en">
+            <head>
+                <apex:slds />
+                
+                <style type="text/css">
+                    .slds-div {
+                        white-space: normal !important;
+                    }
+
+                    .float-right {
+                        float: right;
+                    }
+
+                    .float-left {
+                        float: left;
+                    }
+
+                    .handle {
+                        cursor: move;
+                    }
+
+                    .header {
+                        background: rgb(221, 219, 218);
+                    }
+
+                    .header-text {
+                        text-align: left !important;
+                        font-weight: bold !important;
+                    }
+
+                    .button-icon {
+                        text-align: center;
+                    }
+
+                    .messageColor {
+                        color: red;
+                    }
+
+                    .loader-backdrop {
+                        opacity: 0 !important;
+                    }
+
+                    .align-center {
+                        text-align: center!important;
+                    }
+
+                    .align-left {
+                        text-align: left!important;
+                    }
+
+                    .align-right {
+                        text-align: right!important;
+                    }
+
+                    .slds-p_bottom {
+                        padding-bottom: 100px;
+                    }
+
+                    .paddingButton {
+                        padding: 0px 15px !important;
+                        width: fit-content;
+                    }
+
+                    .linkbuttonPadding {
+                        padding-left: 0rem !important;
+                        padding-right: 0rem !important;
+                    }
+
+                    .header-row {
+                        color: #fff !important;
+                    }
+
+                    .slds-button__icon_large {
+                        height: 1.1rem !important;
+                        width: 1.1rem !important;
+                    }
+
+                    .slds-scope .slds-icon-text-error {
+                        fill: rgb(194, 57, 52) !important;
+                    }
+
+                    .ajax-loader {
+                        position: absolute;
+                        left: 50%;
+                        top: 50%;
+                        display: block;
+                    }
+
+                    .slds-scope .slds-select {
+                        padding: 1px 10px;
+                    }
+
+                    .center {
+                        margin: auto;
+                        width: 50%;
+                        padding: 10px;
+                    }
+
+                    .fullWidth {
+                        width: 100%;
+                    }
+
+                    .labelCSS {
+                        padding-top: 5px;
+                        width:100%;
+                    } 
+                </style>
+                
+                <script>
+                </script>
+            </head>
+        
+            <body>
+                
+                <!-- <div class="slds-scope slds-p-top_xx-small" style="padding: 2%;" id="main-content-div">
+                    <div class="slds-align_absolute-center">
+                        <center>
+                            
+                            <apex:outputPanel rendered="{!NOT(hasError)}">
+                                <div class="" >
+                                    <label class="">
+                                        <b> Select Model Type </b>
+                                    </label>
+                                </div>
+                                <div class="slds-form-element__row slds-select_container slds-m-top_small">
+                                    <apex:selectList size="1" value="{!selectedModelType}" styleClass="slds-select" style="width:99%">
+                                        <apex:selectOptions value="{!ModelTypeItems}" />
+                                        <apex:actionSupport action="{!createNewQuote}" reRender="errorpanel" event="onchange" status="status"/>
+                                    </apex:selectList>
+                                </div>
+                            </apex:outputPanel>
+                            <apex:outputPanel id="errorpanel">
+                                <apex:outputPanel rendered="{!hasError}">
+                                    <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error" role="alert">
+                                        <span class="slds-assistive-text">error</span>
+                                        <span class="slds-icon_container slds-icon-utility-error slds-m-right_x-small" >
+                                        <svg class="slds-icon slds-icon_x-small" aria-hidden="true">
+                                            <use xlink:href="{!URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#error')}"></use>
+                                        </svg>
+                                        </span>
+                                        <h2>
+                                            {!errorMessage}
+                                        </h2>
+                                    
+                                    </div>
+                                </apex:outputPanel>
+                            </apex:outputPanel>
+                            <apex:actionStatus id="status" >
+                                <apex:facet name="start">
+                                    <div class="slds-spinner_container">
+                                        <div role="status" class="slds-spinner slds-spinner_medium slds-spinner_brand">
+                                            <span class="slds-assistive-text">Loading</span>
+                                            <div class="slds-spinner__dot-a"></div>
+                                            <div class="slds-spinner__dot-b"></div>
+                                        </div>
+                                    </div>
+                                </apex:facet>
+                            </apex:actionStatus>
+                            <apex:commandButton action="{!doCancel}" value="{!$Label.apttus_proposal__cancel}" immediate="true" styleclass="slds-button slds-button_brand slds-m-top_large"/>
+                        </center>
+                    </div>
+                </div> -->
+                
+                <!--
+                <apex:actionStatus id="status" stopText="">
+                    <apex:facet name="start">
+                        <div class="slds-spinner_container">
+                            <div role="status" class="slds-spinner slds-spinner_medium slds-spinner_brand">
+                                <span class="slds-assistive-text">Loading</span>
+                                <div class="slds-spinner__dot-a"></div>
+                                <div class="slds-spinner__dot-b"></div>
+                            </div>
+                        </div>
+                    </apex:facet>
+                </apex:actionStatus>
+                -->
+           
+            </body>
+        </html>
+    </apex:form>
+</apex:page>

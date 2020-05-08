@@ -1,0 +1,4 @@
+<apex:page standardController="Significant_Customer_Interaction__c" lightningStylesheets="true">
+   <apex:slds />
+  <apex:detail inlineEdit="false" title="true" relatedList="true" relatedListHover="true" />
+</apex:page>

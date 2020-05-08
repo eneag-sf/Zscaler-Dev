@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ApexComponent xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>40.0</apiVersion>
+    <label>QuoteApprovalEmailComponent</label>
+    <packageVersions>
+        <majorNumber>8</majorNumber>
+        <minorNumber>132</minorNumber>
+        <namespace>Apttus_Proposal</namespace>
+    </packageVersions>
+    <packageVersions>
+        <majorNumber>9</majorNumber>
+        <minorNumber>193</minorNumber>
+        <namespace>Apttus_QPConfig</namespace>
+    </packageVersions>
+</ApexComponent>

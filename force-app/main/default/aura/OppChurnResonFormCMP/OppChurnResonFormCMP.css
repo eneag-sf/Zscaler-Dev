@@ -1,0 +1,30 @@
+.THIS .padd_around_4PX{
+    padding:4px !important;
+}
+.THIS .label-hidden > label {
+    /*display: none !important;*/
+}
+.THIS .slds-form-element__label {
+    /*display : none;
+    visibility : hidden;*/
+}
+.THIS .slds-box{
+    border-radius: 0rem !important;
+}
+.THIS .slds-page-header {
+    padding: 0.5rem 1rem !important;
+}
+.THIS .slds-page-header {
+    background-color: #21a0df !important;
+    border-color:#21a0df !important;
+    color:rgb(255, 255, 255) !important;
+    padding: .5rem .75rem !important;
+}
+.THIS .error_field{
+    color:red !important;
+}
+.THIS .icn{ fill: white; }
+.THIS .slds-checkbox {
+    display: inline !important;
+    
+}

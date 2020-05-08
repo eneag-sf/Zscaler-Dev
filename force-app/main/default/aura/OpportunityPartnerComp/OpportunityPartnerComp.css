@@ -1,0 +1,93 @@
+@media (min-width: 48em){
+    .THIS .slds-modal__container {
+        margin: 0 auto;
+        width: 60%;
+        max-width: 50rem;
+        min-width: 20rem;
+    }
+}
+
+.THIS .slds-modal__content {
+    overflow-y: auto;
+    display: inline-table;
+}
+
+.THIS .slds-table_bordered {
+    border-collapse: separate;
+    border-top: 1px solid rgb(217, 219, 221);
+    border-bottom: 1px solid rgb(217, 219, 221);
+    border-right: 1px solid rgb(217, 219, 221);
+    border-left: 1px solid rgb(217, 219, 221);
+}
+
+.THIS .radioButton{
+    box-sizing: border-box;
+    -webkit-appearance: radio !important;
+    padding: 0;
+}
+
+
+/*.THIS .round {
+  position: relative  !important;
+}
+
+.THIS .round label {
+  background-color: #fff !important;
+  border: 1px solid #ccc !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  height: 28px !important;
+  left: 0 !important;
+  position: absolute !important;
+  top: 0 !important;
+  width: 28px !important;
+}
+
+.THIS .round label:after {
+  border: 2px solid #fff !important;
+  border-top: none !important;
+  border-right: none !important;
+  content: "" !important;
+  height: 6px !important;
+  left: 7px !important;
+  opacity: 0 !important;
+  position: absolute !important;
+  top: 8px !important;
+  transform: rotate(-45deg) !important;
+  width: 12px !important;
+}
+
+.THIS .round input[type="checkbox"] {
+  visibility: hidden !important;
+}
+
+.THIS .round input[type="checkbox"]:checked + label {
+  background-color: #66bb6a !important;
+  border-color: #66bb6a !important;
+}
+
+.THIS .round input[type="checkbox"]:checked + label:after {
+  opacity: 1 !important;
+}*/
+
+
+/** ------------ **/
+/*.THIS .input[type="checkbox"] {
+    display: none;
+}
+
+.THIS .input[type="checkbox"] + *:before {
+  content: "";
+  display: inline-block;
+  margin: 0 0.4em;
+  width: .6em;
+  height: .6em;
+  border-radius: 0.6em;
+  box-shadow: 0px 0px 0px .5px #888;
+  background-color: #ddd;
+}
+
+.THIS .input[type="checkbox"]:checked + *:before {
+  box-shadow: 0px 0px 0px .5px #888, inset 0px 0px 0px .14em #ddd;
+  background-color: #444;
+}*/

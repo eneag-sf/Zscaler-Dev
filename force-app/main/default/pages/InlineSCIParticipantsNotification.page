@@ -1,0 +1,7 @@
+<apex:page showHeader="false" sidebar="false" standardStylesheets="false" standardController="Significant_Customer_Interaction__c" extensions="InlineSCIParticipantsNotificationCtrlr">
+    <apex:outputPanel id="addParticipants" rendered="{!hasToAddParticipants}">
+        <div style="background-color: #f2dede; border: 1px solid #ebccd1; border-radius: 3px; color: #a94442; padding: 10px 10px;">
+            <span style="display: inline-block; font-weight: bold; font-family: Arial, Verdana, Helvetica; font-size: 14px; width: 100%; text-align: center;">Add SCI Zscaler Attendee/External Attendee by scrolling down</span>
+        </div>
+    </apex:outputPanel>
+</apex:page>

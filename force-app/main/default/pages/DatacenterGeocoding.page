@@ -1,0 +1,87 @@
+<apex:page showHeader="true" sidebar="true" standardController="Datacenter__c" extensions="DatacenterGeocodingControllerExt" tabStyle="Datacenter__c">
+	<apex:form id="theForm">
+        <apex:pageBlock title="Datacenter Location Geocoding">
+            <apex:outputPanel >
+                <apex:pageMessages />
+            </apex:outputPanel>
+            <apex:outputPanel rendered="{!NOT(ISNULL(record))}">
+                <apex:pageBlockSection collapsible="false" columns="1" title="Datacenter Details">
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel id="labelname" for="street" value="Datacenter Name"></apex:outputLabel>
+                        <apex:outputField id="name" value="{!record.Name}"></apex:outputField>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel id="labelstreet" for="street" value="Street Address"></apex:outputLabel>
+                        <apex:outputField id="street" value="{!record.Facility_Address__c}"></apex:outputField>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem rendered="{!NOT(isGeolocationInvalid)}">
+                        <apex:outputLabel id="labelcity" for="city" value="City"></apex:outputLabel>
+                        <apex:outputField id="city" value="{!record.Facility_City__c}"></apex:outputField>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem rendered="{!isGeolocationInvalid}">
+                        <apex:outputLabel id="labelcityInput" for="city" value="City"></apex:outputLabel>
+                        <apex:inputField id="cityInput" value="{!record.Facility_City__c}"></apex:inputField>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel id="labelstate" for="state" value="State"></apex:outputLabel>
+                        <apex:outputField id="state" value="{!record.Facility_State__c}"></apex:outputField>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel id="labelzipcode" for="zipcode" value="Zip Code"></apex:outputLabel>
+                        <apex:outputField id="zipcode" value="{!record.Facility_ZIP_Code__c}"></apex:outputField>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem rendered="{!NOT(isGeolocationInvalid)}">
+                        <apex:outputLabel id="labelcountry" for="country" value="Country"></apex:outputLabel>
+                        <apex:outputField id="country" value="{!record.Facility_Country__c}"></apex:outputField>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem rendered="{!isGeolocationInvalid}">
+                        <apex:outputLabel id="labelcountryInput" for="country" value="Country"></apex:outputLabel>
+                        <apex:inputField id="countryInput" value="{!record.Facility_Country__c}"></apex:inputField>
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSection>
+                <apex:pageBlockSection collapsible="false" columns="1" title="Datacenter Geolocation" rendered="{!NOT(isGeolocationInvalid)}">
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel id="labellatitude" for="latitude" value="Geo Latitude"></apex:outputLabel>
+                        <apex:outputField id="latitude" value="{!record.Geo_Latitude__c}"></apex:outputField>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel id="labellongitude" for="longitude" value="Geo Longitude"></apex:outputLabel>
+                        <apex:outputField id="longitude" value="{!record.Geo_Longitude__c}"></apex:outputField>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputPanel style="display: flex; justify-content: center;">
+                            <apex:commandButton id="doneBtn" value="Done" action="{!cancel}"></apex:commandButton>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSection>
+                <apex:pageBlockSection collapsible="false" columns="1" title="Datacenter Geolocation Override" rendered="{!AND(isGeolocationInvalid, showManualGeolocationOverridePanel)}">
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel id="labellatitudeInput" for="latitudeInput" value="Geo Latitude"></apex:outputLabel>
+                        <apex:inputText id="latitudeInput" value="{!record.Geo_Latitude__c}"></apex:inputText>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel id="labellongitudeInput" for="longitudeInput" value="Geo Longitude"></apex:outputLabel>
+                        <apex:inputText id="longitudeInput" value="{!record.Geo_Longitude__c}"></apex:inputText>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputPanel style="display: flex; justify-content: center;">
+                            <apex:commandButton id="saveBtn" action="{!saveGeolocation}" value="Save Geolocation" rerender="theForm"></apex:commandButton>
+                            <apex:commandButton id="cancelBtn2" value="Cancel" action="{!cancel}"></apex:commandButton>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSection>
+                <apex:pageBlockSection rendered="{!AND(isGeolocationInvalid, NOT(showManualGeolocationOverridePanel))}" collapsible="false" showHeader="false" columns="1">
+                    <apex:pageBlockSectionItem rendered="{!isGeolocationInvalid}">
+                        <apex:outputPanel style="display: flex; justify-content: center;">
+                            <apex:commandButton id="fetchGeolocBtn" value="Fetch Geolocation" action="{!fetchGeolocation}" rerender="theForm"></apex:commandButton>
+                            <apex:commandButton id="cancelBtn" value="Cancel" action="{!cancel}"></apex:commandButton>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSection>
+            </apex:outputPanel>
+            <apex:outputPanel rendered="{!ISNULL(record)}">
+                An error occurred. <a href="#" onclick="window.history.back();">Click here</a> to go back.
+            </apex:outputPanel>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

@@ -1,0 +1,17 @@
+<apex:page showHeader="true" sidebar="true" standardStylesheets="false">
+    <apex:includeLightning />
+    <div id="OppChurnReasonFormId" />
+    <script>
+        $Lightning.use("c:OppChurnResonFormAPP", function() {
+            $Lightning.createComponent("c:OppChurnResonFormCMP",
+            { 
+                "recordId" : "{!$CurrentPage.parameters.cid}",
+                "oppId" : "{!$CurrentPage.parameters.oppId}"
+            },
+            "OppChurnReasonFormId",
+            function(cmp) {
+                console.log('Component created, do something cool here');
+            });
+        });
+    </script>
+</apex:page>

@@ -1,0 +1,289 @@
+<apex:page showHeader="false" sidebar="false" controller="RepriceApttusProposalsController">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.nicescroll/3.6.0/jquery.nicescroll.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.11/angular.min.js" type="text/javascript"></script>
+<script src="https://npmcdn.com/tether@1.2.4/dist/js/tether.min.js"></script>
+<script src="https://npmcdn.com/bootstrap@4.0.0-alpha.5/dist/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.5/js/bootstrap.min.js" type="text/javascript">
+</script>
+<script>
+
+        (function() {
+            'use strict';
+            var repriceProposalApp= angular.module('repriceProposalApp', []);
+
+            repriceProposalApp.controller('repriceProposalController' ,['$scope', '$rootScope', '$q','$timeout', '$window', '$filter', '$location', function($scope, $rootScope, $q, $timeout, $window, $filter, $location){
+                $rootScope.message = 'The cart is being repriced to reflect the new partner. Please check the ACV and TCV of the quote once this process completes.';
+                $rootScope.isProcessing = false;
+                $rootScope.proposalIds = [];
+                $scope.redirect = true;
+                $rootScope.index = 0;
+                $scope.proposalInfo = new Object();
+                $scope.proposalRepriceReport = new Object();
+
+                // Get the list of proposal ids from the text
+                var queryString = $window.location.href.split('?')[1];
+                var queryStringParams = queryString.split('&');
+                var queryStringMap = new Object();
+                for (var i = 0; i < queryStringParams.length; i++) {
+                    var key = queryStringParams[i].split('=')[0];
+                    var value = queryStringParams[i].split('=')[1];
+                    queryStringMap[key] = value;
+                }
+                var proposalIdsToValidate = queryStringMap['proposalIds'].split('|') || [];
+
+                // Define the event listeners
+                $rootScope.$on('ChangeProcessingStatus', function(event, status) {
+                    $rootScope.isProcessing = status || false;
+                }, $scope);
+
+                $rootScope.$on('RepriceNextProposal', function(event, index) {
+                    if ($rootScope.proposalIds[index] != undefined) {
+                        $scope.createCartForProposal($scope.proposalRepriceReport[$rootScope.proposalIds[index]]);
+                    }
+                });
+
+                $rootScope.$on('RepriceCart', function(event, cartId) {
+                    if (cartId != undefined) {
+                        // $scope.repriceAndFinalizeProposal($rootScope.proposalIds[index]);
+                    }
+                });
+
+                // Helper to call Apex methods
+                $scope.callRemote = function(serviceName, parameters, callback, config) {
+                    if(parameters == null) {
+                        parameters = [];
+                    }
+                    var callbackWrap = function(result, event) {
+                        var callbackResponse = '';
+                        if(event.status) {
+                            callbackResponse = { 'result': result, 'error': false, 'errorMessage': '' };
+                        } else {
+                            var errorMessage = '';
+                            if (event.type === 'exception') {
+                                errorMessage += event.message + ". " + event.where + ".";
+                            } else {
+                                errorMessage += event.message;
+                            }
+
+                            callbackResponse = { 'result': '', 'error': true, 'errorMessage': errorMessage };
+                        }
+
+                        callback.call($scope, callbackResponse);
+                    };
+                    parameters.push(callbackWrap);
+                    if(config) {
+                        parameters.push(config);
+                    }
+                    try {
+                        serviceName.apply($scope, parameters);
+                    } catch(e) {
+                        callbackWrap(null, {status: false});
+                    }
+                };
+
+                $scope.getAllProposalIdsToReprice = function() {
+                    var deferred = $q.defer();
+                    $scope.callRemote(RepriceApttusProposalsController.getAllProposalIdsToReprice, [proposalIdsToValidate], function(result) {
+                        deferred.resolve(result);
+                    });
+                    return deferred.promise;
+                }
+
+                $scope.createCartForProposalPromise = function(proposalId) {
+                    var deferred = $q.defer();
+                    $scope.callRemote(RepriceApttusProposalsController.createCartForProposal, [proposalId], function(result) {
+                        deferred.resolve(result);
+                    });
+                    return deferred.promise;
+                }
+
+                $scope.updateCartLinesPricingStatusPromise = function(cartId) {
+                    var deferred = $q.defer();
+                    $scope.callRemote(RepriceApttusProposalsController.updateCartLinesPricingStatus, [cartId], function(result) {
+                        deferred.resolve(result);
+                    });
+                    return deferred.promise;
+                }
+
+                $scope.updatePricingFieldsPromise = function(cartId) {
+                    var deferred = $q.defer();
+                    var cartToUpdateId = cartId;
+                    $scope.callRemote(RepriceApttusProposalsController.updatePricingFields, [cartToUpdateId], function(result) {
+                        deferred.resolve(result);
+                    });
+                    return deferred.promise;
+                }
+
+                $scope.repriceCartPromise = function(cartId) {
+                    var deferred = $q.defer();
+                    $scope.callRemote(RepriceApttusProposalsController.repriceCart, [cartId], function(result) {
+                        deferred.resolve(result);
+                    });
+                    return deferred.promise;
+                }
+
+                $scope.finalizeCartPromise = function(cartId) {
+                    var deferred = $q.defer();
+                    $scope.callRemote(RepriceApttusProposalsController.finalizeCart, [cartId], function(result) {
+                        deferred.resolve(result);
+                    });
+                    return deferred.promise;
+                }
+
+                $scope.redirectToProposal = function(proposalId) {
+                    /*$timeout(function() {
+                        $window.location.href = '/' + proposalId;
+                    }, 5000);*/
+                    $timeout(function() {
+                        // $scope.callRemote(RepriceApttusProposalsController.navigatetoURL, [proposalId], function(result) {
+                        // });
+                        navigatetoURL();
+                    }, 5000);
+
+                }
+
+                // Methods to process each step
+                $scope.createCartForProposal = function(proposalInfo) {
+                    $rootScope.message = 'In progress... Creating a new cart to reprice.';
+                    proposalInfo.repriceStatus = 'In progress';
+                    proposalInfo.repriceReason = 'Creating a new cart for the proposal.';
+                    $scope.createCartForProposalPromise(proposalInfo.Id).then(function(callbackResponse){
+                        var cartId = callbackResponse.result;
+                        if (cartId != undefined) {
+                            proposalInfo.cartId = cartId;
+                            $scope.updateCartLinesPricingStatus(proposalInfo);
+                        }
+                    });
+                }
+
+                $scope.updateCartLinesPricingStatus = function(proposalInfo) {
+                    $rootScope.message = 'In progress... Updating the line items\' pricing status.';
+                    proposalInfo.repriceStatus = 'In progress';
+                    proposalInfo.repriceReason = 'Updated pricing status for line items. Pending update pricing fields call.';
+                    $scope.updateCartLinesPricingStatusPromise(proposalInfo.cartId).then(function(callbackResponse) {
+                        var isComplete = callbackResponse.result;
+                        if (isComplete != undefined && isComplete == true) {
+                            $scope.updatePricingFields(proposalInfo);
+                        };
+                    });
+                }
+
+                $scope.updatePricingFields = function(proposalInfo) {
+                    $rootScope.message = 'In progress... Updating the list price for all line items';
+                    proposalInfo.repriceStatus = 'In progress';
+                    proposalInfo.repriceReason = 'Updated pricing fields for line items. Pending to reprice.';
+                    $scope.updatePricingFieldsPromise(proposalInfo.cartId).then(function(callbackResponse) {
+                        var isUpdatePricingFieldsPending = callbackResponse.result;
+                        if (isUpdatePricingFieldsPending != undefined && isUpdatePricingFieldsPending == false) {
+                            $scope.repriceCart(proposalInfo);
+                        } else if (isUpdatePricingFieldsPending == true) {
+                            $scope.updatePricingFields(proposalInfo);
+                        }
+                    });
+                }
+
+                $scope.repriceCart = function(proposalInfo) {
+                    proposalInfo.repriceStatus = 'In progress';
+                    proposalInfo.repriceReason = 'Updated pricing fields for line items. Pending to reprice.';
+                    $rootScope.message = 'In progress... Repricing the cart with the new list prices.';
+                    $scope.repriceCartPromise(proposalInfo.cartId).then(function(callbackResponse) {
+                        var isRepricePending = callbackResponse.result;
+
+                        if (isRepricePending != undefined && isRepricePending == false) {
+                            $scope.finalizeCart(proposalInfo);
+                        } else if (isRepricePending == true) {
+                            $scope.repriceCart(proposalInfo);
+                        }
+                    });
+                }
+
+                $scope.finalizeCart = function(proposalInfo) {
+                    proposalInfo.repriceStatus = 'In progress';
+                    proposalInfo.repriceReason = 'Repricing complete. Pending to finalize.';
+                    $rootScope.message = 'In progress... Finalizing the cart.';
+
+                    $scope.finalizeCartPromise(proposalInfo.cartId).then(function(callbackResponse) {
+                        if (!callbackResponse.error) {
+                            proposalInfo.repriceStatus = 'Success';
+                            proposalInfo.repriceReason = 'Successfully repriced the cart';
+                            $rootScope.message = 'Completed... Successfully repriced and finalized the cart.';
+                            $rootScope.$emit('ChangeProcessingStatus', false);
+
+                            if ($scope.redirect == true) {
+                                $scope.redirectToProposal(proposalInfo.Id);
+                            } else {
+                                $rootScope.index++;
+                                $rootScope.$emit('RepriceNextProposal', $rootScope.index);
+                            }
+                        } else {
+                            proposalInfo.repriceStatus = 'Failed';
+                            proposalInfo.repriceReason = 'Failed to finalize the cart. ' + callbackResponse.errorMessage;
+                            $rootScope.$emit('ChangeProcessingStatus', false);
+                        }
+                    });
+                }
+
+                // Starting point of execution
+                $scope.getAllProposalIdsToReprice().then(function(callbackResponse) {
+                    $rootScope.proposalIds = callbackResponse.result;
+                    $scope.redirect = $rootScope.proposalIds.length > 1 ? false : true;
+
+                    $.each($rootScope.proposalIds, function(index) {
+                        var proposalInfo = new Object();
+                        proposalInfo['Id'] = $rootScope.proposalIds[index];
+                        proposalInfo['cartId'] = '';
+                        proposalInfo['repriceStatus'] = 'Pending';
+                        proposalInfo['repriceReason'] = '';
+
+                        $scope.proposalRepriceReport[proposalInfo.Id] = proposalInfo;
+                    }, this);
+
+                    $rootScope.$emit('RepriceNextProposal', $rootScope.index);
+                });
+            }]);
+        }());
+</script>
+<style>
+    .modal-backdrop {
+        background-color: rgba(255,255,255,0.75);
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        width: 100%;
+        height: 100%;
+    }
+
+    .loading-modal {
+        position: relative;
+        height: 300px;
+        width: 500px;
+        top: 20%;
+        background: url({!$Resource.loadingimg}) 50% 0 no-repeat;
+        margin: 0 auto;
+        padding-top: 60px;
+        text-align: center;
+        font-family: Verdana, Geneva, sans-serif;
+    }
+
+</style>
+<body ng-app="repriceProposalApp" ng-controller="repriceProposalController" ng-cloak='True' id="mainbody">
+
+        <!-- <div>
+            <div ng-repeat="proposal in proposalRepriceReport">
+                {{proposal.Id}}, {{proposal.cartId}}, {{proposal.repriceStatus}}, {{proposal.repriceReason}}
+            </div>
+        </div> -->
+
+        <div id="loading-backdrop" class="modal-backdrop">
+            <div id="loading-message-block" class="loading-modal">
+                {{message}}
+            </div>
+        </div>
+    <apex:form >
+        <apex:actionFunction id="navigatetoURL" name="navigatetoURL" action="{!navigatetoURL}">
+        </apex:actionFunction>
+    </apex:form>
+</body>
+</apex:page>

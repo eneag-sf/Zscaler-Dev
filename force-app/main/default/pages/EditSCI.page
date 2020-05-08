@@ -1,0 +1,3 @@
+<apex:page showHeader="true" sidebar="true" standardController="Significant_Customer_Interaction__c" extensions="EditSCIController" action="{!pageLoad}">
+	<apex:messages />
+</apex:page>

@@ -1,0 +1,70 @@
+<apex:page standardController="Opportunity" extensions="ApttusSelectPriceListController" showHeader="true" sidebar="true">
+    <apex:pageMessages />
+    <apex:form >
+        <div style="width: 100%; background-color: #E7E6E6; padding: 20px 0px;">
+            <div style="display: flex; align-items: center; width: 500px; margin: 0 auto;">
+                <apex:outputLabel value="Select Price List:" for="selectPriceList" style="float: left; margin-right: 10px; font-size: 1.2em; font-weight: bold;"></apex:outputLabel>
+                <apex:selectList id="selectPriceList" value="{!selectedPriceListId}" size="1" multiselect="false" style="float: left; line-height: 18px">
+                    <apex:selectOptions value="{!PriceLists}"></apex:selectOptions>
+                </apex:selectList>&nbsp;&nbsp;&nbsp;
+                <apex:commandButton value="Select" action="{!proceed}" style="float: left; font: 1.2em;"></apex:commandButton>&nbsp;
+                <apex:commandButton value="Cancel" action="{!cancel}" style="float: left; font: 1.2em;"></apex:commandButton>
+            </div>
+            <br/>
+            <apex:outputPanel rendered="{!isPriceListSwitchMode}">
+                <div style="font-weight: bold; text-align: center; color: red; font-family: Arial,Helvetica,sans-serif">Note : If you are switching the price list after you configured and priced a quote, you will loose the configuration.<br/>Best Practice is to start with a new quote.</div>
+            </apex:outputPanel>
+        </div>
+        <br />
+        
+        <apex:outputPanel rendered="{!isAdmin}">
+            <div style="width: 100%; display: flex;">
+                <div style="margin-right: 10px; background: #E7E6E6; padding: 15px;">
+                    <div>
+                        <span style="font-size: 1.5em; font-weight: bold; text-decoration: underline; font-family: Arial,Helvetica,sans-serif">When Should I use the FY2020 Price List</span>
+                        <ol style="font-size: 1.2em; padding: 0px">
+                            <li>New Business : Best practice is to Use the FY2020 Price list for all New Deals.</li>
+                            <li>Upsell : If the customer is open to migrate to the new bundles, Use the FY2020 price list.</li>
+                            <li>Renewals : It is encouraged to migrate the customer to the new bundles at the time of renewal. If your customer is open to that, please use the FY2020 Price List. </li>
+                        </ol>
+                    </div>
+                </div>
+                <div style="margin-left: 10px; background: #E7E6E6; padding: 15px;">
+                    <div>
+                        <span style="font-size: 1.5em; font-weight: bold; text-decoration: underline; font-family: Arial,Helvetica,sans-serif">When Should I use the FY2017 Price List</span>
+                        <ol style="font-size: 1.2em; padding: 0px">
+                            <li>New Business : Use the FY2017 price list only if you have already issued pricing before Aug 2017.</li>
+                            <li>Upsell : If you are just upselling seats or up-selling features/modules a la carte or the customer has no intention to migrate to new bundles as part of this sale then Use the FY2017 price list.</li>
+                            <li>Renewals : Use the the FY2017 price list if the customer is not ready to migrate to the new bundle offering at the time of renewal.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </apex:outputPanel>
+        <apex:outputPanel rendered="{!!isAdmin}">
+            <div style="width: 100%; display: flex;">
+                <div style="width: 100%; background: #E7E6E6; padding: 15px;">
+                    <div>
+                        <span style="font-size: 1.5em; font-weight: bold; text-decoration: underline; font-family: Arial,Helvetica,sans-serif">When Should I use the FY2020 Price List</span>
+                        <ol style="font-size: 1.2em; padding: 0px">
+                            <li>New Business : Best practice is to Use the FY2020 Price list for all New Deals.</li>
+                            <li>Upsell : If the customer is open to migrate to the new bundles, Use the FY2020 price list.</li>
+                            <li>Renewals : It is encouraged to migrate the customer to the new bundles at the time of renewal. If your customer is open to that, please use the FY2020 Price List. </li>
+                        </ol>
+                    </div>
+                </div>
+            </div> 
+        </apex:outputPanel>
+        
+        <!-- <apex:pageBlock>
+            <apex:pageBlockSection columns="2" collapsible="false">
+                <apex:pageBlockSectionItem>
+                   
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem>
+                    
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+        </apex:pageBlock> -->
+    </apex:form>
+</apex:page>

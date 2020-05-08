@@ -1,0 +1,197 @@
+<apex:page controller="Confirm_Reprice_controller" docType="html-5.0" action="{!init}">
+    
+    <apex:slds />
+    <apex:form >
+        <apex:outputPanel rendered="{!isReprice}">
+            <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_info slds-text-heading_small"
+                 role="alert">
+                <span class="slds-assistive-text">info</span>
+                <span class="slds-icon_container slds-icon-utility-user slds-m-right_x-small" title="Info">
+                    <svg class="slds-icon slds-icon_x-small" aria-hidden="true">
+                        <use xmlns:xlink="http://www.w3.org/1999/xlink"
+                             xlink:href="/icons/utility-sprite/svg/symbols.svg#user"></use>
+                    </svg>
+                </span>
+                <h1>This Quote needs to be repriced to reflect the new pricing for {!pricelistApplied}. Click confirm to reprice
+                    or click Cancel to go back to the quote.</h1>
+            </div><br /><br />
+        </apex:outputPanel>
+        <apex:outputPanel rendered="{!iscoSellmodified}">
+            <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_info slds-text-heading_small"
+                 role="alert">
+                <span class="slds-assistive-text">info</span>
+                <span class="slds-icon_container slds-icon-utility-user slds-m-right_x-small" title="Info">
+                    <svg class="slds-icon slds-icon_x-small" aria-hidden="true">
+                        <use xmlns:xlink="http://www.w3.org/1999/xlink"
+                             xlink:href="/icons/utility-sprite/svg/symbols.svg#user"></use>
+                    </svg>
+                </span>
+                <h1>This Quote needs to be repriced because atleast one of the margin partners was changed on the opportunity. Click confirm to reprice or click Cancel to go back to the quote.</h1>
+            </div><br /><br />
+        </apex:outputPanel>
+        <apex:outputPanel rendered="{!isSwitchPL}">
+            <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_info slds-text-heading_small"
+                 role="alert">
+                <span class="slds-assistive-text">info</span>
+                <span class="slds-icon_container slds-icon-utility-user slds-m-right_x-small" title="Info">
+                    <svg class="slds-icon slds-icon_x-small" aria-hidden="true">
+                        <use xmlns:xlink="http://www.w3.org/1999/xlink"
+                             xlink:href="/icons/utility-sprite/svg/symbols.svg#user"></use>
+                    </svg>
+                </span>
+                <h1>This opportunity uses a prices list that has legacy Suites. The Suites are no longer available for
+                    sale. Click on 'Migrate to Bundles' to start your renewal quoting. By clicking 'Migrate to Bundles'
+                    you will lose all the lines in the cart.</h1>
+            </div><br />
+            <br />
+            <article class="slds-card">
+                <div class="slds-card__header slds-grid">
+                    <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                        
+                        <div class="slds-media__body">
+                            <h2 class="slds-card__header-title">
+                                <a href="javascript:void(0);" class="slds-card__header-link slds-truncate">
+                                    <span>Current Cart Lines</span>
+                                </a>
+                                <span onclick="assignlist('{!quoteId}', '{!accountId}');return false;" title="download">
+                                    <img src="{!URLFOR($Resource.ZForecasting, 'img/Export_to_Excel.png')}"
+                                         style="width: 27px; height: 30px;" />
+                                </span>
+                            </h2>
+                        </div>
+                    </header>
+                </div>
+                <div class="slds-card__body slds-card__body_inner">
+                    <apex:dataTable value="{!proposalLineItemList}" rendered="{!proposalLineItemList.size > 0}"
+                                    var="var" styleclass="slds-table slds-table--bordered">
+                        <apex:column value="{!Var.Product_Name__c}" headerValue="Product Name" />
+                        <apex:column value="{!Var.APTS_Product_Code__c}" headerValue="SKU" />
+                        <apex:column headerValue="Base Price">
+                            <apex:outputText value="{0, number,currency}">
+                                <apex:param value="{!var.Apttus_QPConfig__BasePrice__c}" />
+                            </apex:outputText>
+                        </apex:column>
+                        <apex:column value="{!var.APTS_Quantity__c}" headerValue="Quantity" />
+                        <apex:column value="{!var.Apttus_QPConfig__StartDate__c}" headerValue="Start Date" />
+                        <apex:column value="{!var.Apttus_QPConfig__EndDate__c}" headerValue="End Date" />
+                        <apex:column value="{!var.Term_to_Show__c}" headerValue="Term" />
+                        <apex:column value="{!var.APTS_Base_Price_override__c}" headerValue="List Price" />
+                        <!--<apex:column value="{!var.APTS_Partner_Disc__c}" headerValue="Partner Disc" />
+<apex:column value="{!var.APTS_Deal_Reg_Disc__c}" headerValue="Deal Reg Disc" />
+<apex:column value="{!var.APTS_New_Logo_Disc__c}" headerValue="New Logo Disc" />
+<apex:column value="{!var.Apttus_QPConfig__AdjustmentType__c}" headerValue="Adjustment Type" />
+<apex:column value="{!var.APTS_Manual_Discount__c}" headerValue="Adjustment" />-->
+                        <apex:column value="{!var.APTS_Total_Discount_Percentage__c}" headerValue="Total Discount" />
+                        <apex:column value="{!var.APTS_Net_Price__c}" headerValue="Net Price" />
+                        <apex:column value="{!var.APTS_ACV__c}" headerValue="ACV" />
+                        <apex:column value="{!var.APTS_MRR__c}" headerValue="MRR" />
+                    </apex:dataTable>
+                </div>
+            </article>
+            <!--<br />
+<br />
+<article class="slds-card">
+<div class="slds-card__header slds-grid">
+<header class="slds-media slds-media_center slds-has-flexi-truncate">
+
+<div class="slds-media__body">
+<h2 class="slds-card__header-title">
+<a href="javascript:void(0);" class="slds-card__header-link slds-truncate">
+<span>Install Base</span>
+</a>
+</h2>
+</div>
+</header>
+</div>
+<!--<div class="slds-card__body slds-card__body_inner">
+<apex:dataTable value="{!assetLineItemList}" rendered="{!assetLineItemList.size > 0}"
+var="var" styleclass="slds-table slds-table--bordered">
+<apex:column value="{!Var.Product_Name__c}" headerValue="Product Name"/>
+<apex:column value="{!Var.Product_Code__c}" headerValue="SKU"/>
+<apex:column headerValue="Quantity">
+<apex:outputText value="{0, number}">
+<apex:param value="{!var.Apttus_Config2__Quantity__c}" />
+</apex:outputText>
+</apex:column>
+<apex:column value="{!var.Apttus_Config2__StartDate__c}" headerValue="Start Date"/>
+<apex:column value="{!var.Apttus_Config2__EndDate__c}" headerValue="End Date"/>
+<apex:column value="{!var.Term_to_Show__c}" headerValue="Term"/>
+<apex:column value="{!var.APTS_Partner_Disc__c}" headerValue="Partner Disc"/>
+<apex:column value="{!var.APTS_Deal_Reg_Disc__c}" headerValue="Deal Reg Disc"/>
+<apex:column value="{!var.APTS_New_Logo_Disc__c}" headerValue="New Logo Disc"/>
+<apex:column value="{!var.Adjustment_Type__c}" headerValue="Adjustment Type"/>
+<apex:column value="{!var.Adjustment_Amount__c}" headerValue="Adjustment"/>
+<apex:column value="{!var.APTS_Total_Discount_Percentage__c}" headerValue="Total Discount"/>
+<apex:column value="{!var.Apttus_Config2__NetPrice__c}" headerValue="Net Price"/>
+<apex:column value="{!var.APTS_ACV__c}" headerValue="ACV"/>
+<apex:column value="{!var.APTS_MRR__c}" headerValue="MRR"/>
+</apex:dataTable>
+</div>
+</article>-->
+            
+            <br />
+            <br />
+        </apex:outputPanel>
+        <apex:outputPanel rendered="{!isOldDas}">
+            <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_info slds-text-heading_small"
+                 role="alert">
+                <span class="slds-assistive-text">info</span>
+                <span class="slds-icon_container slds-icon-utility-user slds-m-right_x-small" title="Info">
+                    <svg class="slds-icon slds-icon_x-small" aria-hidden="true">
+                        <use xmlns:xlink="http://www.w3.org/1999/xlink"
+                             xlink:href="/icons/utility-sprite/svg/symbols.svg#user"></use>
+                    </svg>
+                </span>
+                <h1>This Quote contains the Old DAS SKUs which is no longer supported. Please modify your cart to include the new deployment services</h1>
+            </div><br /><br />
+        </apex:outputPanel>
+        <apex:outputPanel rendered="{!isPartnerProgramMismatch}">
+            <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_info slds-text-heading_small"
+                 role="alert">
+                <span class="slds-assistive-text">info</span>
+                <span class="slds-icon_container slds-icon-utility-user slds-m-right_x-small" title="Info">
+                    <svg class="slds-icon slds-icon_x-small" aria-hidden="true">
+                        <use xmlns:xlink="http://www.w3.org/1999/xlink"
+                             xlink:href="/icons/utility-sprite/svg/symbols.svg#user"></use>
+                    </svg>
+                </span>
+                
+                <!-- Asana task : 4 -- Viral -->
+                <!-- <h1>This quote is configured with a partner program which is no longer valid for this deal. Please modify your cart to configure as per current partner program.</h1> -->
+                <h1>Please modify your cart to configure as per current partner program. Please modify the partner program type at the opportunity partner section by following the below steps.</h1>
+            </div><br /><br />
+            
+            
+            <!-- Asana task : 4 -- Viral -->
+            <div class="slds-text-align_center">
+                <apex:image id="theImage" value="{!$Resource.PartnerProgramMismatch}" width="800" height="700"/>
+            </div>
+            
+        </apex:outputPanel>
+        <div class="slds-align_absolute-center">
+            <apex:commandButton rendered="{!or(isReprice, iscoSellmodified)}" action="{!onConfirm}" value="Confirm"
+                                styleclass="slds-button slds-button_brand"></apex:commandButton>
+            <apex:commandButton rendered="{!isSwitchPL}" action="{!onSwitchPL}" value="Migrate to Bundles"
+                                styleclass="slds-button slds-button_brand"></apex:commandButton>
+            <apex:commandButton rendered="{!isPartnerProgramMismatch}" action="{!partnerprogSwitch}" value="Configure Cart"
+                                styleclass="slds-button slds-button_brand"></apex:commandButton>
+            <apex:commandButton rendered="{!isOldDas}" action="{!taketoCart}" value="Configure"
+                                styleclass="slds-button slds-button_brand"></apex:commandButton>
+            <apex:commandButton action="{!onCancel}" value="Cancel" styleclass="slds-button slds-button_neutral">
+            </apex:commandButton>
+        </div>
+    </apex:form>
+    <form id="exporttoexcel" method="POST" action="Proposal_Lines_Export_to_Excel">
+        <input id="quoteId" type="hidden" name="payload" />
+        <input id="accId" type="hidden" name="accId" />
+    </form>
+    <script> function sendform() { document.getElementById('exporttoexcel').submit(); }
+    
+    function assignlist(quoteId, accId) {
+        console.log(quoteId);
+        document.getElementById("quoteId").value = quoteId;
+        document.getElementById("accId").value = accId;
+        sendform();
+    }
+    </script>
+</apex:page>

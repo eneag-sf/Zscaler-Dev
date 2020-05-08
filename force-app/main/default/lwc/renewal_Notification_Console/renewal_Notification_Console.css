@@ -1,0 +1,20 @@
+.greyOut {
+  background: #f1f1f1;
+}
+
+.ContentWrapper {
+  border-top: 3px solid #1797c0;
+  border-left: 1px solid grey;
+  border-right: 1px solid grey;
+  border-bottom: 1px solid grey;
+}
+
+.addContactListHolder, .addExtentionHolder, .addNewContactHolder{
+    position: relative;
+    display: inline-block;
+    width: -webkit-fill-available;
+}
+
+.notifyModal{
+  max-width: 70rem !important;
+}

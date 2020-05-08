@@ -1,0 +1,52 @@
+<apex:page standardController="PatchTeam__c" extensions="PatchTeamAssignController" showHeader="false">
+    <apex:includeScript value="{!URLFOR($Resource.Patches, 'js/jquery.min.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.Patches, 'js/angular.min.js')}" />
+    <script>
+        var spApp = angular.module('spPatchTeamAssign', []);
+        spApp.controller('spPatchTeamAssignCtrl', function($scope, $window) {
+            $scope.patches = {!Patches};
+            $scope.checkAll = function() {
+                $("#patchList input[type='checkbox']").prop("checked", $("#topCkb").prop("checked"));
+            };
+            $scope.save = function() {
+                var result = "";
+                for(var i = 0; i < $scope.patches.length; i++) {
+                    if($scope.patches[i].checked) {
+                        result += $scope.patches[i].patchId + ",";
+                    }
+                }
+                $("input[id$='patchSelected']").val(result);
+                savePatch();
+            };
+        });
+        if({!succeeded} == true) {
+            opener.location = "/{!PatchTeam__c.Id}";
+            window.setTimeout("top.close()", 3000);
+        }
+    </script>
+    <apex:sectionHeader title="Assign Team to Patches" subtitle="{!PatchTeam__c.name}" />
+    <apex:form html-ng-app="spPatchTeamAssign" html-ng-controller="spPatchTeamAssignCtrl">
+        <apex:pageMessages />
+        <apex:pageBlock >
+            <apex:pageBlockButtons >
+                <input type="button" class="btn" value="Assign to Selected Patches" ng-click="save()" />
+                <input type="button" class="btn" value="Cancel" onclick="top.close()" />
+                <apex:actionFunction name="savePatch" action="{!save}"/>
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection columns="1"> 
+                <input type="text" style="width:200px;margin-bottom:5px" ng-model="keyword" placeholder="Search"/>
+                <table class="list" cellpadding="0" cellspacing="0" id="patchList">
+                    <tr class="headerRow">
+                        <th class="headerRow" style="width:25px"><input type="checkbox" ng-click="checkAll()" id="topCkb" /></th>
+                        <th class="headerRow">Patch Name</th>
+                    </tr>
+                    <tr class="dataRow" ng-repeat="p in patches | filter: keyword | limitTo : 500">
+                        <td class="dataCell"><input type="checkbox" ng-model="p.checked" value="{{p.patchId}}"/></td>
+                        <td class="dataCell">{{p.patchName}}</td>
+                    </tr>
+                </table>
+                <apex:inputHidden id="patchSelected" value="{!patchesToAssign}"/>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

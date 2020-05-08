@@ -1,0 +1,52 @@
+<apex:page showHeader="false" sidebar="false" title="FY20 EMEA Setup">
+	<GBLite:TabbedPageComponent pageAPIName="GBTabs_FY20_EMEA_Setup" customJsIds="" customCssIds="">
+	<GBLite:EmbedComponent baseGridUrl="{!$Page.GBLite__Grid}" />
+		<script>
+			var pageDefinition = {
+	"name": "FY20 EMEA Setup",
+	"tabs": [
+		{
+			"name": "Territory Grid",
+			"content": "{!gridPage}gname=FY20 Territory Planning EMEA&amp;sh=0&amp;sfname=default",
+			"id": 1558688689303
+		},
+		{
+			"name": "CEUR Account Assignment",
+			"content": "{!gridPage}gname=FY20 Assignment - CEUR&amp;sh=0&amp;sfname=default",
+			"id": 1558689806728
+		},
+		{
+			"name": "UKI Account Assignment",
+			"content": "{!gridPage}gname=FY20 Assignment - UKI&amp;sh=0&amp;sfname=default",
+			"id": 1558689829055
+		},
+		{
+			"name": "NEUR Account Assignment",
+			"content": "{!gridPage}gname=FY20 Assignment - NEUR&amp;sh=0&amp;sfname=default",
+			"id": 1558689839870
+		},
+		{
+			"name": "SEUR Account Assignment",
+			"content": "{!gridPage}gname=FY20 Assignment - SEUR&amp;sh=0&amp;sfname=default",
+			"id": 1558689852279
+		},
+		{
+			"name": "GB Account Assignment",
+			"content": "{!gridPage}gname=FY20 Assignment - GB - EMEA&amp;sh=0&amp;sfname=default",
+			"id": 1558716001630
+		}
+	],
+	"id": 1558688689303,
+	"selectedCustomCSSIds": [],
+	"selectedCustomJSIds": [],
+	"description": "",
+	"globalButtons": true,
+	"object": "0",
+	"height": "800",
+	"showHeader": false,
+	"showSidebar": false,
+	"pageAPIName": "GBTabs_FY20_EMEA_Setup"
+};
+		</script>
+	</GBLite:TabbedPageComponent>
+</apex:page>

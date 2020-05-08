@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>38.0</apiVersion>
+    <packageVersions>
+        <majorNumber>10</majorNumber>
+        <minorNumber>491</minorNumber>
+        <namespace>Apttus</namespace>
+    </packageVersions>
+    <packageVersions>
+        <majorNumber>11</majorNumber>
+        <minorNumber>1675</minorNumber>
+        <namespace>Apttus_Config2</namespace>
+    </packageVersions>
+    <packageVersions>
+        <majorNumber>9</majorNumber>
+        <minorNumber>206</minorNumber>
+        <namespace>Apttus_Proposal</namespace>
+    </packageVersions>
+    <packageVersions>
+        <majorNumber>11</majorNumber>
+        <minorNumber>312</minorNumber>
+        <namespace>Apttus_QPConfig</namespace>
+    </packageVersions>
+    <status>Active</status>
+</ApexClass>

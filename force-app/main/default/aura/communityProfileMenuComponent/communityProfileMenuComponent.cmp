@@ -1,0 +1,26 @@
+<aura:component
+    implements="forceCommunity:profileMenuInterface,force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader,lightning:actionOverride"
+    access="global">
+    <aura:attribute name="options" type="String[]" default="My Profile,Logout" />
+    <aura:attribute name="userName" type="String" />
+    <aura:handler name="change" value="{!v.record}" action="{!c.doInit}" />
+    <aura:attribute name="record" type="User" />
+    <aura:attribute name="error" type="String" />
+    <aura:attribute name="loadcmp" type="Boolean" default="false" />
+
+    <force:recordData aura:id="forceRecordCmp" recordId="{!$SObjectType.CurrentUser.Id}"
+        fields="Id, Name" mode="VIEW" targetRecord="{!v.record}" targetError="{!v.error}"/>
+    <aura:if isTrue="{!v.loadcmp}">
+        <ui:menu>
+            <ui:menuTriggerLink class="zs-profile-menu" aura:id="radioMenuLabel">
+                <lightning:icon iconName="action:user" size="xx-small" /> &nbsp;
+                {!v.userName}
+            </ui:menuTriggerLink>
+            <ui:menuList class="actionMenu" aura:id="actionMenu">
+                <aura:iteration items="{!v.options}" var="itemLabel">
+                    <ui:actionMenuItem label="{!itemLabel}" click="{!c.handleClick}" />
+                </aura:iteration>
+            </ui:menuList>
+        </ui:menu>
+    </aura:if>
+</aura:component>

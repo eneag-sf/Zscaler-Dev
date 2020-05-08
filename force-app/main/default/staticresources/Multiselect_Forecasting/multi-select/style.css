@@ -1,0 +1,125 @@
+/* Put your css in here */
+
+multiselect {
+    display:block;
+}
+multiselect .btn-link {
+    border-color: transparent;
+    cursor: pointer;
+    color: #0088cc;
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    border-radius: 0;
+}
+
+multiselect .btn-link, multiselect .btn-link:active, multiselect .btn-link[disabled] {
+    background-color: transparent;
+    background-image: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+}
+multiselect .btn-small {
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+}
+multiselect .input-block-level{
+    width: 99%;
+    min-height: 20px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgba(0, 0, 0, 0.2);
+    border-image: initial;
+    border-radius: 6px;
+}
+multiselect .open>.dropdown-menu {
+    display: block;
+}
+multiselect .pull-left {
+    float: left;
+	text-overflow: ellipsis;
+    width: 75px;
+    overflow: hidden;
+	height: 20px;
+	white-space:nowrap;
+}
+multiselect .pull-right {
+    float: right;
+}
+multiselect .caret {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    vertical-align: top;
+    border-top: 4px solid #000000;
+    border-right: 4px solid transparent;
+    border-left: 4px solid transparent;
+    content: "";
+	margin-top: 7px;
+}
+multiselect .btn {
+    display: inline-block;
+    margin-bottom: 0;
+    line-height: 20px;
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer;
+    color: #333333;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
+    background-image: -moz-linear-gradient(top, #ffffff, #e6e6e6);
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#ffffff), to(#e6e6e6));
+    background-image: -webkit-linear-gradient(top, #ffffff, #e6e6e6);
+    background-image: -o-linear-gradient(top, #ffffff, #e6e6e6);
+    background-image: linear-gradient(to bottom, #ffffff, #e6e6e6);
+    background-repeat: repeat-x;
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffffff', endColorstr='#ffe6e6e6', GradientType=0);
+    border-color: #e6e6e6 #e6e6e6 #bfbfbf;
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled = false);
+    border: 1px solid #cccccc;
+    border-bottom-color: #b3b3b3;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    -webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 1px 2px rgba(0,0,0,.05);
+    -moz-box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 1px 2px rgba(0,0,0,.05);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 1px 2px rgba(0,0,0,.05);
+    background-color: #FFF;
+	width:100%;
+}
+multiselect .btn.error{
+    border: 1px solid #da4f49 !important;
+}
+multiselect .dropdown-menu {
+    max-height: 300px;
+    overflow-y: auto;
+    position: absolute;
+    /*top: 100%;
+    left: 0;*/
+    z-index: 1000;
+    display: none;
+    /*float: left;
+    min-width: 160px;*/
+    padding: 5px 0;
+    margin: 2px 0 0;
+    list-style: none;
+    background-color: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+    -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    -moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    -webkit-background-clip: padding-box;
+    -moz-background-clip: padding;
+    background-clip: padding-box;
+}
+multiselect .dropdown-menu {
+    box-sizing: border-box;
+    padding: 2px;
+}
+multiselect .dropdown-menu > li > a {
+    cursor:pointer;
+}

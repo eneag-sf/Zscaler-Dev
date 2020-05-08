@@ -1,0 +1,10 @@
+<apex:component controller="GetCaseDetails" access="global">
+    <apex:attribute type="String" name="equipmentRequestId" assignTo="{!equipmentRequestRecordId}" description="Equipment Request Id"/>
+    <apex:attribute type="String" name="typeofTemplate1" assignTo="{!typeofTemplate}" description="Type of template"/>
+        <p>Dear {!ER.Owner.Name}</p>
+        <p>You have been assigned to this ticket -- {!Case.CaseNumber} . Please find the Case Details below:-</p>
+        <p>Case URL :- {!url}/{!Case.id}</p>
+        <p>Case Account :- {!Case.Account.Name}</p>
+        <p>Case Subject :- {!Case.Subject}</p>
+        <p>Case Description:- {!Case.Description}</p>
+</apex:component>

@@ -1,0 +1,16 @@
+<aura:component implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,force:appHostable" >
+    <aura:attribute name="activeSections" type="List" default="['A']" />
+    <aura:attribute name="activeSectionsMessage" type="String" default="" />
+    <div style="background-color: white; border-radius: 4px; padding: 5px;">
+        <lightning:accordion
+            allowMultipleSectionsOpen="true"
+            onsectiontoggle="{! c.handleSectionToggle }"
+            activeSectionName="{! v.activeSections }">
+            <lightning:accordionSection name="A" label="Case Team">
+                <aura:set attribute="body">
+                    <c:emailListLWC/> 
+                </aura:set>
+            </lightning:accordionSection>
+        </lightning:accordion>
+    </div>
+</aura:component>

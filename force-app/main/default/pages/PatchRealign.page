@@ -1,0 +1,20 @@
+<apex:page showHeader="false" standardController="Patch__c" extensions="PatchRealignController" action="{!init}">
+    <apex:includeScript value="https://code.jquery.com/jquery-1.7.1.min.js" />
+    <apex:sectionHeader title="Patch Realign" />
+    <apex:pageMessages />
+    <apex:form >
+        <apex:pageBlock >
+            <apex:pageBlockButtons location="bottom">
+                <apex:commandButton value="Reassign" rendered="{!LeadCount + AccountCount + OpportunityCount > 0 && NOT(InProgress) && NOT(HasPendingUpdate)}" action="{!startProcess}" />
+                <apex:commandButton value="Abort" rendered="{!InProgress}" action="{!abortProcess}"/>
+                <input type="button" class="btn" onclick="window.close()" value="Close" id="close" />
+            </apex:pageBlockButtons>
+            <apex:pageblockSection columns="1">
+                <apex:outputText rendered="{!LeadCount + AccountCount + OpportunityCount > 0 && NOT(HasPendingUpdate) && NOT(InProgress)}">Are you sure you want to reassign these {!IF(LeadCount == 1000, TEXT(LeadCount) & '+', LeadCount)} leads, {!IF(AccountCount == 1000, TEXT(AccountCount) & '+', AccountCount)} accounts, {!IF(OpportunityCount == 1000, TEXT(OpportunityCount) & '+', OpportunityCount)} opportunities?</apex:outputText>
+                <apex:outputText rendered="{!LeadCount + AccountCount + OpportunityCount = 0 && NOT(InProgress)}">There are no records to be realigned.</apex:outputText>
+                <apex:outputText rendered="{!InProgress && NOT(aborted)}">Realignment job is in progress...</apex:outputText>
+                <apex:outputText rendered="{!LeadCount + AccountCount + OpportunityCount > 0 && HasPendingUpdate && NOT(InProgress)}"><span style="color:red">There are pending update on the selected patch(s). You should deploy the changes before realigning the records.</span></apex:outputText>
+            </apex:pageblockSection>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

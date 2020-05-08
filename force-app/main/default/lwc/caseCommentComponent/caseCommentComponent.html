@@ -1,0 +1,43 @@
+<template>
+    <div class="slds-box slds-box_small">
+        <template if:true={showcommentmandatorymessage}>
+            <div class="slds-box slds-theme_error" style="margin-bottom:5px;">
+                {errmsg}
+            </div>
+        </template>
+        <div>
+            <lightning-layout pull-to-boundary="medium" multiple-rows="true">
+                <lightning-layout-item size="12" padding="around-medium">
+                    <template if:false={isPortalUser}>
+                        <lightning-textarea name="casecomment" onchange={assigncasecomment} label="Case Comment">
+                        </lightning-textarea>
+                    </template>
+                    <template if:true={isPortalUser}>
+                        <lightning-input-rich-text formats={formats} onchange={assigncasecomment} label="Case Comment">
+                        </lightning-input-rich-text>
+                    </template>
+                </lightning-layout-item>
+            </lightning-layout>
+        </div>
+        <div>
+            <lightning-file-upload label="Upload files" name="fileUploader" record-id={recordId} multiple
+                onuploadfinished={handleUploadFinish}>
+            </lightning-file-upload>
+        </div>
+        <template if:false={loading}>
+            <hr style="margin-top: 10px; margin-bottom:10px;">
+            <div class="slds-box slds-box_small" style="text-align: right;border: 0px; border-radius: 0px;">
+                <lightning-button class="slds-m-right_small" variant="brand" onclick={savecase} name="save"
+                    label="Post">
+                </lightning-button>
+                <lightning-button variant="neutral" name="cancel" label="Cancel" onclick={cancelCase}>
+                </lightning-button>
+            </div>
+        </template>
+        <template if:true={loading}>
+            <div class="slds-spinner_container">
+                <lightning-spinner variant="brand" size="medium"></lightning-spinner>
+            </div>
+        </template>
+    </div>
+</template>

@@ -1,0 +1,31 @@
+<apex:component access="global" controller="EmailComponentController" >
+    <apex:attribute name="AcctId" type="Id" description="Id of the account" assignTo="{!accountId}"/>
+    <apex:attribute name="lingering" type="Boolean" description="lingering case" assignTo="{!lingeringC}"/>
+    <table class="ql-table-blob">
+      <thead>
+        <tr>
+            <th>Case #</th>
+            <th>Date Opened/Created</th>
+            <th>Case Type</th>
+            <th>Case Assignee</th>
+            <th>Case Subject</th>
+            <th>Next Actions/Owner</th>                      
+        </tr>
+      </thead>
+      <tbody>
+        <apex:repeat value="{!cases}" var="c">
+        <tr>
+            <td>{!c.CaseNumber}</td>
+            <td>
+              <apex:outputText value="{0,date,dd MMM YYYY h:mm a}">
+                <apex:param value="{!c.CreatedDate}"/>
+              </apex:outputText></td>
+            <td>{!c.Case_Type__c}</td>
+            <td>{!c.Owner.Name}</td>
+            <td>{!c.Subject}</td>
+            <td>&nbsp;</td>
+        </tr>
+        </apex:repeat>  
+      </tbody>     
+    </table>
+</apex:component>

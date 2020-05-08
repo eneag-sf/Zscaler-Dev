@@ -1,0 +1,27 @@
+<apex:page standardController="Deal_Reg__c" extensions="MatchingDealRegLeadsControllerExt">
+
+    <apex:form >
+        <apex:pageBlock id="block" >
+        
+            <apex:pageBlockSection columns="1" rendered="{!matchingLeadList.size > 0}">
+                <apex:pageBlockSectionItem >
+                    <apex:pageBlockTable value="{!matchingLeadList}" var="le" >
+                    <apex:column headerValue="Name">
+                        <a href="/{!le.Id}" target="_blank">{!le.Name}</a>
+                    </apex:column>
+                    <apex:column value="{!le.Company}"/>
+                    <apex:column value="{!le.Email}"/>
+                    <apex:column value="{!le.Phone}"/>
+                    <apex:column value="{!le.Status}"/>
+                    <apex:column value="{!le.mkto2__Lead_Score__c}"/>                    
+                </apex:pageBlockTable>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection rendered="{!NOT(matchingLeadList.size > 0)}">
+                No Matching Lead Found.
+            </apex:pageBlockSection>
+            
+            
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

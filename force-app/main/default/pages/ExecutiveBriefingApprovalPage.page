@@ -1,0 +1,26 @@
+<!--<apex:page standardController="Executive_Briefing_Request__c" extensions="ExecutiveBriefingApproval" action="{!SubmitForApproval}">
+    
+    <div style="float:right">
+        <apex:outputLink value="/{!ExecutiveReqId}">Go back to record</apex:outputLink>
+    </div>
+    
+    <apex:pageMessages />
+</apex:page>-->
+
+<apex:page standardController="Executive_Briefing_Request__c" showHeader="true" sidebar="true" standardStylesheets="false">
+    <apex:includeLightning />
+    <div id="FormId" />
+    <script>
+        //alert('--Id--'+"{!Executive_Briefing_Request__c.id}");
+        $Lightning.use("c:ExecutiveBriefingApprovalCompApp", function() {
+            $Lightning.createComponent("c:ExecutiveBriefingApprovalComp",
+            { 
+                "ExecutiveBriefId" : "{!Executive_Briefing_Request__c.id}"
+            },
+            "FormId",
+            function(cmp) {
+                console.log('Component created, do something cool here');
+            });
+        });
+    </script>
+</apex:page>

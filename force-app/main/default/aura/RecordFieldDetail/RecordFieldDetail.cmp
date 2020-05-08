@@ -1,0 +1,10 @@
+<aura:component >
+	<aura:attribute name="record" type="object"/>
+    <aura:attribute name="field" type="string"/>
+    <aura:attribute name="simpleOutput" type="string"/>
+
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:if isTrue="{!v.simpleOutput != null}">
+        <ui:outputText value="{!v.simpleOutput}"/>
+    </aura:if>
+</aura:component>

@@ -1,0 +1,8 @@
+.THIS .slds-page-header{
+    background-color: #0070d2 !important;
+    color: #fff !important;
+    border-radius: 4px !important;
+}
+.THIS .datePicker-openIcon{
+    display:none;
+}

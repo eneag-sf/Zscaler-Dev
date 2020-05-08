@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html ng-app="plunker">
+
+  <head>
+    <meta charset="utf-8" />
+    <title>AngularJS Plunker</title>
+    <script>document.write('<base href="' + document.location + '" />');</script>
+    <link rel="stylesheet" href="style.css" />
+    <script data-require="angular.js@1.1.x" src="http://code.angularjs.org/1.1.5/angular.min.js" data-semver="1.1.5"></script>
+    <script src="app.js"></script>
+     <script src="multiselect.js"></script>
+  </head>
+
+  <body ng-controller="MainCtrl">
+       <h1>Example</h1>
+    <multiselect class="" multiple="true"
+        ng-model="selectedCar"
+        options="c.name for c in cars"
+        change="selected()" ></multiselect>
+        <!--<div class="well well-small">
+            {{selectedCar}}
+        </div>-->
+   
+  </body>
+
+</html>

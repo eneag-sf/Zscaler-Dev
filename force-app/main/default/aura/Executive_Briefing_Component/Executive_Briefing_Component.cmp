@@ -1,0 +1,1165 @@
+<aura:component controller="Executive_Briefing_Request_Controller"
+                implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction"
+                access="global">
+    
+    <aura:attribute name="stepname" type="String" default="1" />
+    <aura:attribute name="errorMsg" type="String" />
+    <aura:attribute name="ResubmitError" type="String" />
+    <aura:attribute name="isEdit" type="boolean" />
+    <aura:attribute name="showSpinner" type="boolean" default="true" />
+    <aura:attribute name="proceedload" type="boolean" default="false" />
+    <aura:attribute name="recordId" type="Id" />
+    <aura:attribute name="oppId" type="Id" />
+    <aura:attribute name="accId" type="Id" />
+    <aura:attribute name="econbuyerId" type="Id" />
+    <aura:attribute name="championId" type="Id" />
+    <aura:attribute name="currQtr" type="String" />
+    <aura:attribute name="stage" type="String" />
+    <aura:attribute name="acv" type="Decimal" />
+    <aura:attribute name="tcv" type="Decimal" />
+    <aura:attribute name="rsm" type="String" />
+    <aura:attribute name="closedate" type="String" />
+    <aura:attribute name="type" type="String" />
+    <aura:attribute name="prodnames" type="String" />
+    <aura:attribute name="oppRec" type="Opportunity" />
+    <aura:attribute name="AccountRec" type="Account" />
+    <aura:attribute name="accRec" type="Account" />
+    <aura:attribute name="EBrec" type="Executive_Briefing_Request__c" />
+    <aura:attribute Name="selItem" type="object" access="public" />
+    <aura:attribute name="userList" type="Object[]" />
+    <aura:attribute name="userfieldlist" type="String" default="Email, Title" />
+    <aura:attribute name="headofitlst" type="Object[]" />
+    <aura:attribute name="headofsecuritylst" type="Object[]" />
+    <aura:attribute name="headofnetworkinglst" type="Object[]" />
+    <aura:attribute name="othercontactlst" type="Object[]" />
+    <aura:attribute Name="contactselecteditem" type="object" access="public" />
+    
+    <!-- Added -->
+    <aura:attribute name="IsMeetingConfirmed" type="boolean" default="false" />
+    <aura:attribute name="StartTime" type="time" />
+    <aura:attribute name="EndTime" type="time" />
+    <aura:attribute name="StartDate" type="date" />
+    <aura:attribute name="EndDate" type="date" />
+    <aura:attribute name="DatoOfMeeting" type="time" />
+    <aura:attribute name="ApprovalStatus" type="string" />
+    
+    <aura:attribute name="isVisible" type="Boolean" default="true"/>
+    <aura:attribute name="isVisibleEdit" type="Boolean" default="true"/>
+    
+    <!-- Added --> 
+    <aura:attribute Name="minTime" type="String" default="00:15:00.000Z"/>
+    <aura:attribute Name="maxTime" type="String" default="23:45:00.000Z"/>
+    <aura:attribute Name="travelReq" type="String" default="https://www-internal.zscaler.com/travel/"/>
+    
+    <!-- validation Error -->
+    <aura:attribute name="startdateValidationError" type="boolean" default="false" />
+    <aura:attribute name="enddateValidationError" type="boolean" default="false" />
+    <aura:attribute name="domValidationError" type="boolean" default="false" />
+    
+    
+    <!-- Added -->
+    <aura:attribute Name="contactfiltercriteria" type="String" access="public"
+                    default="Active__c = false and AccountId != null" />
+    <aura:attribute name="contactfieldlst" type="String"
+                    default="Email, Title, Head_of_IT__c, Head_of_Security__c, Head_of_Networking__c" />
+    
+    
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:handler name="change" value="{!v.selItem}" action="{!c.userchanged}" />
+    <aura:handler name="change" value="{!v.contactselecteditem}" action="{!c.contactchanged}" />
+    
+    
+    <lightning:progressIndicator currentStep="{!v.stepname}" type="path" variant="base">
+        <lightning:progressStep label="Executive Briefing Details" value="1" onstepfocus="{!c.pathstepchange}" />
+        <lightning:progressStep label="Internal Attendees" value="2" onstepfocus="{!c.pathstepchange}" />
+        <lightning:progressStep label="External Attendees" value="3" onstepfocus="{!c.pathstepchange}" />
+    </lightning:progressIndicator>
+    
+    
+    <aura:if isTrue="{!v.showSpinner}">
+        <lightning:spinner variant="brand" size="small" />
+    </aura:if>
+    
+    <aura:if isTrue="{!not(empty(v.ResubmitError))}">
+        <div style="margin:auto;height:2rem"
+             class="slds-notify slds-notify_alert slds-theme_error" role="alert">
+            <h2 style="color: black;font-weight: 600;">{!v.ResubmitError}</h2>
+        </div>
+    </aura:if>
+    
+    <aura:if isTrue="{!v.stepname == '1'}">
+        <aura:if isTrue="{!v.proceedload}">
+            <aura:if isTrue="{!!v.isEdit}">
+                <lightning:recordEditForm aura:id="execform" objectApiName="Executive_Briefing_Request__c"
+                                          onload="{!c.handleLoad}" onsubmit="{!c.handleSubmit}" onsuccess="{!c.handleSuccess}">
+                    <lightning:messages />
+                    <div class="slds-grid slds-wrap">
+                        <div class="slds-align_absolute-center" style="height:5rem">
+                            <lightning:button class="slds-m-top_small" variant="brand" type="submit" name="save"
+                                              label="Save and Proceed" />
+                            <lightning:button class="slds-m-top_small" name="cancel" label="Cancel"
+                                              onclick="{!c.cancel}" />
+                        </div>
+                    </div>
+                    <div class="slds-m-around_medium">
+                        <aura:if isTrue="{!not(empty(v.oppId))}">
+                            <div class="slds-theme_info slds-p-around_small"
+                                 role="alert">
+                                <h2 style="color: black;font-weight: 600;">Opportunity Information</h2>
+                            </div>
+                            <div class="slds-m-around_small slds-custom-pad5">
+                                <lightning:layout pullToBoundary="small" multipleRows="true">
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <div class="slds-p-right_small">
+                                            <lightning:inputField disabled="true" aura:id="accountval" fieldName="Customer__c"
+                                                                  onchange="{!c.accountChanged}" />
+                                        </div>
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <lightning:inputField disabled="true" aura:id="oppIdval" fieldName="Opportunity__c"
+                                                              onchange="{!c.oppChanged}" />
+                                    </lightning:layoutItem>
+                                    
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <div class="slds-p-right_small">
+                                            <div class="slds-form-element slds-form-element_horizontal">
+                                                <span class="slds-form-element__label">Opportunity Type</span>
+                                                <div class="slds-form-element__control">
+                                                    <span class="slds-form-element__static slds-custom-pad5">{!v.type}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </lightning:layoutItem>
+                                    
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <div class="slds-p-right_small">
+                                            <div class="slds-form-element slds-form-element_horizontal">
+                                                <span class="slds-form-element__label">Sales Stage</span>
+                                                <div class="slds-form-element__control">
+                                                    <span class="slds-form-element__static slds-custom-pad5">{!v.stage}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <div class="slds-form-element slds-form-element_horizontal">
+                                            <span class="slds-form-element__label">ACV</span>
+                                            <div class="slds-form-element__control">
+                                                $<lightning:formattedNumber value="{!v.acv}" style="decimal" maximumFractionDigits="2" />
+                                            </div>
+                                        </div>
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <div class="slds-form-element slds-form-element_horizontal">
+                                            <span class="slds-form-element__label">TCV</span>
+                                            <div class="slds-form-element__control">
+                                                $<lightning:formattedNumber value="{!v.tcv}" style="decimal" maximumFractionDigits="2"/>
+                                            </div>
+                                        </div>
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <div class="slds-form-element slds-form-element_horizontal">
+                                            <span class="slds-form-element__label">Close Date</span>
+                                            <div class="slds-form-element__control">
+                                                <span class="slds-form-element__static">{!v.closedate}</span>
+                                            </div>
+                                        </div>
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <div class="slds-form-element slds-form-element_horizontal">
+                                            <span class="slds-form-element__label">Current Quarter Opportunity</span>
+                                            <div class="slds-form-element__control">
+                                                <span class="slds-form-element__static">{!v.currQtr}</span>
+                                            </div>
+                                        </div>
+                                    </lightning:layoutItem>
+                                    
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <div class="slds-form-element slds-form-element_horizontal">
+                                            <span class="slds-form-element__label">Opportunity Owner</span>
+                                            <div class="slds-form-element__control">
+                                                <span class="slds-form-element__static">{!v.rsm}</span>
+                                            </div>
+                                        </div>
+                                    </lightning:layoutItem>
+                                    
+                                    <!--</aura:if>-->
+                                </lightning:layout>
+                            </div>
+                        </aura:if>
+                    </div>
+                    
+                    
+                    <aura:if isTrue="{!empty(v.oppId)}">
+                        <!-- BUG : 15  Company Information section is still displayed in the Exec Req form-->
+                        <div class="slds-m-around_medium">
+                            <div class="slds-theme_info slds-p-around_small"
+                                 role="alert">
+                                <h2 style="color: black;font-weight: 600;">Company information</h2>
+                            </div>
+                            <div class="slds-m-around_medium slds-custom-pad5">
+                                <lightning:layout pullToBoundary="small" multipleRows="true">
+                                    
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <div class="slds-p-right_small">
+                                            <lightning:inputField disabled="true" aura:id="accountval" fieldName="Customer__c"
+                                                                  onchange="{!c.accountChanged}" />
+                                        </div>
+                                    </lightning:layoutItem>
+                                    
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <div class="slds-form-element slds-form-element_horizontal">
+                                            <span class="slds-form-element__label">Sentiment</span>
+                                            <div class="slds-form-element__control">
+                                                <span class="slds-form-element__static">{!v.AccountRec.Customer_Sentiment__c}</span>
+                                            </div>
+                                        </div>
+                                    </lightning:layoutItem>
+                                    
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <div class="slds-form-element slds-form-element_horizontal">
+                                            <span class="slds-form-element__label">Customer Success Stage</span>
+                                            <div class="slds-form-element__control">
+                                                <span class="slds-form-element__static">{!v.AccountRec.Success_Stage__c}</span>
+                                            </div>
+                                        </div>
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <div class="slds-form-element slds-form-element_horizontal">
+                                            <span class="slds-form-element__label">ARR</span>
+                                            <div class="slds-form-element__control">
+                                                <aura:if isTrue="{!!empty(v.AccountRec.Current_ARR__c)}">
+                                                    <span class="slds-form-element__static">
+                                                        ${!v.AccountRec.Current_ARR__c}
+                                                    </span>
+                                                </aura:if>
+                                            </div>
+                                        </div>
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <div class="slds-form-element slds-form-element_horizontal">
+                                            <span class="slds-form-element__label">Total Number of users at Account</span>
+                                            <div class="slds-form-element__control">
+                                                <span class="slds-form-element__static">{!v.AccountRec.No_of_Employees_Users__c}</span>
+                                            </div>
+                                        </div>
+                                    </lightning:layoutItem>
+                                </lightning:layout>
+                            </div>
+                        </div>
+                    </aura:if>
+                    
+                    <div class="slds-m-around_medium">
+                        <div class="slds-theme_info slds-p-around_small"
+                             role="alert">
+                            <h2 style="color: black;font-weight: 600;">Meeting Details</h2>
+                        </div>
+                        <div class="slds-m-around_medium slds-custom-pad5">
+                            
+                            <lightning:layout pullToBoundary="small" multipleRows="true">
+                                
+                                <!-- Reason for Request -->
+                                <lightning:layoutItem size="6" padding="around-xsmall">
+                                    <div class="slds-p-right_small">
+                                        <lightning:inputField aura:id="TravelRequired" fieldName="Reason_for_Request__c" required="true"/>
+                                    </div>
+                                </lightning:layoutItem>
+                                
+                                <lightning:layoutItem size="6" padding="around-xsmall">
+                                </lightning:layoutItem>
+                                
+                                <lightning:layoutItem size="6" padding="around-xsmall">
+                                    <div class="slds-p-right_small">
+                                        <lightning:inputField variant="label-inline" aura:id="meetingconfirmed" fieldName="Is_Meeting_Confirmed__c" onchange="{!c.ChangeMeeting}"/>
+                                    </div>
+                                </lightning:layoutItem>
+                                
+                                <lightning:layoutItem size="6" padding="around-xsmall">
+                                </lightning:layoutItem>
+                                
+                                <lightning:layoutItem size="6" padding="around-xsmall">
+                                </lightning:layoutItem>
+                                
+                                <lightning:layoutItem size="6" padding="around-xsmall">
+                                </lightning:layoutItem>
+                                
+                                
+                                <!-- Start Date -->
+                                <lightning:layoutItem size="6" padding="around-xsmall">
+                                    <aura:if isTrue="{!v.isVisible}">
+                                        <div class="slds-p-right_small">
+                                            <aura:if isTrue="{!v.IsMeetingConfirmed == true}">
+                                                <lightning:inputField aura:id="StartDate" fieldName="Start_Date__c" disabled="true" required="false" value=""/>
+                                                <aura:set attribute="else">
+                                                    <lightning:inputField aura:id="StartDate" fieldName="Start_Date__c" disabled="false" required="true"/>
+                                                </aura:set>
+                                            </aura:if>
+                                            <aura:if isTrue="{!v.startdateValidationError}">
+                                                <p><lightning:formattedText aura:id="StartDateId" style="margin-top: -10px;width: 67%;float: right;margin-bottom: 10px;" class="slds-text-color_error" value="Start Date must be greater than today" /></p>
+                                            </aura:if>
+                                        </div>
+                                    </aura:if>
+                                </lightning:layoutItem>
+                                
+                                
+                                <!-- Location -->
+                                <lightning:layoutItem size="6" padding="around-xsmall">
+                                    <div>
+                                        <lightning:inputField aura:id="Loc/Address" fieldName="Location_Address__c" required="{!if(v.IsMeetingConfirmed == true,true,false)}"/>
+                                    </div>
+                                </lightning:layoutItem>
+                                
+                                
+                                <!-- End Date -->
+                                <lightning:layoutItem size="6" padding="around-xsmall">
+									<div class="slds-p-right_small">
+										<aura:if isTrue="{!v.isVisible}">
+											<aura:if isTrue="{!v.IsMeetingConfirmed == true}">
+												<lightning:inputField aura:id="EndDate" fieldName="End_Date__c" value="" disabled="true" required="false"/>
+												<aura:set attribute="else">
+													<lightning:inputField aura:id="EndDate" fieldName="End_Date__c" disabled="false" required="true"/>
+												</aura:set>
+											</aura:if>
+											<aura:if isTrue="{!v.enddateValidationError}">
+												<p><lightning:formattedText aura:id="EndDateId" style="margin-top: -10px;width: 67%;float: right;margin-bottom: 10px;" class="slds-text-color_error" value="End Date must be greater than Start Date"/></p>
+											</aura:if>
+										</aura:if>
+									</div>
+                                </lightning:layoutItem>
+                                
+                                
+                                <!-- Conference Room -->
+                                <lightning:layoutItem size="6" padding="around-xsmall">
+                                    <div>
+                                        <lightning:inputField aura:id="ConfRoomDet" fieldName="Conference_Room_Details__c" required="{!if(v.IsMeetingConfirmed == true,true,false)}"/>
+                                    </div>
+                                </lightning:layoutItem>
+                                
+                                
+                               <!-- Date of Meeting -->
+                                <lightning:layoutItem size="6" padding="around-xsmall">
+                                    <div class="slds-p-right_small">
+                                        <aura:if isTrue="{!v.isVisible}">
+                                            <aura:if isTrue="{!v.IsMeetingConfirmed == true}">
+                                                <lightning:inputField disabled="false" aura:id="DateOfMeeting" fieldName="Date_of_Meeting__c" required="true"/>
+                                                <aura:set attribute="else">
+                                                    <lightning:inputField disabled="true" aura:id="DateOfMeeting" fieldName="Date_of_Meeting__c" required="false"/>
+                                                </aura:set>
+                                            </aura:if>
+                                            <aura:if isTrue="{!v.domValidationError}">
+                                                <p><lightning:formattedText aura:id="domDateId" style="margin-top: -10px;width: 67%;float: right;margin-bottom: 10px;" class="slds-text-color_error" value="Date of meeting must be greater than today" /></p>
+                                            </aura:if>
+                                        </aura:if>
+                                    </div>
+                                </lightning:layoutItem>
+                                
+                                
+                                <!-- Time Zone -->
+                                <lightning:layoutItem size="6" padding="around-xsmall">
+                                    <div>
+                                        <lightning:inputField aura:id="TimeZone" fieldName="Time_Zone__c" required="{!if(v.IsMeetingConfirmed == true, true, false)}"/>
+                                    </div>
+                                </lightning:layoutItem>
+                                
+                                
+                                <!-- Start time -->
+                                <lightning:layoutItem size="6" padding="around-xsmall">
+                                    <div class="slds-p-right_medium slds-clearfix" style="padding-right: 0.725rem;">
+                                        <lightning:input onchange="{!c.setMinEndTime}" required="{!if(v.IsMeetingConfirmed == true, true, false)}" max="{!v.maxTime}"   type="Time" name="input1" label="Start time" variant="label-inline" value="{!v.StartTime}" />
+                                        <aura:if isTrue="{!if(v.IsMeetingConfirmed == true, true, false)}">
+                                            <p><lightning:formattedText aura:id="ErrorSectionOne" style="width: 67%;float: right;" class="error-text-one" value="Please enter Start time" /></p>
+                                        </aura:if>
+                                    </div>
+                                </lightning:layoutItem>
+                                
+                                <!-- WebEx/F2F -->
+                                <lightning:layoutItem size="6" padding="around-xsmall">
+                                    <div>
+                                        <!-- <label for="F2F/Remote" ><abbr title="required" class="slds-required" lightning-input_input="">*</abbr>F2F/Remote</label> -->
+                                        <lightning:inputField aura:id="F2F/Webex" fieldName="F2F_Webex__c" label="F2F/Remote" required="true" variant="label-inline"/>
+                                    </div>
+                                </lightning:layoutItem>
+                                
+                                <!-- End time -->
+                                <lightning:layoutItem size="6" padding="around-xsmall">
+									<div class="slds-p-right_small">
+										<div class="slds-clearfix">
+											<lightning:input onchange="{!c.setMaxStartTime}" required="{!if(v.IsMeetingConfirmed == true, true, false)}"  min="{!v.minTime}" type="Time" name="input2" label="End time" variant="label-inline" value="{!v.EndTime}" />
+											<aura:if isTrue="{!if(v.IsMeetingConfirmed == true, true, false)}">
+												<p><lightning:formattedText aura:id="ErrorSectionTwo" style="width: 67%;float: right;" class="error-text-two" value="Please enter End time" /></p>
+											</aura:if>
+										</div>
+									</div>
+                                </lightning:layoutItem>
+                                
+                                
+                                <!-- Travel required -->
+                                <lightning:layoutItem size="6" padding="around-xsmall">
+                                    <lightning:inputField aura:id="TravelRequired" fieldName="Travel_Required__c" required="true"/>
+                                </lightning:layoutItem>
+                                
+                                <!-- Exeption 
+                                <lightning:layoutItem size="6" padding="around-xsmall">
+                                    <aura:if isTrue="{!empty(v.oppId)}">
+                                        <lightning:inputField variant="label-inline" aura:id="exception" fieldName="Exception__c" value="true"/>
+                                        <aura:set attribute="else">
+                                            <lightning:inputField variant="label-inline" aura:id="exception" fieldName="Exception__c"/>
+                                        </aura:set>
+                                    </aura:if>
+                                </lightning:layoutItem>-->
+                                
+                            </lightning:layout>
+                        </div>
+                    </div>
+                    
+                    <div class="slds-m-around_medium">
+                        <div class="slds-theme_info slds-p-around_small"
+                             role="alert">
+                            <h2 style="color: black;font-weight: 600;">Purpose of the meeting &amp; agenda</h2>
+                        </div>
+                        <div class="slds-m-vertical_medium slds-custom-pad8">
+                            <lightning:inputField aura:id="purposefield" fieldName="Purpose_of_Meeting_and_Agenda__c" />
+                        </div>
+                    </div>
+                    <div class="slds-m-around_medium">
+                        <div class="slds-theme_info slds-p-around_small"
+                             role="alert">
+                            <h2 style="color: black;font-weight: 600;">Company Background</h2>
+                        </div>
+                        <div class="slds-m-vertical_medium slds-m-horizontal_small slds-custom-pad8">
+                            <lightning:layout pullToBoundary="small" multipleRows="true">
+                                <lightning:layoutItem size="6" padding="around-xsmall">
+                                    <div class="slds-p-right_medium">
+                                        <lightning:inputField aura:id="purposefield" fieldName="Business_Strategies__c" />
+                                    </div>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="6" padding="around-xsmall">
+                                    <div>
+                                        <lightning:inputField aura:id="strategicinitfield" fieldName="Strategic_Initiatives__c" />
+                                    </div>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="6" padding="around-xsmall">
+                                    <div class="slds-p-right_medium">
+                                        <lightning:inputField aura:id="criticalcapfield" fieldName="Critical_Capabilities__c" />
+                                    </div>
+                                </lightning:layoutItem>
+                            </lightning:layout>
+                        </div>
+                    </div>
+                    <aura:if isTrue="{!not(empty(v.oppId))}">
+                        <div class="slds-m-around_medium">
+                            <div class="slds-theme_info slds-p-around_small"
+                                 role="alert">
+                                <h2 style="color: black;font-weight: 600;">Value Proposition</h2>
+                            </div>
+                            <div class="slds-m-vertical_medium slds-m-horizontal_small slds-custom-pad8">
+                                <lightning:layout pullToBoundary="small" multipleRows="true">
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <div class="slds-m-vertical_x-small" style="display:flex;">
+                                            <div class="slds-form-element slds-form-element_horizontal">
+                                                <span class="slds-form-element__label">Why Buy Anything?</span>
+                                                <div class="slds-form-element__control">
+                                                    <span class="slds-form-element__static">
+                                                        <ui:outputRichText class="slds-text-longform" value="{!v.oppRec.Why_Buy_Anything__c}"/>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </lightning:layoutItem>
+                                    
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <div class="slds-m-vertical_x-small" style="display:flex;">
+                                            <div class="slds-form-element slds-form-element_horizontal">
+                                                <span class="slds-form-element__label">Why Buy Now?</span>
+                                                <div class="slds-form-element__control">
+                                                    <span class="slds-form-element__static">
+                                                        <ui:outputRichText class="slds-text-longform" value="{!v.oppRec.Why_Buy_Now__c}"/>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </lightning:layoutItem>
+                                    
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <div class="slds-m-vertical_x-small" style="display:flex;">
+                                            <div class="slds-form-element slds-form-element_horizontal">
+                                                <span class="slds-form-element__label">Why Buy Zscaler?</span>
+                                                <div class="slds-form-element__control">
+                                                    <span class="slds-form-element__static">
+                                                        <ui:outputRichText class="slds-text-longform" value="{!v.oppRec.Why_Buy_Zscaler__c}"/>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </lightning:layoutItem>
+                                </lightning:layout>
+                            </div>
+                        </div>
+                    </aura:if>
+                    <div class="slds-m-around_medium">
+                        <div class="slds-theme_info slds-p-around_small"
+                             role="alert">
+                            <h2 style="color: black;font-weight: 600;">Desired Meeting Outcome</h2>
+                        </div>
+                        <div class="slds-m-vertical_medium slds-custom-pad8">
+                            <lightning:inputField fieldName="Desired_Meeting_Outcome__c" />
+                        </div>
+                    </div>
+                    <div class="slds-m-around_medium">
+                        <div class="slds-theme_info slds-p-around_small"
+                             role="alert">
+                            <h2 style="color: black;font-weight: 600;">Competitive Overview</h2>
+                        </div>
+                        <div class="slds-m-vertical_medium slds-custom-pad8">
+                            <lightning:inputField fieldName="Competitive_Overview__c" />
+                        </div>
+                    </div>
+                    <aura:if isTrue="{!not(empty(v.oppId))}">
+                        <div class="slds-m-around_medium slds-custom-pad8">
+                            <div class="slds-theme_info slds-p-around_small"
+                                 role="alert">
+                                <h2 style="color: black;font-weight: 600;">Products from the opportunity</h2>
+                            </div>
+                            <div class="slds-m-vertical_medium">
+                                <label class="slds-form-element__label" style="margin-bottom: -0.5rem;padding-left: 0.25rem;">Products from the opportunity:</label>
+                                <span style="margin-left: 33%;display: block;">
+                                    <lightning:inputField variant="label-hidden" aura:id="prods" fieldName="Products__c"/>
+                                </span>
+                            </div>
+                            
+                        </div>
+                    </aura:if>
+                    
+					
+                    
+                    <div class="slds-m-around_medium">
+                        <div class="slds-theme_info slds-p-around_small"
+                             role="alert">
+                            <h2 style="color: black;font-weight: 600;">What is the customer doing with SD WAN, O365 and AWS/Azure?</h2>
+                        </div>
+                        <div class="slds-m-vertical_medium slds-custom-pad8">
+                            <lightning:inputField fieldName="SD_WAN_O365_and_AWS_Azure_Usage__c" />
+                        </div>
+                    </div>
+                    <div class="slds-m-around_medium">
+                        <div class="slds-theme_info slds-p-around_small"
+                             role="alert">
+                            <h2 style="color: black;font-weight: 600;">MEDDIC</h2>
+                        </div>
+                        <div class="slds-m-vertical_medium slds-m-horizontal_small slds-custom-pad8">
+                            <lightning:layout pullToBoundary="small" multipleRows="true">
+                                <lightning:layoutItem size="6" padding="around-xsmall">
+                                    <div class="slds-p-right_small" >
+                                        <lightning:inputField fieldName="Metrics__c" />
+                                    </div>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="6" padding="around-xsmall">
+                                    <lightning:inputField aura:id="exonomicbuyer" fieldName="Economic_Buyer__c" />
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="6" padding="around-xsmall">
+                                    <div class="slds-p-right_small">
+                                        <lightning:inputField fieldName="Decision_Criteria__c" />
+                                    </div>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="6" padding="around-xsmall">
+                                    <lightning:inputField fieldName="Decision_Process__c" />
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="6" padding="around-xsmall">
+                                    <div class="slds-p-right_small">	
+                                        <lightning:inputField fieldName="Identified_Pain__c" />
+                                    </div>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="6" padding="around-xsmall">
+                                    <lightning:inputField aura:id="champion" fieldName="Champion__c" />
+                                </lightning:layoutItem>
+                            </lightning:layout>
+                        </div>
+                    </div>
+                    <div class="slds-grid slds-wrap">
+                        <div class="slds-align_absolute-center" style="height:5rem">
+                            <lightning:button class="slds-m-top_small" variant="brand" type="submit" name="save"
+                                              label="Save and Proceed" />
+                            <lightning:button class="slds-m-top_small" name="cancel" label="Cancel"
+                                              onclick="{!c.cancel}" />
+                        </div>
+                    </div>
+                </lightning:recordEditForm>
+                
+                
+                <!-- Else -->
+                <aura:set attribute="else">
+                    <lightning:recordEditForm aura:id="execform" recordId="{!v.recordId}" objectApiName="Executive_Briefing_Request__c"
+                                              onload="{!c.handleLoad}" onsubmit="{!c.handleSubmit}" onsuccess="{!c.handleSuccess}">
+                        <lightning:messages />
+                        <div class="slds-grid slds-wrap">
+                            <div class="slds-align_absolute-center" style="height:5rem">
+                                <lightning:button class="slds-m-top_small" variant="brand" type="submit" name="save"
+                                                  label="Save and Proceed" />
+                                <lightning:button class="slds-m-top_small" name="cancel" label="Cancel"
+                                                  onclick="{!c.cancel}" />
+                            </div>
+                        </div>
+                        <div class="slds-m-around_medium">
+                            <aura:if isTrue="{!not(empty(v.oppId))}">
+                                <div class="slds-theme_info slds-p-around_small"
+                                     role="alert">
+                                    <h2 style="color: black;font-weight: 600;">Opportunity Information</h2>
+                                </div>
+                                <div class="slds-m-around_small slds-custom-pad5">
+                                    <lightning:layout pullToBoundary="small" multipleRows="true">
+                                        <lightning:layoutItem size="6" padding="around-xsmall">
+                                            <div class="slds-p-right_small">
+                                                <lightning:inputField disabled="true" aura:id="accountval" fieldName="Customer__c"
+                                                                      onchange="{!c.accountChanged}" />
+                                            </div>
+                                        </lightning:layoutItem>
+                                        
+                                        
+                                        <lightning:layoutItem size="6" padding="around-xsmall">
+                                            <lightning:inputField disabled="true"  aura:id="oppIdval" fieldName="Opportunity__c"
+                                                                  onchange="{!c.oppChanged}" />
+                                        </lightning:layoutItem>
+                                        
+                                        <lightning:layoutItem size="6" padding="around-xsmall">
+                                            <div class="slds-p-right_small">
+                                                <div class="slds-form-element slds-form-element_horizontal">
+                                                    <span class="slds-form-element__label">Opportunity Type</span>
+                                                    <div class="slds-form-element__control">
+                                                        <span class="slds-form-element__static slds-custom-pad5">{!v.type}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </lightning:layoutItem>
+                                        <lightning:layoutItem size="6" padding="around-xsmall">
+                                            <div class="slds-p-right_small">
+                                                <div class="slds-form-element slds-form-element_horizontal">
+                                                    <span class="slds-form-element__label">Sales Stage</span>
+                                                    <div class="slds-form-element__control">
+                                                        <span class="slds-form-element__static slds-custom-pad5">{!v.stage}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </lightning:layoutItem>
+                                        <lightning:layoutItem size="6" padding="around-xsmall">
+                                            <div class="slds-form-element slds-form-element_horizontal">
+                                                <span class="slds-form-element__label">ACV</span>
+                                                <div class="slds-form-element__control">
+                                                    $<lightning:formattedNumber value="{!v.acv}" style="decimal" maximumFractionDigits="2" />
+                                                    <!--<span class="slds-form-element__static">${!v.acv}</span>-->
+                                                </div>
+                                            </div>
+                                        </lightning:layoutItem>
+                                        <lightning:layoutItem size="6" padding="around-xsmall">
+                                            <div class="slds-form-element slds-form-element_horizontal">
+                                                <span class="slds-form-element__label">TCV</span>
+                                                <div class="slds-form-element__control">
+                                                    $<lightning:formattedNumber value="{!v.tcv}" style="decimal" maximumFractionDigits="2"/>
+                                                    <!--<span class="slds-form-element__static">${!v.tcv}</span>-->
+                                                </div>
+                                            </div>
+                                        </lightning:layoutItem>
+                                        <lightning:layoutItem size="6" padding="around-xsmall">
+                                            <div class="slds-form-element slds-form-element_horizontal">
+                                                <span class="slds-form-element__label">Close Date</span>
+                                                <div class="slds-form-element__control">
+                                                    <span class="slds-form-element__static">{!v.closedate}</span>
+                                                </div>
+                                            </div>
+                                        </lightning:layoutItem>
+                                        <lightning:layoutItem size="6" padding="around-xsmall">
+                                            <div class="slds-form-element slds-form-element_horizontal">
+                                                <span class="slds-form-element__label">Opportunity Owner</span>
+                                                <div class="slds-form-element__control">
+                                                    <span class="slds-form-element__static">{!v.rsm}</span>
+                                                </div>
+                                            </div>
+                                        </lightning:layoutItem>
+                                        <lightning:layoutItem size="6" padding="around-xsmall">
+                                            <div class="slds-form-element slds-form-element_horizontal">
+                                                <span class="slds-form-element__label">Current Quarter Opportunity</span>
+                                                <div class="slds-form-element__control">
+                                                    <span class="slds-form-element__static">{!v.currQtr}</span>
+                                                </div>
+                                            </div>
+                                        </lightning:layoutItem>
+                                        <!--</aura:if>-->
+                                    </lightning:layout>
+                                </div>
+                            </aura:if>
+                        </div>
+                        
+                        <aura:if isTrue="{!empty(v.oppId)}">
+                            <div class="slds-m-around_medium">
+                                <div class="slds-theme_info slds-p-around_small"
+                                     role="alert">
+                                    <h2 style="color: black;font-weight: 600;">Company information</h2>
+                                </div>
+                                <div class="slds-m-around_medium slds-custom-pad5">
+                                    <lightning:layout pullToBoundary="small" multipleRows="true">
+                                        
+                                        <lightning:layoutItem size="6" padding="around-xsmall">
+                                            <div class="slds-p-right_small">
+                                                <lightning:inputField disabled="true" aura:id="accountval" fieldName="Customer__c"
+                                                                      onchange="{!c.accountChanged}" />
+                                            </div>
+                                        </lightning:layoutItem>
+                                        
+                                        <lightning:layoutItem size="6" padding="around-xsmall">
+                                            <div class="slds-form-element slds-form-element_horizontal">
+                                                <span class="slds-form-element__label">Sentiment</span>
+                                                <div class="slds-form-element__control">
+                                                    <span class="slds-form-element__static">{!v.AccountRec.Customer_Sentiment__c}</span>
+                                                </div>
+                                            </div>
+                                        </lightning:layoutItem>
+                                        
+                                        <lightning:layoutItem size="6" padding="around-xsmall">
+                                            <div class="slds-form-element slds-form-element_horizontal">
+                                                <span class="slds-form-element__label">Customer Success Stage</span>
+                                                <div class="slds-form-element__control">
+                                                    <span class="slds-form-element__static">{!v.AccountRec.Success_Stage__c}</span>
+                                                </div>
+                                            </div>
+                                        </lightning:layoutItem>
+                                        <lightning:layoutItem size="6" padding="around-xsmall">
+                                            <div class="slds-form-element slds-form-element_horizontal">
+                                                <span class="slds-form-element__label">ARR</span>
+                                                <div class="slds-form-element__control">
+                                                    <aura:if isTrue="{!!empty(v.AccountRec.Current_ARR__c)}">
+                                                        <span class="slds-form-element__static">
+                                                            ${!v.AccountRec.Current_ARR__c}
+                                                        </span>
+                                                    </aura:if>
+                                                </div>
+                                            </div>
+                                        </lightning:layoutItem>
+                                        <lightning:layoutItem size="6" padding="around-xsmall">
+                                            <div class="slds-form-element slds-form-element_horizontal">
+                                                <span class="slds-form-element__label">Total Number of users at Account</span>
+                                                <div class="slds-form-element__control">
+                                                    <span class="slds-form-element__static">{!v.AccountRec.No_of_Employees_Users__c}</span>
+                                                </div>
+                                            </div>
+                                        </lightning:layoutItem>
+                                    </lightning:layout>
+                                </div>
+                            </div>
+                        </aura:if>
+                        
+                        <div class="slds-m-around_medium">
+                            <div class="slds-theme_info slds-p-around_small"
+                                 role="alert">
+                                <h2 style="color: black;font-weight: 600;">Meeting Details</h2>
+                            </div>
+							
+							
+                            <div class="slds-m-around_medium slds-custom-pad5">
+                                <lightning:layout pullToBoundary="small" multipleRows="true">
+								
+                                    
+                                    
+                                    <!--EDIT Reason for Request -->
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <div class="slds-p-right_small">
+                                            <lightning:inputField aura:id="TravelRequired" fieldName="Reason_for_Request__c" required="true"/>
+                                        </div>
+                                    </lightning:layoutItem>
+                                    
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                    </lightning:layoutItem>
+                                    
+                                    
+									<!--EDIT is Meeting Confirmed -->
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <div class="slds-p-right_small">
+                                            <lightning:inputField variant="label-inline" aura:id="meetingconfirmedEdit" fieldName="Is_Meeting_Confirmed__c" onchange="{!c.ChangeMeetingEdit}"/>
+                                        </div>
+                                    </lightning:layoutItem>
+                                    
+									<lightning:layoutItem size="6" padding="around-xsmall">
+                                    </lightning:layoutItem>
+									
+									<lightning:layoutItem size="6" padding="around-xsmall">
+                                    </lightning:layoutItem>
+									
+									<lightning:layoutItem size="6" padding="around-xsmall">
+                                    </lightning:layoutItem>
+									
+									<!--Edit Start date -->
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <aura:if isTrue="{!v.isVisibleEdit}">
+                                            <div class="slds-p-right_small">
+                                                <aura:if isTrue="{!v.IsMeetingConfirmed == true}">
+                                                    <lightning:inputField aura:id="StartDate" fieldName="Start_Date__c" disabled="true" required="false" value=""/>
+                                                    <aura:set attribute="else">
+                                                        <lightning:inputField aura:id="StartDate" fieldName="Start_Date__c" disabled="false" required="true"/>
+                                                    </aura:set>
+                                                </aura:if>
+                                                <aura:if isTrue="{!v.startdateValidationError}">
+                                                    <p><lightning:formattedText aura:id="EditStartDateId" style="margin-top: -10px;width: 67%;float: right;margin-bottom: 10px;" class="slds-text-color_error" value="Start Date must be greater than today" /></p>
+                                                </aura:if>    
+                                            </div>
+                                        </aura:if>
+                                    </lightning:layoutItem>
+									
+									
+									<!--Edit Location -->
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <div>
+                                            <lightning:inputField aura:id="Loc/Address" fieldName="Location_Address__c" required="{!if(v.IsMeetingConfirmed == true,true,false)}"/>
+                                        </div>
+                                    </lightning:layoutItem>
+                                    
+									
+									<!--Edit End date -->
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+										<div class="slds-p-right_small">
+											<aura:if isTrue="{!v.isVisibleEdit}">
+												<aura:if isTrue="{!v.IsMeetingConfirmed == true}">
+													<lightning:inputField aura:id="EndDate" fieldName="End_Date__c" value="" disabled="true" required="false"/>
+													<aura:set attribute="else">
+														<lightning:inputField aura:id="EndDate" fieldName="End_Date__c" disabled="false" required="true"/>
+													</aura:set>
+												</aura:if>
+												<aura:if isTrue="{!v.enddateValidationError}">
+													<p><lightning:formattedText aura:id="EditEndDateId" style="margin-top: -10px;width: 67%;float: right;margin-bottom: 10px;" class="slds-text-color_error" value="End Date must be greater than Start Date"/></p>
+												</aura:if>
+											</aura:if>
+										</div>
+                                    </lightning:layoutItem>
+									
+									
+									<!--Edit Conferenece Room -->
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <div>
+                                            <lightning:inputField aura:id="ConfRoomDet" fieldName="Conference_Room_Details__c" required="{!if(v.IsMeetingConfirmed == true,true,false)}"/>
+                                        </div>
+                                    </lightning:layoutItem>
+                                    
+									
+									<!--Edit Date of meeting -->
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <div class="slds-p-right_small">
+                                            <aura:if isTrue="{!v.isVisibleEdit}">
+                                                <aura:if isTrue="{!v.IsMeetingConfirmed == true}">
+                                                    <lightning:inputField aura:id="DateOfMeeting" fieldName="Date_of_Meeting__c"  disabled="false"  required="true"/>
+                                                    <aura:set attribute="else">
+                                                        <lightning:inputField aura:id="DateOfMeeting" fieldName="Date_of_Meeting__c" value=""  disabled="true"  required="false"/>
+                                                    </aura:set>
+                                                </aura:if>
+                                                <aura:if isTrue="{!v.domValidationError}">
+                                                    <p><lightning:formattedText aura:id="domDateId" style="margin-top: -10px;width: 67%;float: right;margin-bottom: 10px;" class="slds-text-color_error" value="Date of meeting must be greater than today" /></p>
+                                                </aura:if>
+                                            </aura:if>
+                                        </div>
+                                    </lightning:layoutItem>
+                                    
+									
+									<!--Edit Time Zone -->
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <div>
+                                            <lightning:inputField aura:id="TimeZone" fieldName="Time_Zone__c" required="{!if(v.IsMeetingConfirmed == true, true, false)}"/>
+                                        </div>
+                                    </lightning:layoutItem>
+                                    
+									
+									<!--Edit Start time -->
+									<lightning:layoutItem size="6" padding="around-xsmall">
+                                        <div class="slds-p-right_medium slds-clearfix" style="padding-left: .25rem;">
+                                            <lightning:input  onchange="{!c.setMinEndTime}" required="{!if(v.IsMeetingConfirmed == true, true, false)}" max="{!v.maxTime}" label="Start Time" variant="label-inline" type="Time" name="input1" value="{!v.StartTime}" style="padding: 0;"/>
+                                        </div>
+                                    </lightning:layoutItem>
+									
+									
+									<!--Edit F2F/Remote -->
+									<lightning:layoutItem size="6" padding="around-xsmall">
+                                        <div>
+                                            <lightning:inputField aura:id="F2F/Webex" label="F2F/Remote" styleClass="f2fwebx" fieldName="F2F_Webex__c" required="true" variant="label-inline"/>
+                                        </div>
+                                    </lightning:layoutItem>
+                                  
+									
+									<!--Edit End time -->
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+										<div class="slds-p-right_small">
+											<div class="slds-clearfix">
+												<lightning:input onchange="{!c.setMaxStartTime}" required="{!if(v.IsMeetingConfirmed == true, true, false)}" min="{!v.minTime}" type="Time" name="input2" label="End time" variant="label-inline" value="{!v.EndTime}"/>
+											</div>
+										</div>
+                                    </lightning:layoutItem>
+                                    
+									
+									<!--Edit Travel Required -->
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <lightning:inputField aura:id="TravelRequired" fieldName="Travel_Required__c" required="true"/>
+                                    </lightning:layoutItem>
+                                    
+									
+									<!--Edit Exeption 
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <aura:if isTrue="{!!empty(v.oppId)}">
+                                            <lightning:inputField variant="label-inline" aura:id="exception" fieldName="Exception__c"/>
+                                        </aura:if>
+                                    </lightning:layoutItem>-->
+                                    
+                                </lightning:layout>
+                            </div>
+                        </div>
+                        
+                        <div class="slds-m-around_medium">
+                            <div class="slds-theme_info slds-p-around_small"
+                                 role="alert">
+                                <h2 style="color: black;font-weight: 600;">Purpose of the meeting &amp; agenda</h2>
+                            </div>
+                            <div class="slds-m-vertical_medium slds-custom-pad8">
+                                <lightning:inputField aura:id="purposefield" fieldName="Purpose_of_Meeting_and_Agenda__c" />
+                            </div>
+                        </div>
+                        
+                        <div class="slds-m-around_medium">
+                            <div class="slds-theme_info slds-p-around_small"
+                                 role="alert">
+                                <h2 style="color: black;font-weight: 600;">Company Background</h2>
+                            </div>
+                            <div class="slds-m-vertical_medium slds-m-horizontal_small slds-custom-pad8">
+                                <lightning:layout pullToBoundary="small" multipleRows="true">
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <div class="slds-p-right_medium">
+                                            <lightning:inputField aura:id="purposefield" fieldName="Business_Strategies__c" />
+                                        </div>
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <div>
+                                            <lightning:inputField aura:id="strategicinitfield" fieldName="Strategic_Initiatives__c" />
+                                        </div>
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <div class="slds-p-right_medium">
+                                            <lightning:inputField aura:id="criticalcapfield" fieldName="Critical_Capabilities__c" />
+                                        </div>
+                                    </lightning:layoutItem>
+                                </lightning:layout>
+                            </div>
+                        </div>
+                        <aura:if isTrue="{!not(empty(v.oppId))}">
+                            <div class="slds-m-around_medium">
+                                <div class="slds-theme_info slds-p-around_small"
+                                     role="alert">
+                                    <h2 style="color: black;font-weight: 600;">Value Proposition</h2>
+                                </div>
+                                <div class="slds-m-vertical_medium slds-m-horizontal_small slds-custom-pad8">
+                                    <lightning:layout pullToBoundary="small" multipleRows="true">
+                                        
+                                        <lightning:layoutItem size="6" padding="around-xsmall">
+                                            <div class="slds-m-vertical_x-small" style="display:flex;">
+                                                <div class="slds-form-element slds-form-element_horizontal">
+                                                    <span class="slds-form-element__label">Why Buy Anything?</span>
+                                                    <div class="slds-form-element__control">
+                                                        <span class="slds-form-element__static">
+                                                            <ui:outputRichText class="slds-text-longform" value="{!v.oppRec.Why_Buy_Anything__c}"/>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </lightning:layoutItem>
+                                        
+                                        <lightning:layoutItem size="6" padding="around-xsmall">
+                                            <div class="slds-m-vertical_x-small" style="display:flex;">
+                                                <div class="slds-form-element slds-form-element_horizontal">
+                                                    <span class="slds-form-element__label">Why Buy Now?</span>
+                                                    <div class="slds-form-element__control">
+                                                        <span class="slds-form-element__static">
+                                                            <ui:outputRichText class="slds-text-longform" value="{!v.oppRec.Why_Buy_Now__c}"/>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </lightning:layoutItem>
+                                        
+                                        <lightning:layoutItem size="6" padding="around-xsmall">
+                                            <div class="slds-m-vertical_x-small" style="display:flex;">
+                                                <div class="slds-form-element slds-form-element_horizontal">
+                                                    <span class="slds-form-element__label">Why Buy Zscaler?</span>
+                                                    <div class="slds-form-element__control">
+                                                        <span class="slds-form-element__static">
+                                                            <ui:outputRichText class="slds-text-longform" value="{!v.oppRec.Why_Buy_Zscaler__c}"/>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </lightning:layoutItem>
+                                    </lightning:layout>
+                                </div>
+                            </div>
+                        </aura:if>
+                        <div class="slds-m-around_medium">
+                            <div class="slds-theme_info slds-p-around_small"
+                                 role="alert">
+                                <h2 style="color: black;font-weight: 600;">Desired Meeting Outcome</h2>
+                            </div>
+                            <div class="slds-m-vertical_medium slds-custom-pad8">
+                                <lightning:inputField fieldName="Desired_Meeting_Outcome__c" />
+                            </div>
+                        </div>
+                        <div class="slds-m-around_medium">
+                            <div class="slds-theme_info slds-p-around_small"
+                                 role="alert">
+                                <h2 style="color: black;font-weight: 600;">Competitive Overview</h2>
+                            </div>
+                            <div class="slds-m-vertical_medium slds-custom-pad8">
+                                <lightning:inputField fieldName="Competitive_Overview__c" />
+                            </div>
+                        </div>
+                        
+                        <aura:if isTrue="{!not(empty(v.oppId))}">
+                            <div class="slds-m-around_medium">
+                                <div class="slds-theme_info slds-p-around_small"
+                                     role="alert">
+                                    <h2 style="color: black;font-weight: 600;">Products from the opportunity</h2> 
+                                </div>
+                                <div class="slds-m-vertical_medium slds-custom-pad8">
+                                    <label class="slds-form-element__label" style="margin-bottom: -0.5rem;padding-left: 0.25rem;">Products from the opportunity:</label>
+                                    <span style="margin-left: 33%;display: block;">
+                                        <lightning:inputField variant="label-hidden" aura:id="prods" fieldName="Products__c"/>
+                                    </span>
+                                </div>
+                            </div>
+                        </aura:if>
+                        
+                        <div class="slds-m-around_medium">
+                            <div class="slds-theme_info slds-p-around_small"
+                                 role="alert">
+                                <h2 style="color: black;font-weight: 600;">What is the customer doing with SD WAN, O365 and AWS/Azure?</h2>
+                            </div>
+                            <div class="slds-m-vertical_medium slds-custom-pad8">
+                                <lightning:inputField fieldName="SD_WAN_O365_and_AWS_Azure_Usage__c" />
+                            </div>
+                        </div>
+                        <div class="slds-m-around_medium">
+                            <div class="slds-theme_info slds-p-around_small"
+                                 role="alert">
+                                <h2 style="color: black;font-weight: 600;">MEDDIC</h2>
+                            </div>
+                            <div class="slds-m-vertical_medium slds-m-horizontal_small slds-custom-pad8">
+                                <lightning:layout pullToBoundary="small" multipleRows="true">
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <div class="slds-p-right_small">
+                                            <lightning:inputField fieldName="Metrics__c" />
+                                        </div>
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <lightning:inputField aura:id="exonomicbuyer" fieldName="Economic_Buyer__c" />
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <div class="slds-p-right_small">
+                                            <lightning:inputField fieldName="Decision_Criteria__c" />
+                                        </div>
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <lightning:inputField fieldName="Decision_Process__c" />
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <div class="slds-p-right_small">
+                                            <lightning:inputField fieldName="Identified_Pain__c" />
+                                        </div>
+                                    </lightning:layoutItem>
+                                    <lightning:layoutItem size="6" padding="around-xsmall">
+                                        <lightning:inputField aura:id="champion" fieldName="Champion__c" />
+                                    </lightning:layoutItem>
+                                </lightning:layout>
+                            </div>
+                        </div>
+                        <div class="slds-grid slds-wrap">
+                            <div class="slds-align_absolute-center" style="height:5rem">
+                                <lightning:button class="slds-m-top_small" variant="brand" type="submit" name="save"
+                                                  label="Save and Proceed" />
+                                <lightning:button class="slds-m-top_small" name="cancel" label="Cancel"
+                                                  onclick="{!c.cancel}" />
+                            </div>
+                        </div>
+                        
+                    </lightning:recordEditForm>
+                </aura:set>
+            </aura:if>
+        </aura:if>
+    </aura:if>
+    
+    <aura:if isTrue="{!v.stepname == '2'}">
+        <aura:if isTrue="{!not(empty(v.errorMsg))}">
+            <div style="margin:auto;height:2rem"
+                 class="slds-notify slds-notify_alert slds-theme_error" role="alert">
+                <h2 style="color: black;font-weight: 600;">{!v.errorMsg}</h2>
+            </div>
+        </aura:if>
+        <div class="slds-grid slds-wrap">
+            <div class="slds-align_absolute-center" style="margin:auto;height:5rem;width:30%">
+                <c:Lookup objectName="User" field_API_text="Name" field_API_val="Id" limit="4" field_API_search="Name"
+                          lookupIcon="standard:user" selItem="{!v.selItem}" placeholder="Search Users(3 char min)"
+                          filter="isActive = true" fieldlst="{!v.userfieldlist}" noBind="true" />
+            </div>
+        </div>
+        <c:ListCardAddRemoveComponent listofrecords="{!v.userList}" cardbodyfields="title,email"
+                                      header="Selected Internal Attendees" />
+        
+        <div class="slds-grid slds-wrap">
+            <div class="slds-align_absolute-center">
+                <p>
+                    Please add at least one Internal Attendee.
+                </p>
+            </div>
+        </div>
+        <div class="slds-grid slds-wrap">
+            <div class="slds-align_absolute-center" style="height:5rem">
+                <lightning:button class="slds-m-top_small" variant="brand" onclick="{!c.previous}" label="Go Back" />
+                <lightning:button class="slds-m-top_small" variant="brand" onclick="{!c.saveinternalatt}"
+                                  label="Save and Proceed" />
+                <lightning:button class="slds-m-top_small" name="cancel" label="Cancel" onclick="{!c.cancel}" />
+            </div>
+        </div>
+        
+    </aura:if>
+    
+    <aura:if isTrue="{!v.stepname == '3'}">
+        <aura:if isTrue="{!not(empty(v.errorMsg))}">
+            <div style="margin:auto;height:2rem"
+                 class="slds-notify slds-notify_alert slds-theme_error" role="alert">
+                <h2 style="color: black;font-weight: 600;">{!v.errorMsg}</h2>
+            </div>
+        </aura:if>
+        <div class="slds-grid slds-wrap">
+            <div class="slds-align_absolute-center" style="margin:auto;height:5rem;width:30%">
+                <c:Lookup objectName="Contact" field_API_text="Name" field_API_val="Id" limit="4"
+                          field_API_search="Name" lookupIcon="standard:contact" selItem="{!v.contactselecteditem}"
+                          placeholder="Search Contacts(3 char min)" filter="Active__c = false and AccountId != null"
+                          fieldlst="{!v.contactfieldlst}" noBind="true" />
+            </div>
+            
+        </div>
+        
+        <c:ListCardAddRemoveComponent listofrecords="{!v.headofitlst}" cardbodyfields="title,email"
+                                      header="Head of IT" />
+        <c:ListCardAddRemoveComponent listofrecords="{!v.headofsecuritylst}" cardbodyfields="title,email"
+                                      header="Head of Security" />
+        <c:ListCardAddRemoveComponent listofrecords="{!v.headofnetworkinglst}" cardbodyfields="title,email"
+                                      header="Head of Networking" />
+        <c:ListCardAddRemoveComponent listofrecords="{!v.othercontactlst}" cardbodyfields="title,email"
+                                      header="Selected Attendees (Other)" />
+        
+        <div class="slds-grid slds-wrap">
+            <div class="slds-align_absolute-center">
+                <p>
+                    Please add at least one C-Level External Attendee.
+                </p>
+            </div>
+        </div>
+        <div class="slds-grid slds-wrap">
+            <div class="slds-align_absolute-center" style="height:5rem">
+                <lightning:button class="slds-m-top_small" variant="brand" onclick="{!c.previous}" label="Go Back" />
+                <lightning:button class="slds-m-top_small" variant="brand" onclick="{!c.saveexternalatt}"
+                                  label="Save and Proceed" />
+                <lightning:button class="slds-m-top_small" name="cancel" label="Cancel" onclick="{!c.cancel}" />
+            </div>
+        </div>
+    </aura:if>
+</aura:component>

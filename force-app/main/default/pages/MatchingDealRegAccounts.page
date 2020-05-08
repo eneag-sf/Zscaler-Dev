@@ -1,0 +1,29 @@
+<apex:page standardController="Deal_Reg__c" extensions="MatchingDealRegAccountsControllerExt" showHeader="false" sidebar="false">
+    
+    <apex:form >
+        <apex:pageBlock id="block">
+        
+            <apex:pageBlockSection columns="1" rendered="{!matchingAccountList.size > 0}">
+                <apex:pageBlockSectionItem >
+                    <apex:pageBlockTable value="{!matchingAccountList}" var="acc" >
+                    <apex:column headerValue="Name">
+                        <a href="/{!acc.Id}" target="_blank">{!acc.Name}</a>
+                    </apex:column>
+                    <apex:column value="{!acc.Type}"/>
+                    <apex:column value="{!acc.NumberOfEmployees}"/>
+                    <apex:column headerValue="Owner">
+                        {!acc.Owner.Name}
+                    </apex:column>
+                    
+                </apex:pageBlockTable>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            
+            <apex:pageBlockSection rendered="{!NOT(matchingAccountList.size > 0)}">
+                No Matching Account Found.
+            </apex:pageBlockSection>
+            
+            
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

@@ -1,0 +1,228 @@
+<apex:page controller="PatchRulesController" tabstyle="Patch__c">
+<html ng-app="spPatchList">
+    <link rel="stylesheet" href="{!URLFOR($Resource.Patches, 'css/bootstrap-force.css')}"/>
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.css" rel="stylesheet"/>
+    <script src="{!URLFOR($Resource.Patches, 'js/jquery.min.js')}"></script>
+    <script src="{!URLFOR($Resource.Patches, 'js/angular.min.js')}"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <script>
+        function setFocusOnLoad() {}
+        
+        var spApp = angular.module('spPatchList', []);
+        spApp.controller('spPatchListCtrl', function($scope, $window) {
+            $scope.patches = {!PatchToDisplay};
+            $scope.lastDeploymentDate = {!LastDeploymentDate};
+            $scope.isUpdated = function(p) {
+                return p.timestamp > $scope.lastDeploymentDate;
+            };
+            $scope.openNewWindow = function(url) {
+                $window.open(url, '_blank');
+            };
+            $scope.hasUpdate = false;
+            angular.forEach($scope.patches, function(patch){
+                if($scope.isUpdated(patch))
+                {
+                    $scope.hasUpdate = true;
+                }
+            });
+        });
+        $(document).ready(function() {
+            $('.fa').tooltip();
+            $(".accordion-heading").click(function() {
+               $(this).next().slideToggle("fast");
+            });
+        });
+    </script>
+    <style>
+        #wrap {
+            text-align:left;
+            width: 90%;
+            text-align:center;
+        }
+        .form-ul {
+            padding: 0;
+            margin: 0;
+        }
+        .form-ul li {
+            list-style: none;
+        }
+        .head-title {
+            border: 1px solid #E4E4E4;
+            border-left: none;
+            border-right: none;
+        }
+        .head-title .data-row {
+            background: #EBECEC;
+            color: #000;
+            font-weight: bold;
+        }
+        .child-block {   
+        }
+        .child-row .li-head {
+            width: 100%;
+        }
+        .data-row, .child-row, .logic-row {
+            font-size: 12px;
+            display: table;
+            width: 100%;
+            text-align: left;
+            table-layout: fixed;
+        }
+        .data-row span.data-cell, .child-ul span.child-cell, .logic-row span.logic-cell {
+            display: table-cell;
+            padding: 3px 0;
+            vertical-align: top;
+        }
+        .accordion-inner .data-row span.data-cell {
+            padding: 3px 10px;
+        }
+        .data-row span.data-cell > a {
+            text-decoration: underline;
+            color: #000;
+        }
+        
+        .data-row span.data-cell > a:hover {
+            
+        }
+        .data-row span.data-cell.first-cell {
+            width: 65px;
+            padding-left: 4px;
+        }
+        .center {
+            text-align: center;
+        }
+        .data-row span.data-cell.has-label {
+            width: 6%;
+        }
+        .logic-row span.logic-cell.li-half-title {
+            width: 150px;
+            display: table-cell;
+        }
+        .logic-row span.logic-cell.li-half {
+            display: table-cell;
+        }
+        .accordion-toggle:hover {
+            background-color: #e1f2ff;
+        }
+        .accordion-inner {
+            padding: 10px 20px;
+        }
+        .child-ul {
+            width: 100%;
+        }
+        .child-ul li, .logic-row span.logic-cell {
+            padding: 2px 10px 2px 10px;
+            font-size: 12px;
+        }
+        .accordion-inner:hover {
+            background-color: #f7f8f7
+        }
+        .fa {
+            font-size: 14px;
+        }
+        .bootstrap-force .accordion-heading .accordion-toggle {
+            display: block;
+            padding: 8px 15px 8px 5px;
+        }
+    </style>
+
+    <div ng-controller="spPatchListCtrl">
+    <apex:sectionHeader title="Patch Rules"></apex:sectionHeader>
+    <apex:form >
+    <apex:pageMessages />
+    <apex:pageBlock mode="maindetail">
+        <apex:pageBlockButtons location="top">
+            <input type="button" class="btn" onclick="window.location='{!URLFOR($Action.Patch__c.New)}'" value="New Patch" />
+            <apex:commandButton value="Config" rendered="{!IsAdmin}" onclick="top.location='{!$Page.PatchConfiguration}';return false;" />
+            <apex:commandButton value="Replace Member" onclick="window.open('{!$Page.PatchUserReplace}?validate=1', '_blank', 'width=500,height=400');return false;" />
+            <apex:commandButton value="Validate" onclick="window.open('{!$Page.PatchRuleDeploy}?validate=1', '_blank', 'width=500,height=400');return false;" />
+            <apex:commandButton value="Deploy"  onclick="window.open('{!$Page.PatchRuleDeploy}', '_blank', 'width=500,height=400');return false;" />
+        </apex:pageBlockButtons>
+        <div id="wrap" class="bootstrap-force">
+            <ul class="accordion form-ul" id="accordion1">
+                <li style="position:absolute;top:77px;">
+                    <input type="text" style="line-height:15px;height:15px;box-shadow:none;" class="form-control" onkeyup="startGlobalSearch(this.value)" placeholder="Search..."/>
+                </li>
+                <li class="head-title">
+                    <div class="data-row">
+                        <span class="data-cell first-cell center"><span class="fa fa-exclamation-circle" ng-show="hasUpdate" data-toggle="tooltip" data-placement="top" title="There are updates. Deployment is needed" style="color:#F0A300"></span></span>
+                        <span class="data-cell">Patch Number</span>
+                        <span class="data-cell">Patch Name</span>
+                        <span class="data-cell">Type</span>
+                        <span class="data-cell">Team</span>
+                    </div>
+                </li>
+                <li class="accordion-group" ng-repeat="p in patches">
+                    <div class="accordion-heading">
+                        <div class="accordion-toggle collapsed" >
+                            <div class="data-row">
+                                <span class="data-cell first-cell">
+                                    <span class="fa fa-check" ng-show="p.active" data-toggle="tooltip" data-placement="top" title="This patch is ACTIVE" style="color:green"></span>
+                                    <span class="fa fa-times" ng-hide="p.active" data-toggle="tooltip" data-placement="top" title="This patch is INACTIVE" style="color:grey"></span>
+                                    <span class="fa fa-user-plus" ng-show="p.assignTeamOnly" data-toggle="tooltip" data-placement="top" title="Assigns team only" style="color:#F0A300"></span>
+                                    <span class="fa fa-bitbucket" ng-show="p.catchall" data-toggle="tooltip" data-placement="top" title="Catchall bucket" style="color:red"></span>
+                                    <span class="fa fa-exclamation-circle" ng-show="isUpdated(p)" data-toggle="tooltip" data-placement="top" title="Needs deployment" style="color:#F0A300"></span>
+                                </span>
+                                <span class="data-cell"><a ng-click="openNewWindow('/' + p.patchId)">{{p.patchNumber}}</a>&nbsp;</span>
+                                <span class="data-cell"><a ng-click="openNewWindow('/' + p.patchId)">{{p.name}}</a>&nbsp;</span>
+                                <span class="data-cell">{{p.type}}</span>
+                                <span class="data-cell"><a ng-click="openNewWindow('/' + p.teamId)">{{p.teamName}}</a>&nbsp;</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="collapse{{$index}}" class="accordion-body" style="display:none">
+                        <div class="accordion-inner">
+                            <div class="child-block">
+                                <div class="logic-row" ng-show="p.ruleLogic != null && p.ruleLogic != ''">
+                                    <span class="li-half-title logic-cell">Rule Logic</span>
+                                    <span class="li-half logic-cell">{{p.ruleLogic}}</span>    
+                                </div>
+                                <ul class="child-ul">
+                                    <li class="child-row" ng-repeat="r in p.rules">
+                                        <span class="child-cell">{{r.sequence}}</span>
+                                        <span class="child-cell">{{r.field}}</span>
+                                        <span class="child-cell">{{r.operation}}</span>
+                                        <span class="child-cell"><span title="{{r.value}}" ng-show="r.operation != 'in range'">{{r.value}}</span><span ng-show="r.operation == 'in range'">{{r.rangeLow}} - {{r.rangeHigh}}</span></span>
+                                        <span class="child-cell"></span>
+                                        <span class="child-cell"></span>
+                                    </li>
+                                </ul>
+                            </div>   
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        
+    </apex:pageBlock>
+    </apex:form>
+    </div>
+
+    <script>
+        let timer;
+        function startGlobalSearch(input){
+            let searchKey = input.trim().toLowerCase();
+            clearTimeout(timer);
+            timer = setTimeout(function(){
+                $('.accordion-group').each(function(){
+                    let currentPatchRow = $(this);
+                    let isVisible = false;
+                    currentPatchRow.find('.data-row span').each(function(){
+                        let spanText = $(this).text();
+                        if(spanText.toLowerCase().indexOf(searchKey) >= 0){
+                            isVisible = true;
+                        }
+                    });
+
+                    if(!isVisible){
+                        currentPatchRow.hide();
+                    }
+                    else{
+                        currentPatchRow.show();   
+                    }
+                });
+            }, 500);
+        }
+    </script>
+</html>
+</apex:page>

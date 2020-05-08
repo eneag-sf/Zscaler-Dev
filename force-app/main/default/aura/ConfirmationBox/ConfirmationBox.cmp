@@ -1,0 +1,47 @@
+<aura:component implements="force:lightningQuickActionWithoutHeader,flexipage:availableForRecordHome,force:hasRecordId" Controller="ConfirmationBoxApexController" access="global" >
+    <aura:html tag="style">
+        .slds-modal__container {
+        min-width: 50vw;
+        }
+        
+        .cuf-content {
+        padding: 0 0rem !important;
+        }
+        .slds-p-around--medium {
+        padding: 0rem !important;
+        }       
+        .slds-modal__content{
+        overflow-y:hidden !important;
+        height:unset !important;
+        max-height:unset !important;
+        }
+    </aura:html>
+    
+
+    <aura:attribute name="recordId" type="Id"/>
+    <aura:attribute name="loading" type="Boolean" default="true"/>
+	
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="mailBody" type="String" />
+    <lightning:inputRichText value="{!v.mailBody}" placeholder="Type something interesting"/>
+    <!-- MODAL BODY / INPUT FORM -->    
+    <!-- End of Modal Content -->  
+    
+    
+    <aura:if isTrue="{! v.loading}">
+        <div role="status" class="slds-spinner slds-spinner_medium">
+            <span class="slds-assistive-text">Loading</span>
+            <div class="slds-spinner__dot-a"></div>
+            <div class="slds-spinner__dot-b"></div>
+        </div>
+    </aura:if>
+    <div class="modal-footer slds-modal__footer slds-size_1-of-1">
+        <div class="forceChangeRecordTypeFooter">
+            <ui:button class="slds-button slds-button_neutral" label="Cancel"  press="{!c.handleClose}"/>
+            <ui:button class="slds-button slds-button_neutral" label="Save"  press="{!c.saveTemplateOnCase}"/>
+          
+        </div>
+    </div>
+    
+    
+</aura:component>

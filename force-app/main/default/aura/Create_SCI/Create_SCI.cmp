@@ -1,0 +1,16 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader,lightning:actionOverride" access="global" >
+    <aura:handler name="change" value="{!v.record}" action="{!c.doinit}" />
+    <aura:attribute name="record" type="Account"/>
+    <aura:attribute name="showSpinner" type="boolean" default="true"/>
+    <aura:attribute name="simpleRecord" type="Account"/>
+    <!-- This is equivalent of Standard Controller -->
+    <force:recordData aura:id="forceRecordCmp"
+                      recordId="{!v.recordId}"
+                      fields="Id,Name,Sales_Territory__c"
+                      mode="VIEW"
+                      targetRecord="{!v.record}"
+                      targetError="{!v.error}" />
+    <aura:if isTrue="{!v.showSpinner}">
+            <lightning:spinner variant="brand" size="medium" />
+    </aura:if>
+</aura:component>

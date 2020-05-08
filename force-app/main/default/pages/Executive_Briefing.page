@@ -1,0 +1,35 @@
+<apex:page standardController="Executive_Briefing_Request__c" sidebar="false" lightningstylesheets="true">
+    <apex:slds />
+    <apex:includeLightning />
+    <div  id="LoadingvfDIV" class="slds-spinner_container" style="position: fixed;">
+        <div role="status" class="slds-spinner slds-spinner_medium slds-spinner_brand">
+            <span class="slds-assistive-text">Loading...</span>
+            <div class="slds-spinner__dot-a"></div>
+            <div class="slds-spinner__dot-b"></div>
+        </div>
+    </div>
+    <div id="lightning" />
+    <script>
+
+        let accId = '';
+        if('{!Executive_Briefing_Request__c.Customer__c}'){
+            accId = '{!Executive_Briefing_Request__c.Customer__c}';
+        }else if('{!Executive_Briefing_Request__c.Opportunity__r.AccountId}'){
+            accId = '{!Executive_Briefing_Request__c.Opportunity__r.AccountId}';
+        }
+        $Lightning.use("c:Executive_Briefing_Application", function() {
+             $Lightning.createComponent("c:Executive_Briefing_Component", {
+                   recordId: "{!$CurrentPage.parameters.id}",
+                   oppId: "{!Executive_Briefing_Request__c.Opportunity__c}",
+                   accId: accId
+                 },
+              "lightning",
+              function(cmp) {
+                console.log("component was created");
+                document.getElementById("LoadingvfDIV").style.display = "none";
+                // do some stuff
+              }
+          );
+        });
+    </script>
+</apex:page>

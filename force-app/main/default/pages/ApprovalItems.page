@@ -1,0 +1,131 @@
+<apex:page controller="ApprovalItemsController">
+    <apex:form >
+    <style>
+    .ct{
+        text-align:right;
+        }
+    </style>
+    <script>
+        function openApproveRejectWindow(approvalRequestId) {
+            var childWindow = window.open('/apex/ApproveOrRejectQuote?Id=' + approvalRequestId, 'newwindow', 'height=550,width=850,left=250,top=100,resizable=no,scrollbars=yes  '); 
+            childWindow.onunload = function() { 
+                refreshFn();
+            };
+            return false;
+        }
+    </script>
+        <apex:pageBlock title="Items to Approve" id="approvalList">
+        
+            <apex:pageBlockButtons location="top" style="text-align: right;" rendered="{!approvalReqList.size>0}">
+              <apex:commandButton id="refreshBtn" action="{!refereshAppReq}" value="Refresh" style="color: black; background : powderblue;"/> 
+            </apex:pageBlockButtons>
+
+            <apex:pageBlockTable value="{!approvalReqList }" var="approvalReq">
+               
+               <!-- <apex:column style="width:150px" >
+                    <apex:facet name="header">
+                        Approval Action 
+                    </apex:facet>
+                    <apex:outputField value="{!approvalReq.APTSC_Approval_Action__c}"/> 
+                    
+                </apex:column> -->
+                    
+                <apex:column style="width:150px" >
+                    <apex:facet name="header">
+                        Approval Action 
+                    </apex:facet>
+                    <a href="#" onclick="openApproveRejectWindow('{!approvalReq.Id}');">Approve/Reject</a>
+                  
+                </apex:column>
+                            
+                <apex:column >
+                    <apex:facet name="header">
+
+                        <apex:commandLink action="{! doSorting }" reRender="approvalList">
+                            <apex:param name="sortField" value="Apttus_QPApprov__ProposalId__r.Name" assignTo="{!sortField}"/>
+                            Quote Number {!IF(sortfield=='Apttus_QPApprov__ProposalId__r.Name',IF(sortOrder==' DESC ',' ▼',' ▲' ),'')}
+                        </apex:commandLink>
+                    </apex:facet>
+                    <a href="/{!approvalReq.Apttus_QPApprov__ProposalId__c}" target="blank">
+                            <apex:outputField value="{!approvalReq.Apttus_QPApprov__ProposalId__r.Name}" />
+                    </a>
+                </apex:column>
+
+                <apex:column >
+                    <apex:facet name="header">
+                        <apex:commandLink action="{! doSorting }" reRender="approvalList">
+                            <apex:param name="sortField" value="Apttus_QPApprov__ProposalId__r.Apttus_Proposal__Opportunity__r.Name" assignTo="{!sortField}"/>
+                            Opportunity {!IF(sortfield=='Apttus_QPApprov__ProposalId__r.Apttus_Proposal__Opportunity__r.Name',IF(sortOrder==' DESC ',' ▼',' ▲' ),'')}
+                        </apex:commandLink>
+                    </apex:facet>
+                    <a href="/{!approvalReq.Apttus_QPApprov__ProposalId__r.Apttus_Proposal__Opportunity__c}" target="blank">
+                        <apex:outputField value="{!approvalReq.Apttus_QPApprov__ProposalId__r.Apttus_Proposal__Opportunity__r.Name}" />
+                    </a>
+                </apex:column>
+
+                <apex:column style="text-align: right;" headerClass="ct">
+                    <apex:facet name="header">
+                        <apex:commandLink action="{! doSorting }" reRender="approvalList" style="text-align: right;">
+                            <apex:param name="sortField" value="Apttus_QPApprov__ProposalId__r.Apttus_Proposal__Opportunity__r.CloseDate" assignTo="{!sortField}"/>
+                            Close Date {!IF(sortfield=='Apttus_QPApprov__ProposalId__r.Apttus_Proposal__Opportunity__r.CloseDate',IF(sortOrder==' DESC ',' ▼',' ▲' ),'')}
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!approvalReq.Apttus_QPApprov__ProposalId__r.Apttus_Proposal__Opportunity__r.CloseDate}" />
+                </apex:column>
+
+
+
+                <apex:column style="width:150px;text-align: right;" headerClass="ct">
+                    <apex:facet name="header">
+                        <apex:commandLink action="{! doSorting }" reRender="approvalList" >
+                            <apex:param name="sortField" value="Apttus_Approval__DateAssigned__c" assignTo="{!sortField}"/>
+                            Submitted on {!IF(sortfield=='Apttus_Approval__DateAssigned__c' || sortField == '',IF(sortOrder==' DESC ',' ▼',' ▲' ),'')}
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!approvalReq.Apttus_Approval__DateAssigned__c}" />
+                </apex:column>
+
+                <apex:column style="text-align: right;" headerClass="ct">
+                    <apex:facet name="header">
+                        <apex:commandLink action="{! doSorting }" reRender="approvalList">
+                            <apex:param name="sortField" value="Apttus_QPApprov__ProposalId__r.APTS_ACV__c" assignTo="{!sortField}"/>
+                            ACV {!IF(sortfield=='Apttus_QPApprov__ProposalId__r.APTS_ACV__c',IF(sortOrder==' DESC ',' ▼',' ▲' ),'')}
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!approvalReq.Apttus_QPApprov__ProposalId__r.APTS_ACV__c}" />
+                </apex:column>
+
+                <apex:column style="text-align: right;" headerClass="ct">
+                    <apex:facet name="header">
+                        <apex:commandLink action="{! doSorting }" reRender="approvalList">
+                            <apex:param name="sortField" value="Apttus_QPApprov__ProposalId__r.APTS_Proposal_Net_Price__c" assignTo="{!sortField}"/>
+                            TCV {!IF(sortfield=='Apttus_QPApprov__ProposalId__r.APTS_Proposal_Net_Price__c',IF(sortOrder==' DESC ',' ▼',' ▲' ),'')}
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!approvalReq.Apttus_QPApprov__ProposalId__r.APTS_Proposal_Net_Price__c}" />
+                </apex:column>
+
+                <apex:column style="text-align: right;" headerClass="ct">
+                    <apex:facet name="header">
+                        <apex:commandLink action="{! doSorting }" reRender="approvalList">
+                            <apex:param name="sortField" value="Apttus_QPApprov__ProposalId__r.Abs_Total_Discount__c" assignTo="{!sortField}"/>
+                            Total Discount {!IF(sortfield=='Apttus_QPApprov__ProposalId__r.Abs_Total_Discount__c',IF(sortOrder==' DESC ',' ▼',' ▲' ),'')}
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!approvalReq.Apttus_QPApprov__ProposalId__r.Abs_Total_Discount__c}" />
+                </apex:column>
+
+                <apex:column style="text-align: right;" headerClass="ct">
+                    <apex:facet name="header">
+                        <apex:commandLink action="{! doSorting }" reRender="approvalList">
+                            <apex:param name="sortField" value="Apttus_QPApprov__ProposalId__r.APTS_Subscription_Term__c" assignTo="{!sortField}"/>
+                            Term {!IF(sortfield=='Apttus_QPApprov__ProposalId__r.APTS_Subscription_Term__c',IF(sortOrder==' DESC ',' ▼',' ▲' ),'')}
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!approvalReq.Apttus_QPApprov__ProposalId__r.APTS_Subscription_Term__c}" />
+                </apex:column>
+            </apex:pageBlockTable>
+        </apex:pageBlock>
+        <apex:actionFunction id="refreshFn" name="refreshFn" action="{!refereshAppReq}" reRender="approvalList"></apex:actionFunction>
+    </apex:form>
+</apex:page>

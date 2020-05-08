@@ -1,0 +1,107 @@
+<aura:component controller="CaseEscalationController_LWC"
+    implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader,lightning:actionOverride"
+    access="global">
+    <aura:handler name="init" value="{!this}" action="{!c.doinit}" />
+    <aura:attribute name="showSpinner" type="boolean" default="true" />
+    <!--<aura:attribute name="inescalation" type="boolean" default="true" />
+    <aura:attribute name="showengesc" type="boolean" default="false" />
+    <aura:attribute name="showhandoff" type="boolean" default="false" />
+    <aura:attribute name="showescalation" type="boolean" default="false" />
+    <aura:attribute name="showModal" type="boolean" default="false" />-->
+    <aura:attribute name="showdefcon" type="boolean" default="false" />
+    <aura:attribute name="escTitle" type="String" default="Escalate Case" />
+    <aura:attribute name="escLabel" type="String" default="Reason for Escalation" />
+    <aura:attribute name="reason" type="String" />
+    <aura:attribute name="deflevel" type="String" />
+    <aura:attribute name="typeofEscalation" type="String" />
+    <aura:if isTrue="{!v.showSpinner}">
+        <lightning:spinner variant="brand" size="medium" />
+    </aura:if>
+    <!--<div class="slds-page-header slds-align_absolute-center" style="height: 5em"  role="banner">
+        <h1 class="slds-page-header__title slds-m-right_small
+                        slds-truncate slds-align-left">{!v.escTitle}</h1>
+    </div>-->
+
+    <!--<aura:if isTrue="{!!v.inescalation}">-->
+    <!--<aura:if isTrue="{!v.showengesc == true || v.showhandoff == true || v.showescalation == false}">
+        <div class="slds-box slds-grid slds-theme_shade slds-theme_warning">
+            <aura:if isTrue="{!v.showengesc}">
+                <div class="slds-col slds-p-horizontal_small">
+                    <lightning:button class="changestyle-of-box" variant="neutral" label="Engineering Escalation" onclick="{!c.engescalation}" />
+                </div>
+            </aura:if>
+            <aura:if isTrue="{!v.showhandoff}">
+                <div class="slds-col slds-p-horizontal_small">
+                    <lightning:button class="changestyle-of-box" variant="neutral" label="Case Handoff"
+                        onclick="{!c.handoff}" />
+                </div>
+            </aura:if>
+            <aura:if isTrue="{!!v.showescalation}">
+                <div class="slds-col slds-p-horizontal_small" style="text-align: right;">
+                    <lightning:button class="changestyle-of-box" variant="neutral" label="Customer Escalation"
+                        onclick="{!c.otherescalation}" />
+                </div>
+            </aura:if>
+
+        </div>
+        <aura:set attribute="else">
+            <div class="slds-box slds-grid slds-theme_shade slds-theme_warning">
+                <div class="slds-col slds-p-horizontal_small" style="text-align: center;">
+                    Already in Escalation!
+                </div>
+            </div>
+        </aura:set>
+    </aura:if>-->
+    <aura:if isTrue="{!v.showSpinner}">
+        <lightning:spinner variant="brand" size="medium" />
+        <aura:set attribute="else">
+            <aura:if isTrue="{!v.showdefcon}">
+                <lightning:recordEditForm aura:id="caseform" recordId="{!v.recordId}" objectApiName="Case"
+                    onload="{!c.handleLoad}" onsubmit="{!c.handleSubmit}">
+                    <lightning:messages />
+                    <div >
+                        <lightning:layout pullToBoundary="medium" multipleRows="true">
+
+                            <lightning:layoutItem size="12" padding="around-medium">
+                                <lightning:inputField aura:id="custesc" fieldName="Escalation_on_behalf_of_Customer__c"
+                                    onchange="{!c.custesc}" />
+                            </lightning:layoutItem>
+
+                            <lightning:layoutItem size="12" padding="around-medium">
+                                <lightning:inputField aura:id="defconval" fieldName="Defcon_Level__c" />
+                            </lightning:layoutItem>
+
+                            <lightning:layoutItem size="12" padding="around-medium">
+                                <lightning:textarea name="reasonforESC" value="{!v.reason}" label="{!v.escLabel}" required="true"/>
+                            </lightning:layoutItem>
+                        </lightning:layout>
+                        <br />
+                        <div class="slds-box" style="text-align:right">
+                            <button class="slds-button slds-button_neutral" onclick="{!c.cancel}">Cancel</button>
+                            <button class="slds-button slds-button_brand"
+                                                    type="submit">{!v.escTitle}</button>
+                        </div>
+
+                    </div>
+                </lightning:recordEditForm>
+                <aura:set attribute="else">
+                    <div >
+                        <lightning:textarea name="reasonforESC" value="{!v.reason}" label="{!v.escLabel}" required="true"/>
+                    </div>
+                    <aura:if isTrue="{!v.showSpinner}">
+                        <lightning:spinner variant="brand" size="medium" />
+                        <aura:set attribute="else">
+                            <div class="slds-box" style="text-align:right">
+                                <!--<button class="slds-button slds-button_neutral" onclick="{!c.cancel}">Cancel</button>-->
+                                <button class="slds-button slds-button_brand"
+                                    onclick="{!c.escalateCase}">{!v.escTitle}</button>
+                            </div>
+                        </aura:set>
+                    </aura:if>
+                </aura:set>
+            </aura:if>
+        </aura:set>
+    </aura:if>
+
+
+</aura:component>

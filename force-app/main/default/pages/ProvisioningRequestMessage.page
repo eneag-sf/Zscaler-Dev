@@ -1,0 +1,3 @@
+<apex:page standardController="Provisioning_Request__c" showHeader="false">
+<div style="color:red;width:100%;text-align:center" title="{!Provisioning_Request__c.FailedReason__c}">{!Provisioning_Request__c.FailedReason__c}</div>
+</apex:page>

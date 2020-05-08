@@ -1,0 +1,65 @@
+<apex:page showHeader="false" controller="PatchRuleDeployController">
+    <apex:includeScript value="{!URLFOR($Resource.Patches, '/js/jszip.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.Patches, '/js/jszip-load.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.Patches, '/js/jszip-deflate.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.Patches, '/js/jszip-inflate.js')}"/>
+    <style type="text/css">
+        .hidden {
+            display: none;
+        }
+    </style>
+    <script>
+        function onRealignChecked(event){
+            if(event.target.checked) {
+                document.getElementById('realignType').classList.remove('hidden');
+            } else{
+                document.getElementById('realignType').classList.add('hidden');
+            }
+        }
+    </script>
+    <body onload="generateZip()">
+    <apex:sectionHeader title="Patch Rule {!IF($CurrentPage.parameters.validate == '1', 'Validation', 'Deployment')}"/>
+    <apex:form id="form">
+        <apex:pageBlock >
+            <apex:actionPoller action="{!checkAsyncRequest}" interval="5" rerender="form" rendered="{!NOT(ISNULL(AsyncResult))}"/>
+            <apex:actionFunction name="deployZip" action="{!deployZip}" rendered="{!ISNULL(AsyncResult)}" rerender="form">
+                <apex:param name="data" assignTo="{!ZipData}" value=""/>
+            </apex:actionFunction>
+            <apex:pageblockButtons location="bottom" rendered="{!NOT(isValidate) && NOT(isConfirmed)}">
+                <apex:commandButton value="Deploy" action="{!startDeploy}"/>
+                <input type="button" class="btn" value="Cancel" onclick="window.close()" />
+            </apex:pageblockButtons>
+            <apex:outputPanel rendered="{!NOT(isValidate) && NOT(isConfirmed)}">
+                <table>
+                    <tr>
+                        <td>Realign all patches after complete</td>
+                        <td><apex:inputCheckbox value="{!realign}" onclick="onRealignChecked(event)" /></td>
+                    </tr>
+                </table>
+                <table id="realignType" class="hidden">
+                    <tr>
+                        <td><apex:inputCheckbox value="{!accRealign}" /></td>
+                        <td>Account</td>
+                        <td><apex:inputCheckbox value="{!leadrealign}" /></td>
+                        <td>Lead</td>
+                    </tr>
+                </table>
+            </apex:outputPanel>
+            <c:Zip name="generateZip" oncomplete="deployZip(data);" rendered="{!isConfirmed && ISNULL(AsyncResult)}">
+                <script>
+                    zipFile.file('package.xml', '{!JSENCODE(PackageXml)}');
+                    <apex:repeat value="{!EngineClassName2Body}" var="engineClassName">
+                        zipFile.file('classes/{!engineClassName}.cls-meta.xml', '{!JSENCODE(ClassMetadata)}');
+                        zipFile.file('classes/{!engineClassName}.cls', '{!JSENCODE(EngineClassName2Body[engineClassName])}');                        
+                    </apex:repeat>
+                    <apex:repeat value="{!EngineTestClassName2Body}" var="engineTestClassName">
+                        zipFile.file('classes/{!engineTestClassName}.cls-meta.xml', '{!JSENCODE(ClassMetadata)}');
+                        zipFile.file('classes/{!engineTestClassName}.cls', '{!JSENCODE(EngineTestClassName2Body[engineTestClassName])}');                        
+                    </apex:repeat>
+                </script>
+            </c:Zip>
+            <apex:pageMessages id="message" />
+        </apex:pageBlock>
+    </apex:form>
+    </body>
+</apex:page>

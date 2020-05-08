@@ -1,0 +1,10 @@
+<apex:page showHeader="true" sidebar="true" standardController="Opportunity" extensions="OpportunityCreateOverridePageController" action="{!redirect}">
+    <apex:form >
+        <apex:outputPanel rendered="{!showError}">
+            Opportunity can be only created by converting a lead or from a contact. <apex:commandLink action="{!goBack}">Click here</apex:commandLink> to go back to your previous page.
+            <br />
+            <br />
+            <a href="https://drive.google.com/file/d/1gITmzl2SvrD_fEYc07ohelm5QbAXDa-b/view" target="_blank">Click here</a> to learn more about opportunity creation.
+        </apex:outputPanel>
+    </apex:form>
+</apex:page>

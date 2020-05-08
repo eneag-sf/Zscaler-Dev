@@ -1,0 +1,12 @@
+button.action-button-spacing:nth-child(5){
+	background-color:red !important;
+	display:none;
+}
+
+.incentive-controls.ng-scope {
+    display: none;
+}
+
+button#addToCart {
+    display: none;
+}

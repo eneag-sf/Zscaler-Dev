@@ -1,0 +1,48 @@
+<template>
+    <div class="zs-case-details">
+        <div class="zs-case-attachment-component">
+            <lightning-card>
+                <h3 slot="title">
+                    <lightning-icon icon-name="utility:attach" size="small"></lightning-icon> &nbsp;&nbsp;
+                    Attachments
+                </h3>
+                <template if:true={putlimit}>
+                    <lightning-button-icon class="slds-p-right_xx-small" onclick={loadmore} icon-name="utility:expand"
+                        slot="actions" alternative-text="Expand"></lightning-button-icon>
+                </template>
+                <template if:false={putlimit}>
+                    <lightning-button-icon class="slds-p-right_xx-small" onclick={contract} icon-name="utility:contract"
+                        slot="actions" alternative-text="Collapse"></lightning-button-icon>
+                </template>
+                <lightning-button-icon class="slds-p-right_xx-small" onclick={refreshdata} icon-name="utility:refresh"
+                    slot="actions" alternative-text="Refresh"></lightning-button-icon>
+                <div slot="footer">
+                    <template if:true={putlimit}>
+                        <lightning-button variant="base" label="View All" title="View All" onclick={loadmore}
+                            class="slds-m-left_x-small"></lightning-button>
+                    </template>
+                    <template if:false={putlimit}>
+                        <lightning-button variant="base" label="Collapse" title="Collapse" onclick={contract}
+                            class="slds-m-left_x-small"></lightning-button>
+                    </template>
+                </div>
+                <div class="slds-p-horizontal_small zs-attachment">
+                    <lightning-layout pull-to-boundary="medium" multiple-rows="true">
+                        <template for:each={caseFiles} for:item="csf">
+                            <lightning-layout-item key={csf.key} size="6">
+                                <div class="slds-box slds-m-around_small lgc-bg">
+                                    <lightning-tile label={csf.filename} href={csf.urltodownload} type="media">
+                                        <lightning-avatar size="medium" src="#" slot="media" initials=""
+                                            fallback-icon-name="doctype:attachment" alternative-text="ATT"
+                                            class="slds-m-right_small">
+                                        </lightning-avatar>
+                                    </lightning-tile>
+                                </div>
+                            </lightning-layout-item>
+                        </template>
+                    </lightning-layout>
+                </div>
+            </lightning-card>
+        </div>
+    </div>
+</template>

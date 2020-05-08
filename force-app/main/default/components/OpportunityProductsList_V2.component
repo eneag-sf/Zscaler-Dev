@@ -1,0 +1,69 @@
+<apex:component access="global" controller="OpportunityLineItemController">
+    <apex:attribute name="Opptyrecord1" description="This field is used to display list of Proposal products" 
+                     type="String" assignTo="{!opptyrecId}" />
+    <apex:attribute name="accrecord1" description="This field is used to get instance URL" 
+                     type="String" assignTo="{!accrecordId}" />
+    
+
+    <b>Please review the new service order</b><br/><br/>      
+    <b>Overview</b><br/>
+    Opportunity Name: {!opptyrec.Name}<br/> 
+    Type: {!opptyrec.Type}<br/> 
+    Account Name: {!accrecord.Name}<br/> 
+    Primary Partner: {!opptyrec.Primary_Partner__c}<br/>  
+    Region: {!accrecord.Region__c}<br/>
+    Territory Type: {!accrecord.Territory_Type__c}<br/><br/>
+    
+    
+    <b>Product</b><br/>
+    Product Type: {!opptyrec.Product_Type__c} <br/>
+    Seats Purchased: {!opptyrec.Proposed_Number_of_Users__c} <br/>
+    Total ACV: {!opptyrec.Amount} <br/>
+    ZPA ACV: {!opptyrec.Total_ZPA_ACV__c} <br/>
+    Account Employee Count: {!accrecord.NumberOfEmployees} <br/><br/>
+    
+    <b>Service</b><br/>
+    DAS Package Purchased: {!opptyrec.DAS_Package_New__c} <br/>
+    DAS Transition Comments: {!opptyrec.DAS_Transition_Comments__c} <br/><br/> 
+
+    <b>Zscaler Contacts</b><br/>
+    ZPA Manager: {!opptyrec.Opportunity_ZPA_Manager__r.Name} <br/> 
+    ZPA SE: {!opptyrec.Opportunity_ZPA_SE__r.Name} <br/> 
+    SE: {!opptyrec.SE_Name__r.Name} <br/> 
+    RSM: {!opptyrec.Owner.Name} <br/> 
+    CSM: {!accrecord.CSM_Name_New__r.Name} <br/> 
+    TAM: {!accrecord.TAM_Name__c} <br/><br/> 
+
+    <!--<b>Customer Contacts</b><br/>
+    <!--Primary Project Contact Name: {!opptyrec.Primary_Project_Contact_Name__c} <br/> 
+    Primary Project Contact Email: {!opptyrec.Primary_Project_Contact_Email__c} <br/> 
+    <!--Primary Project Contact Phone: {!opptyrec.Primary_Project_Contact_Phone__c} <br/><br/> -->
+
+    <b>Technical Information</b><br/>
+    Technical Validation Plan: {!opptyrec.Validation_Plan__c} <br/> 
+    Technical Validation Findings Report: {!opptyrec.Validation_Report__c} <br/> 
+    Architecture Document: {!opptyrec.Architecture_Document__c} <br/> 
+    Architecture Workshop Link: {!accrecord.Architecture_Workshop_Link__c}<br/>
+    Customer Value: {!opptyrec.Summarize_the_Value_to_the_Customer__c} <br/><br/> 
+
+
+    <b>Opportunity Link:</b>&nbsp;&nbsp; <apex:outputLink value="{!url+'/'+opptyrecId}">{!opptyrec.Name}</apex:outputLink><br/><br/> 
+    
+    <br/>
+    <table border="1" style="border-collapse: collapse; width: 100%">
+                   <tr style="font-weight:bold; text-align: center; background-color: #929599;">
+                        <td>Product Name</td>
+                        <td>Product Code</td>                                                                        
+                        
+                    </tr>
+            <apex:repeat value="{!olilst}" var="Item">
+                
+                <tr >
+                    <td style="text-align: center;" ><apex:outputField value="{!Item.Product2.Name}"/> </td>
+                    <td style="text-align: center;"><apex:outputField value="{!Item.ProductCode}"/> </td>
+                </tr>
+            </apex:repeat>
+        </table><br/><br/>
+
+
+</apex:component>

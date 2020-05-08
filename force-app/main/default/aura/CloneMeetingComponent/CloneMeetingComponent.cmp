@@ -1,0 +1,66 @@
+<aura:component access="global" controller="CloneMeetingController" implements="force:appHostable,flexipage:availableForAllPageTypes,forceCommunity:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasSObjectName,force:hasRecordId" >
+    <aura:attribute name="recordId" type="String"/>
+    <aura:attribute name="showModal" type="Boolean" default="false"/>
+    <aura:attribute name="loading" type="Boolean" default="false"/>
+    <aura:attribute name="showErrorModal" type="Boolean" default="false"/>
+    <aura:attribute name="errorMessage" type="String" default=""/>
+    <div class="slds-grid" style="background-color: white;padding: 10px;border-radius: 5px;">
+
+        <div class="slds-col" style="text-align: end;">
+            <lightning:button variant="brand" label="Clone Meeting" onclick="{!c.handleModal}"/>
+        </div>
+
+    </div>
+    
+    <div class="{!v.showErrorModal == true ? 'slds-show' : 'slds-hide'}">
+        <div role="alertdialog" tabindex="-1" aria-labelledby="prompt-heading-id" aria-describedby="prompt-message-wrapper" class="slds-modal slds-fade-in-open slds-modal--prompt">
+            <div class="slds-modal__container">
+                <div class="slds-modal__header slds-theme--error slds-theme--alert-texture">
+                    <h2 class="slds-text-heading--medium" id="prompt-heading-id">Error</h2>
+                </div>
+                <div class="slds-modal__content slds-p-around--medium">
+                    <div>
+                        <p>{!v.errorMessage}</p>
+                    </div>
+                </div>
+                <div class="slds-modal__footer slds-theme--default">
+                    <button class="slds-button slds-button_neutral btnColor" onclick="{!c.closeMessage}">Close</button>
+                </div>
+            </div>
+        </div>
+        <div class="slds-backdrop slds-backdrop--open"></div>
+    </div>
+    <div class="{!v.showModal == true ? 'slds-show' : 'slds-hide'}">
+        
+        <div class="demo-only" style="height: 640px;">
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-slide-up-open">
+                <div class="slds-modal__container modalCSS">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick="{!c.handleModal}">
+                            <lightning:icon iconName="utility:close" class="slds-button__icon slds-button__icon_large" size="xx-small" />
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Clone Case</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <p> Are you sure You want to clone this Case?</p>
+                        <aura:if isTrue="{!v.loading}">
+                            <div aura:id="spinnerId" class="slds-spinner_container">
+                                <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                                    <span class="slds-assistive-text">Loading...</span>
+                                    <div class="slds-spinner__dot-a"></div>
+                                    <div class="slds-spinner__dot-b"></div>
+                                </div>
+                            </div>
+                        </aura:if>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_brand btnColor" onclick="{!c.handleSave}">Yes</button>
+                        <button class="slds-button slds-button_neutral btnColor" onclick="{!c.handleModal}">Cancel</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </div>
+</aura:component>

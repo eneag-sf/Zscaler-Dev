@@ -1,0 +1,49 @@
+<apex:page showHeader="true" sidebar="false" tabStyle="Account" controller="AccountReportController">
+  
+  <apex:pageBlock >
+      <apex:pageBlockSection columns="2" title="Account 360 for : {!acc.Name}">
+          <apex:pageblockSectionItem >
+              <apex:outputPanel >
+                <analytics:reportChart reportId="00O700000051UpK" hideOnError="false" filter="{column:'ACCOUNT_ID', operator:'equals', value:'{!accId}'} " size="large" showRefreshButton="true"></analytics:reportChart>          
+              </apex:outputPanel>
+          </apex:pageblockSectionItem>
+          <apex:pageblockSectionItem >
+              <analytics:reportChart reportId="00O0g000004qkgR" hideOnError="false" filter="{column:'ACCOUNT_ID', operator:'equals', value:'{!accId}'}" size="large" showRefreshButton="true" ></analytics:reportChart>    
+          </apex:pageblockSectionItem>
+          
+          <apex:pageblockSectionItem >
+              <analytics:reportChart reportId="00O700000051UqS" hideOnError="false" filter="{column:'Account.Id', operator:'equals', value:'{!accId}'}" size="large" showRefreshButton="true" ></analytics:reportChart>    
+          </apex:pageblockSectionItem>
+          <apex:pageblockSectionItem >
+              <analytics:reportChart reportId="00O700000051Uue" hideOnError="false" filter="{column:'Account.Id', operator:'equals', value:'{!accId}'}" size="large" showRefreshButton="true" ></analytics:reportChart>    
+          </apex:pageblockSectionItem>
+          
+          <apex:pageblockSectionItem >
+              <analytics:reportChart reportId="00O700000051UqI" hideOnError="false" filter="{column:'Account.Id', operator:'equals', value:'{!accId}'}" size="large" showRefreshButton="true" ></analytics:reportChart>    
+          </apex:pageblockSectionItem>
+          <apex:pageblockSectionItem >
+              <analytics:reportChart reportId="00O700000051Upo" hideOnError="false" filter="{column:'ACCOUNT_ID', operator:'equals', value:'{!accId}'}" size="large" showRefreshButton="true" ></analytics:reportChart>    
+          </apex:pageblockSectionItem>
+          
+          <apex:pageblockSectionItem rendered="{!accId == null}" >
+              <analytics:reportChart reportId="00O0g000004ZsBi" hideOnError="false" filter="{column:'Account.Id', operator:'equals', value:'{!accId}'}" size="large" showRefreshButton="true" ></analytics:reportChart>    
+          </apex:pageblockSectionItem>
+          <apex:pageblockSectionItem >
+              <analytics:reportChart reportId="00O0g000004Zr9v" hideOnError="false" filter="{column:'Account.Id', operator:'equals', value:'{!accId}'}" size="large" showRefreshButton="true" ></analytics:reportChart>    
+          </apex:pageblockSectionItem>
+          <apex:pageblockSectionItem >
+              <analytics:reportChart reportId="00O0g000004ZtM8" hideOnError="false" filter="{column:'Account.Id', operator:'equals', value:'{!accId}'}" size="large" showRefreshButton="true" ></analytics:reportChart>    
+          </apex:pageblockSectionItem>
+          
+          <apex:pageblockSectionItem >
+              <analytics:reportChart reportId="00O700000052WSP" hideOnError="false" filter="{column:'Account.Id', operator:'equals', value:'{!accId}'}" size="large" showRefreshButton="true" ></analytics:reportChart>    
+          </apex:pageblockSectionItem>
+          <apex:pageblockSectionItem >
+              <analytics:reportChart reportId="00O700000052WSZ" hideOnError="false" filter="{column:'Account.Id', operator:'equals', value:'{!accId}'}" size="large" showRefreshButton="true" ></analytics:reportChart>    
+          </apex:pageblockSectionItem>
+      </apex:pageBlockSection>
+  </apex:pageBlock>
+ 
+
+
+</apex:page>

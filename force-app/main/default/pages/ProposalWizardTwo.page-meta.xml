@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ApexPage xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>15.0</apiVersion>
+    <availableInTouch>false</availableInTouch>
+    <confirmationTokenRequired>false</confirmationTokenRequired>
+    <label>ProposalWizardTwo</label>
+    <packageVersions>
+        <majorNumber>8</majorNumber>
+        <minorNumber>132</minorNumber>
+        <namespace>Apttus_Proposal</namespace>
+    </packageVersions>
+</ApexPage>

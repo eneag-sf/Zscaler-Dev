@@ -1,0 +1,602 @@
+<apex:component access="global" controller="QuoteApprovalController">
+    <apex:attribute name="InputProposal" description="This field is used to display list of Proposal products" type="string"
+        assignTo="{!ProposalId}" />
+    <apex:attribute name="InputInstanceURL" description="This field is used to get instance URL" type="string" assignTo="{!InstanceURL}"
+    />
+    <apex:attribute name="InputApprovalRequest" description="This field is used to get Approval Request" type="ID" assignTo="{!ApprovalRequestId}"
+    />
+    <apex:attribute name="InputApproverId" description="This field is used for Approval Request" type="ID" assignTo="{!ApproverId}"
+    />
+    <apex:attribute name="InputIsAssignment" description="This field is used for Approval Request" type="Boolean" assignTo="{!IsAssignment}"
+    />
+    <apex:attribute name="InputIsApproved" description="This field is used for Approval Request" type="Boolean" assignTo="{!IsApproved}"
+    />
+    <apex:attribute name="InputIsApproveOrReject" description="This field is used for Approval Request" type="Boolean" assignTo="{!IsApproveOrReject}"
+    />
+
+
+    <apex:outputPanel rendered="{!IsAssignment}">
+        <div style="font-size: 1.8em; text-align: center; font-weight: bold;"> Quote for : {!Proposal.Apttus_Proposal__Account__r.Name}</div>
+        <br/>
+        <br/>
+        <table style="border: 1px solid black; border-collapse: collapse; width:100%" cellspacing="0" cellpadding="0">
+            <tbody>
+                <tr style="background-color: #17770a; text-align: center; color: white; background-color: black;">
+                    <td>
+                        <b>To Approve : Reply with "Approved" or "Approve" or "Yes". To Reject : Reply with "Rejected" or "Reject"
+                            or "No". You can also add your comments in the next line.</b>
+                    </td>
+                </tr>
+            </tbody>
+
+        </table>
+        <br/>
+        <br/>
+    </apex:outputPanel>
+
+    <apex:outputPanel rendered="{!IsApproved}">
+        <table style="border: 1px solid black; border-collapse: collapse; width:100%" cellspacing="0" cellpadding="0">
+            <tbody>
+                <tr style="background-color: #17770a; text-align: center; color: white">
+                    <td>Your quote is now Approved!!!!</td>
+                </tr>
+            </tbody>
+
+        </table>
+        <br/>
+        <br/>
+    </apex:outputPanel>
+
+    <apex:outputPanel rendered="{!AND(NOT(IsApproved),NOT(IsAssignment), NOT(IsApproveOrReject))}">
+        <table style="border: 1px solid black; border-collapse: collapse; width:100%" cellspacing="0" cellpadding="0">
+            <tbody>
+                <tr>
+                    <td style="background-color: #8e0a05; text-align: center; color: white">This quote has been rejected by
+                        <b>{!RejectedBy}</b> with following reason</td>
+                </tr>
+                <tr>
+                    <td>{!RejectionReason}</td>
+                </tr>
+            </tbody>
+
+        </table>
+        <br/>
+        <br/>
+    </apex:outputPanel>
+
+
+
+    <apex:outputPanel rendered="{!AND(NOT(IsAssignment), NOT(IsApproveOrReject))}">
+
+        <b>This quote has the following exceptions for Approval:</b>
+        <br/>
+        <apex:repeat value="{!ApprovalExceptionsList}" var="execep">
+            {!execep}
+            <br/>
+        </apex:repeat>
+        <br/>
+        <br/>
+
+    </apex:outputPanel>
+
+    <apex:outputPanel rendered="{!AND(OR(IsAssignment, IsApproveOrReject),  MyApprovalExceptionsList.size > 0)}">
+
+        <b>You are reviewing the following exceptions :</b>
+        <br/>
+
+
+        <apex:repeat value="{!MyApprovalExceptionsList}" var="myexe">
+            {!myexe}
+            <br/>
+        </apex:repeat>
+        <br/>
+        <br/>
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!AND(OR(IsAssignment, IsApproveOrReject),  otherApprovalExceptionsList.Size > 0)}">
+
+        <b>The other expections on this quote are :</b>
+        <br/>
+
+        <apex:repeat value="{!otherApprovalExceptionsList}" var="otherexe">
+            {!otherexe}
+            <br/>
+        </apex:repeat>
+        <br/>
+        <br/>
+
+    </apex:outputPanel>
+    <b>Approval Request Reason: </b>{!proposal.APTS_Approval_Reason__c}
+    <br/>
+    <br/>
+    <apex:outputPanel rendered="{!isPartnerSummit}">This quote uses Partner Summit Program. Please&nbsp;
+        <a href="#">click here</a>&nbsp;to review the discount approval guidelines before you approve for pricing.</apex:outputPanel>
+    <br/>
+    <br/>
+
+    <table style=" border-collapse: collapse; width:100%" cellspacing="0" cellpadding="0">
+        <tbody>
+            <tr>
+                <td>&nbsp;
+                    <table style="width:100%; " cellspacing="0" cellpadding="0">
+                        <tbody>
+                            <tr style="text-align: center;">
+                                <td style="border: 1px solid black; ">
+                                    <a style="font-weight: bold; color: #0047b3;">
+                                        <apex:outputField value="{!proposal.APTS_Record_Type_Name__c}" />
+                                    </a>
+                                </td>
+                                <td style="border: 1px solid black; ">
+                                    <a href="{!url}/{!proposal.Apttus_Proposal__Opportunity__r.Id}" style="font-weight: bold; color: #0047b3;">
+                                        <apex:outputField value="{!proposal.Apttus_Proposal__Opportunity__r.Name}" />
+                                    </a>
+                                </td>
+                                <td style="border: 1px solid black; ">
+                                    <a href="{!url}/{!proposal.Id}" style="font-weight: bold; color: #0047b3;">
+                                        <apex:outputField value="{!proposal.Name}" />
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td>&nbsp;
+                    <table style="width:100%;" cellspacing="0" cellpadding="0">
+                        <tbody>
+                            <tr>
+                                <td width="20%" style="background-color: #002060; color: #FFFFFF; text-align: center; border: 1px solid black;"># Users</td>
+                                <td width="20%" style="background-color: #002060; color: #FFFFFF; text-align: center; border: 1px solid black;">ACV</td>
+                                <td width="20%" style="background-color: #002060; color: #FFFFFF; text-align: center; border: 1px solid black;">TCV</td>
+                                <apex:outputPanel rendered="{!isPartnerSummit}">
+                                    <td width="20%" style="background-color: #002060; color: #FFFFFF; text-align: center; border: 1px solid black;">Total Stackable Discount</td>
+                                    <td width="20%" style="background-color: #002060; color: #FFFFFF; text-align: center; border: 1px solid black;">Total Deal Discount</td>
+                                    <td width="20%" style="background-color: #002060; color: #FFFFFF; text-align: center; border: 1px solid black;">Net to Zscaler</td>
+                                </apex:outputPanel>
+                                <apex:outputPanel rendered="{!!isPartnerSummit}">
+                                    <td width="20%" style="background-color: #002060; color: #FFFFFF; text-align: center; border: 1px solid black;">Discount</td>
+                                </apex:outputPanel>
+                                <td width="20%" style="background-color: #002060; color: #FFFFFF; text-align: center; border: 1px solid black;">Term</td>
+                            </tr>
+                            <tr style="border: 1px solid black; text-align: center;">
+                                <td width="20%" style="border: 1px solid black;">
+                                    <apex:outputField value="{!proposal.No_of_Users__c}" />
+                                </td>
+                                <td width="20%" style="border: 1px solid black;">
+                                    <apex:outputField value="{!proposal.APTS_ACV__c}" />
+                                </td>
+                                <td width="20%" style="border: 1px solid black;">
+                                    <apex:outputField value="{!proposal.APTS_Proposal_Net_Price__c}" />
+                                </td>
+                                <apex:outputPanel rendered="{!isPartnerSummit}">
+                                    <td width="20%" style="border: 1px solid black;">
+                                        <apex:outputField value="{!proposal.Total_Stackable_Margin__c}" />
+                                    </td>
+                                    <td width="20%" style="border: 1px solid black;">
+                                        <apex:outputField value="{!proposal.Total_Deal_Discount__c}" />
+                                    </td>
+                                    <td width="20%" style="border: 1px solid black;">
+                                        <apex:outputField value="{!proposal.Total_Net_to_Zscaler__c}" />
+                                    </td>
+                                </apex:outputPanel>
+                                <apex:outputPanel rendered="{!!isPartnerSummit}">
+                                    <td width="20%" style="border: 1px solid black;">
+                                        <apex:outputField value="{!proposal.Total_Discount_Without_Support__c}" />
+                                    </td>
+                                </apex:outputPanel>
+                                <td width="20%" style="border: 1px solid black;">
+                                    <apex:outputField value="{!proposal.APTS_Subscription_Term__c}" />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <br/>
+    <apex:outputPanel rendered="{!proposal.APTS_Record_Type_Name__c == 'Renewal'}">
+
+        <table style="width:100%;" cellspacing="0" cellpadding="0">
+            <tbody>
+                <tr>
+                    <td width="20%" style="background-color: #002060; color: #FFFFFF; text-align: center; border: 1px solid black;">Previous MRR</td>
+                    <td width="20%" style="background-color: #002060; color: #FFFFFF; text-align: center; border: 1px solid black;">Current MRR</td>
+                    <td width="20%" style="background-color: #002060; color: #FFFFFF; text-align: center; border: 1px solid black;">% Change</td>
+                </tr>
+                <tr style="border: 1px solid black; text-align: center;">
+                    <td width="20%" style="border: 1px solid black;">
+                        <apex:outputField value="{!proposal.Previous_MRR__c}" />
+                    </td>
+                    <td width="20%" style="border: 1px solid black;">
+                        <apex:outputField value="{!proposal.APTS_Current_Quote_MRR__c}" />
+                    </td>
+                    <td width="20%" style="border: 1px solid black;">
+                        <apex:outputField value="{!proposal.Renewal_MRR_Change__c}" />
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <br/>
+        <table style="width:100%;" cellspacing="0" cellpadding="0">
+            <tbody>
+                <tr>
+                    <td width="20%" style="background-color: #002060; color: #FFFFFF; text-align: center; border: 1px solid black;">Previous PPU</td>
+                    <td width="20%" style="background-color: #002060; color: #FFFFFF; text-align: center; border: 1px solid black;">Current PPU</td>
+                    <td width="20%" style="background-color: #002060; color: #FFFFFF; text-align: center; border: 1px solid black;">% Change</td>
+                </tr>
+                <tr style="border: 1px solid black; text-align: center;">
+                    <td width="20%" style="border: 1px solid black;">
+                        <apex:outputText value="${0, number, ##,###.##}">
+                            <apex:param value="{!oldppu}" /></apex:outputText>
+                    </td>
+                    <td width="20%" style="border: 1px solid black;">
+                        <apex:outputText value="${0, number, ##,###.##}">
+                            <apex:param value="{!newppu}" /></apex:outputText>
+                    </td>
+                    <td width="20%" style="border: 1px solid black;">
+                        <apex:outputText value="{0, number, ##,###.##}%">
+                            <apex:param value="{!changeofPPU}" /></apex:outputText>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <br/>
+        <table style="border: 1px solid black; border-collapse: collapse; width:100%">
+            <tbody>
+                <tr style="border: 1px solid black; ">
+                    <td style="border: 1px solid black; background-color: #86ce89;text-align: center;" width="25%">PPU/Month</td>
+                    <td style="border: 1px solid black;" width="25%">&nbsp;
+                        <apex:outputText value="${0, number, ###,###.##}">
+                            <apex:param value="{!IF(AND(NOT(ISNULL(proposal.APTS_Proposal_Net_Price__c)), NOT(ISNULL(proposal.No_of_Users__c)), proposal.No_of_Users__c > 0), (proposal.APTS_Proposal_Net_Price__c / proposal.APTS_Subscription_Term__c) / proposal.No_of_Users__c, 0.0)}"
+                            /></apex:outputText>
+                    </td>
+                    <td style="border: 1px solid black; background-color: #86ce89;text-align: center;" width="25%">Bill To</td>
+                    <td style="border: 1px solid black;" width="25%">&nbsp;
+                        <apex:outputField value="{!proposal.Apttus_QPConfig__BillToAccountId__r.Name}" />
+                    </td>
+                </tr>
+                <tr style="border: 1px solid black;">
+                    <!-- Commented the below as Brand Ambassador and VMO Play fields are not being used -->
+                    <!-- <td style="border: 1px solid black; background-color: #86ce89;text-align: center;" width="25%">Brand Ambassador</td>
+                    <td style="border: 1px solid black;">&nbsp;<apex:outputField value="{!proposal.Brand_Ambassador__c}"/></td> -->
+                    <td style="border: 1px solid black;background-color: #86ce89;text-align: center;" width="25%">Payment Terms</td>
+                    <td style="border: 1px solid black;" width="25%">&nbsp;
+                        <apex:outputField value="{!proposal.Apttus_Proposal__Payment_Term__c}" />
+                    </td>
+                    <!-- </tr>
+                <tr style="border: 1px solid black;"> -->
+                    <!-- Commented the below as Brand Ambassador and VMO Play fields are not being used -->
+                    <!-- <td style="border: 1px solid black;background-color: #86ce89;text-align: center;">VMO Play</td>
+                    <td style="border: 1px solid black;">&nbsp;<apex:outputField value="{!proposal.Apttus_Proposal__Opportunity__r.VMO_Play__c}"/></td> -->
+                    <td style="border: 1px solid black;background-color: #86ce89;text-align: center;">Billing Frequency</td>
+                    <td style="border: 1px solid black;">&nbsp;
+                        <apex:outputField value="{!proposal.APTS_Billing_Frequency__c}" />
+                    </td>
+                </tr>
+                <tr style="border: 1px solid black;">
+                    <td style="border: 1px solid black;background-color: #86ce89;text-align: center;" width="25%">Customer Sentiment</td>
+                    <td style="border: 1px solid black;" width="25%">&nbsp;
+                        <apex:outputField value="{!proposal.Apttus_Proposal__Account__r.Customer_Sentiment__c}" />
+                    </td>
+                    <td style="border: 1px solid black;background-color: #86ce89;text-align: center;">Customer Success Stage</td>
+                    <td style="border: 1px solid black;">&nbsp;
+                        <apex:outputField value="{!proposal.Apttus_Proposal__Account__r.Success_Stage__c}" />
+                    </td>
+                </tr>
+                <!--<tr style="border: 1px solid black;">
+                    <td style="border: 1px solid black; background-color: #86ce89;text-align: center;" width="25%">MRR</td>
+                    <td style="border: 1px solid black;" width="25%">&nbsp;<apex:outputField value="{!proposal.APTS_Current_Quote_MRR__c}"/></td>
+                    <td style="border: 1px solid black;background-color: #86ce89;text-align: center;">Previous MRR</td>
+                    <td style="border: 1px solid black;">&nbsp;<apex:outputField value="{!proposal.APTS_Original_Quote_MRR__c}"/></td>
+                </tr>-->
+                <!--<tr style="border: 1px solid black;">
+                    <td style="border: 1px solid black;background-color: #86ce89;text-align: center;">Brand Ambassador</td>
+                    <td style="border: 1px solid black;">&nbsp;<apex:outputField value="{!proposal.Brand_Ambassador__c}"/></td>
+                    <td style="border: 1px solid black;background-color: #86ce89;text-align: center;">VMO Play</td>
+                    <td style="border: 1px solid black;">&nbsp;<apex:outputField value="{!proposal.Apttus_Proposal__Opportunity__r.VMO_Play__c}"/></td> 
+                </tr>-->
+            </tbody>
+        </table>
+    </apex:outputPanel>
+
+    <apex:outputPanel rendered="{!proposal.APTS_Record_Type_Name__c != 'Renewal'}">
+        <table style="border: 1px solid black; border-collapse: collapse; width:100%">
+            <tbody>
+                <tr style="border: 1px solid black; ">
+                    <td style="border: 1px solid black; background-color: #86ce89;text-align: center;" width="25%">MRR</td>
+                    <td style="border: 1px solid black;" width="25%">&nbsp;
+                        <apex:outputField value="{!proposal.APTS_Current_Quote_MRR__c}" />
+                    </td>
+                    <td style="border: 1px solid black; background-color: #86ce89;text-align: center;" width="25%">Bill To</td>
+                    <td style="border: 1px solid black;" width="25%">&nbsp;
+                        <apex:outputField value="{!proposal.Apttus_QPConfig__BillToAccountId__r.Name}" />
+                    </td>
+                </tr>
+                <tr style="border: 1px solid black;">
+                    <td style="border: 1px solid black; background-color: #86ce89;text-align: center;" width="25%">PPU/Month</td>
+                    <td style="border: 1px solid black;" width="25%">&nbsp;
+                        <apex:outputText value="${0, number, ###,###.##}">
+                            <apex:param value="{!IF(AND(NOT(ISNULL(proposal.APTS_Proposal_Net_Price__c)), NOT(ISNULL(proposal.No_of_Users__c)), proposal.No_of_Users__c > 0), (proposal.APTS_Proposal_Net_Price__c / proposal.APTS_Subscription_Term__c) / proposal.No_of_Users__c, 0.0)}"
+                            /></apex:outputText>
+                    </td>
+                    <td style="border: 1px solid black;background-color: #86ce89;text-align: center;" width="25%">Payment Terms</td>
+                    <td style="border: 1px solid black;" width="25%">&nbsp;
+                        <apex:outputField value="{!proposal.Apttus_Proposal__Payment_Term__c}" />
+                    </td>
+                </tr>
+                <tr style="border: 1px solid black;">
+                    <td style="border: 1px solid black;background-color: #86ce89;text-align: center;" width="25%">Billing Frequency</td>
+                    <td style="border: 1px solid black;" width="25%">&nbsp;
+                        <apex:outputField value="{!proposal.APTS_Billing_Frequency__c}" />
+                    </td>
+
+                </tr>
+                <!-- Commented the below as Brand Ambassador and VMO Play fields are not being used -->
+                <!-- <tr style="border: 1px solid black;">
+                    <td style="border: 1px solid black;background-color: #86ce89;text-align: center;">Brand Ambassador</td>
+                    <td style="border: 1px solid black;">&nbsp;<apex:outputField value="{!proposal.Brand_Ambassador__c}"/></td>
+                    <td style="border: 1px solid black;background-color: #86ce89;text-align: center;">VMO Play</td>
+                    <td style="border: 1px solid black;">&nbsp;<apex:outputField value="{!proposal.Apttus_Proposal__Opportunity__r.VMO_Play__c}"/></td>
+                </tr> -->
+            </tbody>
+        </table>
+    </apex:outputPanel>
+    <br/>
+    <br/>
+    <apex:outputPanel rendered="{!proposal.Custom_Term_Exists__c}">
+        <table style="border: 1px solid black; border-collapse: collapse; width:100%">
+            <tbody>
+                <tr style="border: 1px solid black; ">
+                    <td style="border: 1px solid black; text-align: center;">
+                        <b>Special Terms Entered by Rep: </b>
+                    </td>
+                </tr>
+                <tr style="border: 1px solid black;">
+                    <td style="border: 1px solid black;">
+                        <apex:outputField value="{!proposal.Special_Term__c}" />
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <br/>
+        <br/>
+    </apex:outputPanel>
+    <!--<apex:outputPanel rendered="{!proposal.APTS_Record_Type_Name__c == 'Renewal'}">
+        <table border="1" style="border-collapse: collapse; width: 100%">
+                   <tr style="font-weight:bold; text-align: center; background-color: #929599;">
+                        <td >Product Name</td>
+                        <td>Quantity</td>                                                                        
+                        <td >Start Date</td>
+                        <td >End Date</td>
+                        <td>Term</td>
+                        <td>Current PPU</td>
+                        <td>Previous PPU</td>
+                        <td>Partner Discount</td>
+                        <td>Total Discount</td>
+                        <td>Net Price</td>
+                        <td>MRR</td>
+                    </tr>
+            <apex:repeat value="{!ListOfLineItems}" var="Item">
+                <tr >
+                    <td >
+                        <apex:outputPanel rendered="{!OR(Item.Is_Ramped_SKU__c == false, AND(Item.Is_Ramped_SKU__c == true, Item.Apttus_QPConfig__ItemSequence__c == 1))}">
+                            <apex:outputField value="{!Item.Product_Name__c}" /> 
+                        </apex:outputPanel>
+                    </td>
+                    <td style="text-align: center;">
+                        <apex:outputText value="{0, number,###,###,##0}" >
+                            <apex:param value="{!Item.APTS_Quantity__c}"/>
+                        </apex:outputText>
+                    </td>
+                    <td ><apex:outputField value="{!Item.Apttus_QPConfig__StartDate__c}"/> </td>
+                    <td ><apex:outputField value="{!Item.Apttus_QPConfig__EndDate__c}"/> </td>
+                    <td style="text-align: center;"><apex:outputField value="{!Item.Term_to_Show__c}"/> </td>
+                    <td style="text-align: center;"><apex:outputField value="{!Item.Price_Per_Unit__c}"/> </td>
+                    <td style="text-align: center;"><apex:outputField value="{!Item.Old_PPU__c}"/> </td>
+                    <td style="text-align: center;">
+                        <apex:outputText value="{0,number,0}%" >
+                            <apex:param value="{!Item.APTS_Partner_Disc__c}"/>
+                        </apex:outputText>
+                    </td>
+                    <td style="text-align: center;">
+                        <apex:outputText value="{0,number,0}%" >
+                            <apex:param value="{!Item.APTS_Total_Discount_Percentage__c}"/>
+                        </apex:outputText>
+                    </td>
+                    <td style="text-align: right;">
+                        <apex:outputPanel rendered="{!Item.APTS_Net_Price__c < 0}" style="color: red;">
+                           <apex:outputText value="{0, number,currency}" >
+                                <apex:param value="{!Item.APTS_Net_Price__c}"/>
+                            </apex:outputText>
+                        </apex:outputPanel>
+                        <apex:outputPanel rendered="{!Item.APTS_Net_Price__c > 0}">
+                           <apex:outputText value="{0, number,currency}" >
+                                <apex:param value="{!Item.APTS_Net_Price__c}"/>
+                            </apex:outputText>
+                        </apex:outputPanel>
+                    </td>
+
+                    <td style="text-align: right;">
+                        <apex:outputPanel rendered="{!Item.APTS_MRR__c < 0}" style="color: red;">
+                           <apex:outputText value="{0, number,currency}" >
+                                <apex:param value="{!Item.APTS_MRR__c}"/>
+                            </apex:outputText>
+                        </apex:outputPanel>
+                        <apex:outputPanel rendered="{!Item.APTS_MRR__c > 0}">
+                           <apex:outputText value="{0, number,currency}" >
+                                <apex:param value="{!Item.APTS_MRR__c}"/>
+                            </apex:outputText>
+                        </apex:outputPanel>
+                    </td>
+                </tr>
+            </apex:repeat>
+        </table><br/><br/>
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!proposal.APTS_Record_Type_Name__c != 'Renewal'}">-->
+    <apex:outputPanel rendered="{!!isPartnerSummit}">
+        <table border="1" style="border-collapse: collapse; width: 100%">
+            <tr style="font-weight:bold; text-align: center; background-color: #929599;">
+                <td>Product Name</td>
+                <td>Quantity</td>
+                <td>Start Date</td>
+                <td>End Date</td>
+                <td>Term</td>
+                <td>Current PPU</td>
+                <td>Partner Discount</td>
+                <td>Total Discount</td>
+                <td>Net Price</td>
+                <td>MRR</td>
+            </tr>
+            <apex:repeat value="{!ListOfLineItems}" var="Item">
+                <tr>
+                    <td>
+                        <apex:outputPanel rendered="{!OR(Item.Is_Ramped_SKU__c == false, AND(Item.Is_Ramped_SKU__c == true, Item.Apttus_QPConfig__ItemSequence__c == 1))}">
+                            <apex:outputField value="{!Item.Product_Name__c}" />
+                        </apex:outputPanel>
+                    </td>
+                    <td style="text-align: center;">
+                        <apex:outputText value="{0, number,###,###,##0}">
+                            <apex:param value="{!Item.APTS_Quantity__c}" />
+                        </apex:outputText>
+                    </td>
+                    <td>
+                        <apex:outputField value="{!Item.Apttus_QPConfig__StartDate__c}" /> </td>
+                    <td>
+                        <apex:outputField value="{!Item.Apttus_QPConfig__EndDate__c}" /> </td>
+                    <td style="text-align: center;">
+                        <apex:outputField value="{!Item.Term_to_Show__c}" /> </td>
+                    <td style="text-align: center;">
+                        <apex:outputField value="{!Item.Price_Per_Unit__c}" /> </td>
+                    <td style="text-align: center;">
+                        <apex:outputText value="{0,number,0}%">
+                            <apex:param value="{!Item.APTS_Partner_Disc__c}" />
+                        </apex:outputText>
+                    </td>
+                    <td style="text-align: center;">
+                        <apex:outputText value="{0,number,0}%">
+                            <apex:param value="{!Item.APTS_Total_Discount_Percentage__c}" />
+                        </apex:outputText>
+                    </td>
+                    <td style="text-align: right;">
+                        <apex:outputPanel rendered="{!Item.APTS_Net_Price__c < 0}" style="color: red;">
+                            <apex:outputText value="{0, number,currency}">
+                                <apex:param value="{!Item.APTS_Net_Price__c}" />
+                            </apex:outputText>
+                        </apex:outputPanel>
+                        <apex:outputPanel rendered="{!Item.APTS_Net_Price__c > 0}">
+                            <apex:outputText value="{0, number,currency}">
+                                <apex:param value="{!Item.APTS_Net_Price__c}" />
+                            </apex:outputText>
+                        </apex:outputPanel>
+                    </td>
+
+                    <td style="text-align: right;">
+                        <apex:outputPanel rendered="{!Item.APTS_MRR__c < 0}" style="color: red;">
+                            <apex:outputText value="{0, number,currency}">
+                                <apex:param value="{!Item.APTS_MRR__c}" />
+                            </apex:outputText>
+                        </apex:outputPanel>
+                        <apex:outputPanel rendered="{!Item.APTS_MRR__c > 0}">
+                            <apex:outputText value="{0, number,currency}">
+                                <apex:param value="{!Item.APTS_MRR__c}" />
+                            </apex:outputText>
+                        </apex:outputPanel>
+                    </td>
+                </tr>
+            </apex:repeat>
+        </table>
+        <br/>
+        <br/>
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!isPartnerSummit}">
+        <table border="1" style="border-collapse: collapse; width: 100%">
+            <tr style="font-weight:bold; text-align: center; background-color: #929599;">
+                <td>Product Name</td>
+                <td>Quantity</td>
+                <td>Start Date</td>
+                <td>End Date</td>
+                <td>Term</td>
+                <td>Customer Discount</td>
+                <td>Total Stackable Margin</td>
+                <td>Net Price</td>
+                <td>MRR</td>
+                <td>Net to Zscaler</td>
+            </tr>
+            <apex:repeat value="{!ListOfLineItems}" var="Item">
+                <tr>
+                    <td>
+                        <apex:outputPanel rendered="{!OR(Item.Is_Ramped_SKU__c == false, AND(Item.Is_Ramped_SKU__c == true, Item.Apttus_QPConfig__ItemSequence__c == 1))}">
+                            <apex:outputField value="{!Item.Product_Name__c}" />
+                        </apex:outputPanel>
+                    </td>
+                    <td style="text-align: center;">
+                        <apex:outputText value="{0, number,###,###,##0}">
+                            <apex:param value="{!Item.APTS_Quantity__c}" />
+                        </apex:outputText>
+                    </td>
+                    <td>
+                        <apex:outputField value="{!Item.Apttus_QPConfig__StartDate__c}" /> </td>
+                    <td>
+                        <apex:outputField value="{!Item.Apttus_QPConfig__EndDate__c}" /> </td>
+                    <td style="text-align: center;">
+                        <apex:outputField value="{!Item.Term_to_Show__c}" /> </td>
+                    <td style="text-align: center;">
+                        <apex:outputText value="{0,number,0}%">
+                            <apex:param value="{!Item.APTS_Total_Discount_Percentage__c}" />
+                        </apex:outputText>
+                    </td>
+
+                    <td style="text-align: center;">
+                        <apex:outputText value="{0,number,0}%">
+                            <apex:param value="{!Item.Total_Stackable_Margin__c}" />
+                        </apex:outputText>
+                    </td>
+                    <td style="text-align: right;">
+                        <apex:outputPanel rendered="{!Item.APTS_Net_Price__c < 0}" style="color: red;">
+                            <apex:outputText value="{0, number,currency}">
+                                <apex:param value="{!Item.APTS_Net_Price__c}" />
+                            </apex:outputText>
+                        </apex:outputPanel>
+                        <apex:outputPanel rendered="{!Item.APTS_Net_Price__c > 0}">
+                            <apex:outputText value="{0, number,currency}">
+                                <apex:param value="{!Item.APTS_Net_Price__c}" />
+                            </apex:outputText>
+                        </apex:outputPanel>
+                    </td>
+
+                    <td style="text-align: right;">
+                        <apex:outputPanel rendered="{!Item.APTS_MRR__c < 0}" style="color: red;">
+                            <apex:outputText value="{0, number,currency}">
+                                <apex:param value="{!Item.APTS_MRR__c}" />
+                            </apex:outputText>
+                        </apex:outputPanel>
+                        <apex:outputPanel rendered="{!Item.APTS_MRR__c > 0}">
+                            <apex:outputText value="{0, number,currency}">
+                                <apex:param value="{!Item.APTS_MRR__c}" />
+                            </apex:outputText>
+                        </apex:outputPanel>
+                    </td>
+                    <td style="text-align: right;">
+                        <apex:outputPanel rendered="{!Item.Apttus_QPConfig__DerivedFromId__r.Net_to_Zscaler__c < 0}" style="color: red;">
+                            <apex:outputText value="{0, number,currency}">
+                                <apex:param value="{!Item.Apttus_QPConfig__DerivedFromId__r.Net_to_Zscaler__c}" />
+                            </apex:outputText>
+                        </apex:outputPanel>
+                        <apex:outputPanel rendered="{!Item.Apttus_QPConfig__DerivedFromId__r.Net_to_Zscaler__c > 0}">
+                            <apex:outputText value="{0, number,currency}">
+                                <apex:param value="{!Item.Apttus_QPConfig__DerivedFromId__r.Net_to_Zscaler__c}" />
+                            </apex:outputText>
+                        </apex:outputPanel>
+                    </td>
+                </tr>
+            </apex:repeat>
+        </table>
+        <br/>
+        <br/>
+    </apex:outputPanel>
+
+
+</apex:component>

@@ -1,0 +1,292 @@
+<apex:page controller="PerformanceOpportunityReportController" extensions="PerformanceOpportunityReportServiceExt" showHeader="true" sidebar="false" tabStyle="Performance__tab">
+
+    <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular-animate.min.js"></script>
+    <apex:stylesheet value="{!URLFOR($Resource.Forecasting, 'css/fq.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.Forecasting, 'css/toggle-switch.css')}" />
+    <link href="https://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet" />
+    <script type="text/javascript">
+        var FiscalQtr = "{!FiscalQtr}";
+        var currentUserId = "{!currentUserId}";
+        var stage = "{!stage}";
+        var startDate = "{!startDate}";
+        var endDate = "{!endDate}";
+        var source = "{!source}";
+        var forecastType = "{!type}";
+        
+        var myapp = angular.module('oppReportingApp', ['ngAnimate']);
+        var contrl= myapp.controller('oppReportingAppCtrl', function($scope, $q, $timeout) {
+            $scope.fiscalQuarter = FiscalQtr;
+            $scope.UserId = currentUserId;
+            $scope.OppStage = stage;
+            $scope.weekStartDate = startDate;
+            $scope.weekEndDate = endDate;
+            $scope.oppSource = source;
+            $scope.requestInProgress = 0;
+            $scope.displayFormat = "W";
+            $scope.errorMessage = null;
+            $scope.forecastType = forecastType;
+            $scope.opportunityListing = {
+                                        isLoading: false,
+                                        data: [],
+                                        collapsed: false,
+                                        pageIndex: 1,
+                                        pageCount: 1,
+                                        totalOppAmount: 0,
+                                        hasPrevious: false,
+                                        hasNext: false,
+                                        filter: {
+                                            pageIndex: 1,
+                                            sortField: 'Amount',
+                                            isAscendingOrder: false
+                                        }
+                                    };
+            
+            
+            $scope.getCacheValue = function(key, defaultValue) {
+                if(typeof(Storage)!=="undefined") {
+                    key = "OPPR." + key;
+                    var value = sessionStorage.getItem(key);
+                    if(value == null) {
+                        return defaultValue;
+                    }
+                    return JSON.parse(value);
+                } else {
+                    return defaultValue;
+                }
+            }
+
+            $scope.setCacheValue = function(key, value) {
+                if(typeof(Storage)!=="undefined") {
+                    key = "OPPR." + key;
+                    try {
+                        return sessionStorage.setItem(key, JSON.stringify(value));
+                    } catch(err) {
+                        sessionStorage.removeItem(key);
+                    }
+                }
+            }
+            
+            $scope.callRemoteServiceWithCache = function(serviceName, parameters, identifier, callback, config) {
+                $scope.requestInProgress++;
+                var cachedValue = $scope.getCacheValue(identifier, null);
+                if(cachedValue != null) {
+                    callback.call($scope, cachedValue);
+                }
+                if(parameters == null) {
+                    parameters = [];
+                }
+                var callbackWrap = function(result, event) {
+                    $scope.requestInProgress--;
+                    if($scope.isCalloutSucceeded(event)) {
+                        $scope.setCacheValue(identifier, result);
+                        callback.call($scope, result);
+                    }
+                };
+                parameters.push(callbackWrap);
+                if(config) {
+                    parameters.push(config);
+                }
+                try {
+                    serviceName.apply($scope, parameters);
+                } catch(e) {
+                    callbackWrap(null, {status: false});
+                }
+            };
+
+            $scope.isCalloutSucceeded = function(event) {
+                if(event.status == true) {
+                    return true;
+                }
+                else  {
+                    if($scope.calloutErrorOccured == false && $scope.userCancel == false)  {
+                        $scope.errorMessage = "Error occured. Please try refreshing the page. ";
+                        if(event.message) {
+                            $scope.errorMessage += "The error message is: " + event.message;
+                        }
+                    }
+                    $scope.calloutErrorOccured = true;
+                    return false;
+                }
+            };
+
+            $scope.loadOpportunityListing = function() {
+                $scope.opportunityListing.isLoading = true;
+                var request = { UserId: $scope.UserId,
+                                FiscalQtr: $scope.fiscalQuarter,
+                                PageIndex: $scope.opportunityListing.filter.pageIndex,
+                                Stage: $scope.OppStage,
+                                startDate : $scope.weekStartDate,
+                                endDate: $scope.weekEndDate,
+                                source : $scope.oppSource,
+                                SortField: $scope.opportunityListing.filter.sortField,
+                                IsAscendingOrder: $scope.opportunityListing.filter.isAscendingOrder,
+                                ForecastType: $scope.forecastType
+                            };
+                    PerformanceOpportunityReportServiceExt.GetOpportunityListing(request, function(result, event) {
+                        $scope.opportunityListing.isLoading = false;
+                        if($scope.isCalloutSucceeded(event)) {
+                            $scope.opportunityListing.data = result.Opportunities;
+                            $scope.opportunityListing.hasPrevious = result.HasPrevious;
+                            $scope.opportunityListing.hasNext = result.HasNext;
+                            $scope.opportunityListing.pageCount = result.PageCount;
+                            $scope.opportunityListing.pageIndex = result.PageIndex;
+                            $scope.opportunityListing.totalOppAmount = result.totalOppAmount;
+                            $scope.opportunityListing.pagers = $scope.buildArray(result.PageCount);
+                            $scope.$apply($scope.opportunityListing);
+                        }
+                    });
+            }
+            
+            $scope.commaFormatted = function(amount) {
+                var delimiter = ","; // replace comma if desired
+                var a = amount.split('.',2)
+                var d = (a.length > 1)?a[1]:'';
+                var i = parseInt(a[0]);
+                if(isNaN(i)) { return ''; }
+                var minus = '';
+                if(i < 0) { minus = '-'; }
+                i = Math.abs(i);
+                var n = new String(i);
+                var a = [];
+                while(n.length > 3)
+                {
+                    var nn = n.substr(n.length-3);
+                    a.unshift(nn);
+                    n = n.substr(0,n.length-3);
+                }
+                if(n.length > 0) { a.unshift(n); }
+                n = a.join(delimiter);
+                if(d.length < 1) { amount = n; }
+                else { amount = n + '.' + d; }
+                amount = minus + amount;
+                return amount;
+            };
+            
+            $scope.unescape = function(str) {
+                if(str) {
+                    return str.replace("&amp;", "&").replace("&quot;", "\"").replace("&apos;", "'").replace("&lt;", "<").replace("&gt;", ">");
+                }
+                return "";
+            };
+            $scope.formatDecimal = function(value, format) {
+                if(value == null) {
+                    return null;
+                } else if(value == 0) {
+                    return "0";
+                } else if(format == "E") {
+                    //exact value, 2 decimals
+                    return "$" + $scope.commaFormatted(((value)/1).toFixed(2));
+                } else if(format == "W") {
+                    //whole values, 0 decimals
+                    return "$" + $scope.commaFormatted(((value)/1).toFixed(0));
+                } else if(format == "K") {
+                    //thousand, with 2 decimals
+                    var result = "$" + $scope.commaFormatted(((value)/1000).toFixed(2)) + "K";
+                    return result.replace(".00K", "K");
+                } else if(format == "M") {
+                    //million, with 2 decimals
+                    var result = "$" + $scope.commaFormatted(((value)/1000/1000).toFixed(2)) + "M";
+                    return result.replace(".00M", "M");
+                }
+                return "";
+            };
+        
+            $scope.buildArray = function(count) {
+                var result = [];
+                for(var i = 0; i < count; i++)
+                {
+                    result.push(i+1);
+                }
+                return result;
+            };
+            
+            $scope.turnPageOppList = function(pageIndex) {
+                $scope.opportunityListing.filter.pageIndex = pageIndex;
+                $scope.loadOpportunityListing();
+            };
+            $scope.sortOppList = function(sortField) {
+                if($scope.opportunityListing.filter.sortField === sortField) {
+                    $scope.opportunityListing.filter.isAscendingOrder = !$scope.opportunityListing.filter.isAscendingOrder;
+                }
+                $scope.opportunityListing.filter.sortField = sortField;
+                $scope.loadOpportunityListing();
+            };
+    
+            $scope.loadOpportunityListing();
+        });    
+        
+    
+    </script>
+    <div id="ngContainer" ng-app="oppReportingApp" ng-controller="oppReportingAppCtrl" style=" margin-top: 50px;margin-bottom:80px">
+        
+        <apex:pageBlock id="opportunityListingBlock" title="Opportunity List - Page {{opportunityListing.pageIndex}} / {{opportunityListing.pageCount}}  ">
+                <div class="listCaption"> 
+                    
+                    Total :  {{formatDecimal(opportunityListing.totalOppAmount, displayFormat)}}&nbsp;
+                    
+                    <img src="/img/loading.gif" alt="loading" ng-show="opportunityListing.isLoading" />
+                    
+                    
+                    
+                        
+                    <span style="float:right" ng-show="opportunityListing.data.length > 0">
+                        <a class="actionLink fa fa-angle-double-left" ng-click="turnPageOppList(opportunityListing.pageIndex-1)" ng-show="opportunityListing.hasPrevious"> Previous Page</a>
+                        <select ng-model="opportunityListing.pageIndex" ng-options="p as p for p in opportunityListing.pagers" ng-show="opportunityListing.pageCount>1" ng-change="turnPageOppList(opportunityListing.pageIndex)"></select>
+                        <a class="actionLink" ng-click="turnPageOppList(opportunityListing.pageIndex+1)" ng-show="opportunityListing.hasNext">Next Page <span class="fa fa-angle-double-right"></span></a>
+                    </span>
+                    
+                </div>
+                <div>
+                        <span class="displayUnits">
+                                <input type="radio" name="displayUnits" value="M" ng-click="displayFormat='M'" />Millions
+                                <input type="radio" name="displayUnits" value="K" ng-click="displayFormat='K'" />Thousands
+                                <input type="radio" name="displayUnits" value="W" checked="true" ng-click="displayFormat='W'" />Whole
+                                <input type="radio" name="displayUnits" value="E" ng-click="displayFormat='E'" />Exact
+                        </span>
+                    </div>
+                
+
+        
+        <div ng-hide="opportunityListing.data.length > 0">No opportunities found.</div>
+                <table class="report borderReport" style="width: 100%" ng-show="opportunityListing.data.length > 0">
+                    <thead>
+                        <tr class="header">
+                            <th ><a class="actionLink" ng-click="sortOppList('Name')">Opportunity Name </a></th>
+                            <th><a class="actionLink" ng-click="sortOppList('Amount')">Amount</a></th>
+                            <th><a class="actionLink" ng-click="sortOppList('StageName')">Sales Stage</a></th>
+                            <th>Technical Stage</th>
+                            <th><a class="actionLink" ng-click="sortOppList('ForecastCategoryName')">VMO Play</a></th>
+                            <th><a class="actionLink" ng-click="sortOppList('CloseDate')">Close Date</a></th>
+                            <th><a class="actionLink" ng-click="sortOppList('ForecastCategoryName')">Forecast Category</a></th>
+                            <th>Deal Path</th>
+                            <th>Source</th>
+                            <th>Lead Source</th>
+                            <th width="30%"><a class="actionLink" ng-click="sortOppList('NextStep')">Next Step</a></th>
+                            <th>Primary Partner</th>
+                            <th width="10%"><a class="actionLink" ng-click="sortOppList('OwnerId')">Owner</a></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-class="{'line': !($index % 2), 'line2': !!($index % 2), 'high': opportunity.Highlight}" ng-repeat="opportunity in opportunityListing.data">
+                            <td><a href="/{{opportunity.OppId}}" target="_blank">{{unescape(opportunity.OppName)}}</a></td>
+                            <td class="number">{{formatDecimal(opportunity.Amount, displayFormat)}}</td>
+                            <td class="center">{{unescape(opportunity.Stage)}}</td>
+                            <td class="center">{{unescape(opportunity.PocStatus)}}</td>
+                            <td class="center">{{unescape(opportunity.VMOPlay)}}</td>
+                            <td class="center">{{opportunity.CloseDate}}</td>
+                            <td class="center">{{unescape(opportunity.ForecastCategory)}}</td>
+                            <td class="center">{{unescape(opportunity.DealPath)}}</td>
+                            <td class="center">{{unescape(opportunity.Source)}}</td>
+                            <td class="center">{{unescape(opportunity.LeadSource)}}</td>
+                            <td>{{unescape(opportunity.NextStep)}}</td>
+                            <td><a href="/{{opportunity.PrimaryPartnerId}}" target="_blank">{{unescape(opportunity.PrimaryPartnerName)}}</a></td>
+                            <td><a href="/{{opportunity.OwnerId}}" target="_blank">{{unescape(opportunity.OwnerName)}}</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+                </apex:pageBlock>
+    </div>
+
+</apex:page>

@@ -1,0 +1,92 @@
+.overlayBackground2 {
+    background-color: #000;
+    border: none;
+    opacity: .6;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    z-index: 50100;
+}
+.cssDialog2 {
+    top: 25%;
+    left: 50%;
+}
+.overlayDialog2 {
+    position: fixed;
+    z-index: 50101;
+    top: 40px;
+    left: 30%;
+    max-width: 600px;
+}
+.overlayDialog2 .topRight {
+    background: url('../pic/popup/overlay_crns.png') right top no-repeat;
+    padding-left: 0;
+    padding-right: 6px;
+}
+.overlayDialog2 .topLeft {
+    padding: 8px 6px 8px 12px;
+    background: url('../pic/popup/overlayTopLft.png') left top no-repeat;
+}
+.dialogClose2 {
+    background: transparent url('../pic/popup/closeX.png');
+    width: 20px;
+    height: 20px;
+    float: right;
+    cursor: pointer;
+    background-position: top left;
+    text-indent: -999em;
+    overflow: hidden;
+}
+.dialogClose2:hover {
+    background-position: left -20px;
+}
+.overlayDialog2 .topLeft h2 {
+    color: #000;
+    font-size: 1.25em;
+    text-align: left;
+}
+.overlayDialog2 .middle {
+    background: #fff url('../pic/popup/overlay_crns.png') left -240px repeat-x;
+    border: none;
+    padding: 0;
+}
+.inlineEditDialog2 .innerContent {
+    text-align: center;
+    padding: 12px 16px;
+}
+.overlayDialog2 .innerContent .buttons {
+    text-align: center;
+    padding-top: 12px;
+}
+.zen .zen-btn {
+    color: #222;
+    border: 1px solid #c3c3c3;
+    border-color: #c3c3c3 #aaa #909090;
+    font-size: .917em;
+    font-weight: bold;
+    text-decoration: none;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    background: #f0f0f0;
+    background: -moz-linear-gradient(#fff,#f0f0f0);
+    background: -webkit-linear-gradient(#fff,#f0f0f0);
+    background: -ms-linear-gradient(#fff,#f0f0f0);
+    padding: 3px 6px;
+    overflow: visible;
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+    margin: 1px;
+}
+.overlayDialog2 .bottomRight {
+    background: url("../pic/popup/overlay_crns.png") no-repeat scroll right -235px transparent;
+    height: 4px;
+    padding-left: 0;
+    padding-right: 6px;
+}
+.overlayDialog2 .bottomLeft {
+    background: url("../pic/popup/overlayBtmLft.png") no-repeat scroll left bottom transparent;
+    height: 4px;
+}

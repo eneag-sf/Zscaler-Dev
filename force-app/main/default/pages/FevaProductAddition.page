@@ -1,0 +1,78 @@
+<apex:page controller="FevaProductAdditionController" tabStyle="Provisioning_Request__c">
+    <apex:includeScript id="jQuery" value="https://code.jquery.com/jquery-3.1.1.min.js" />
+    <script type="text/javascript">
+        window.hideError = !{!isError};
+    </script>
+    <apex:form id="frmId">
+ 
+        <apex:outputPanel id="validationErrorsContainer">
+            <div id="validationErrors" style="border: 1px solid #CC0000; border-radius: 3px; background-color: #FFFFCC; color: #000000; clear: both; padding: 8px 6px; margin: 5px 20px; display: none;">
+                {!IF(isErroronVZEN == TRUE, "An approved VZEN Equipment Request is required to add this SKU", IF(AND(isZPAProductIncluded == TRUE, isMandatoryFieldsFilled == FALSE), "To add ZPA, a ZPA SKU should be added to the primary Quote and all the fields in the ZPA section in the provisioning request form should be filled out.", "ZPA section needs to be filled in the PR before a POC is requested."))}
+            </div>
+            
+            <!--<div id="validationErrors" style="border: 1px solid #CC0000; border-radius: 3px; background-color: #FFFFCC; color: #000000; clear: both; padding: 8px 6px; margin: 5px 20px; display: none;">
+                {!IF(isErroronVZEN == TRUE, "An approved VZEN Equipment Request is required to add this SKU", "")}
+            </div>-->
+            
+            <script type="text/javascript">
+                window.hideError = !{!isError};
+                if (window.hideError != undefined
+                    && window.hideError != true) {
+                    console.log('inside if');
+                    $("#validationErrors").show();
+                    $("#validationErrors").ready(function() {
+                        setTimeout(function() {
+                            $("#validationErrors").hide(); 
+                            window.hideError = true; 
+                        }, 50000);
+                    });
+                } else {
+                    console.log('inside else');
+                    $("#validationErrors").hide();
+                }
+            </script>
+			<apex:pageMessages id="FinalErrorblock" rendered="{!ErrorMessage}"/>
+        </apex:outputPanel>
+        <apex:pageBlock id="pgBlk">
+			<apex:pageBlockButtons location="top"  >
+                <apex:outputPanel id="pgButton">
+                    <apex:commandButton value="Save" action="{!saveProduct}" style="margin-left: 150px;"/>
+                    <apex:commandButton value="Cancel" action="/{!provReqId}"/>
+                </apex:outputPanel>
+             </apex:pageBlockButtons>
+             
+             <apex:pageBlockSection id="prodSec" columns="1" collapsible="false" showHeader="true" title="Products Added">
+                <apex:outputPanel id="addedProd">
+                    <apex:pageBlockTable value="{!addedProductList}" var="var" >
+                        <apex:column headerValue="Action" width="60px">
+                            <b><apex:commandLink value="Delete"  action="{!removeProduct}" reRender="allProd,addedProd,validationErrorsContainer,FinalErrorblock">
+                                <apex:param name="productId" value="{!Var.id}" assignTo="{!productId}"/>
+                            </apex:commandLink></b>
+                         </apex:column>
+                        <apex:column value="{!Var.Name}" headerValue="Product Name"/>
+                        <apex:column value="{!Var.ProductCode}" headerValue="SKU"/>
+                        <apex:column value="{!var.Product_Category__c}" headerValue="Category"/>
+                    </apex:pageBlockTable>
+                </apex:outputPanel>
+             </apex:pageBlockSection>
+             
+             
+             <apex:pageBlockSection id="otherSec" columns="1" collapsible="false" showHeader="true" title="Products Available">
+                <apex:outputPanel id="allProd">
+                    <apex:pageBlockTable value="{!allProductList}" var="var">
+                        <apex:column headerValue="Action" width="60px">
+                            <b><apex:commandLink value="Add"  action="{!addProduct}" reRender="allProd,addedProd,validationErrorsContainer,FinalErrorblock">
+                                <apex:param name="productId" value="{!Var.id}" assignTo="{!productId}"/> 
+                            </apex:commandLink></b>
+                         </apex:column>
+                        <apex:column value="{!Var.Name}" headerValue="Product Name"/>
+                        <apex:column value="{!Var.ProductCode}" headerValue="SKU"/>
+                        <apex:column value="{!var.Product_Category__c}" headerValue="Category"/>
+                    </apex:pageBlockTable>
+                </apex:outputPanel>
+             </apex:pageBlockSection>
+             
+             
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

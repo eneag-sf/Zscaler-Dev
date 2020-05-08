@@ -1,0 +1,33 @@
+<apex:page standardController="Opportunity" standardStylesheets="true" showHeader="false">
+<!-- <apex:pageBlock rendered="{!IF(((Opportunity.StageName = '1 - Qualified and Budgeted' || Opportunity.StageName = '2 - Technical Validation' || Opportunity.StageName = '7 - Negotiation & Review') && (Opportunity.Account.Amber_Road_Status__c='Potential Match' || Opportunity.Account.Amber_Road_Status__c='Match')),true,false)}"> -->
+<!-- || Opportunity.StageName = $Label.Stage_4_Economic_Buyer_Signoff -->
+   <apex:pageBlock rendered="{!IF(((Opportunity.StageName = $Label.Stage_1_Alignment || Opportunity.StageName = $Label.Stage_2_Qualified_Budgeted || Opportunity.StageName = $Label.Stage_3_Value_Impact_Validation || Opportunity.StageName = $Label.Stage_4_Economic_Buyer_Signoff || Opportunity.StageName = $Label.Stage_5_Contracts_Complete || Opportunity.StageName = $Label.Stage_6_Closed_Won || Opportunity.StageName = $Label.Stage_7_Closed_Lost) && (Opportunity.Account.Amber_Road_Status__c='Potential Match' || Opportunity.Account.Amber_Road_Status__c='Match') && (Opportunity.Account.type='Partner' || Opportunity.Account.type='Prospect' || Opportunity.Account.type='Customer')),true,false)}">
+      <base target="_top" />
+      <div class="orgLoginHistoryWrapper">
+         <div class="errorAndDownloadOptions">
+            <div class="warningElement">
+               <div class="message errorM3" id="ie6DeprecationWarning">
+                  <table  class="messageTable" border="0" cellpadding="2" cellspacing="1" >
+                     <tr>
+                        <td valign="top"><img src="/s.gif" alt="error" class="msgIcon" title="error"/></td>
+                        <td class="messageCell">
+                            <p>"This account has been blocked by export compliance screening. Contact <i><Strong style="color:blue">dplscreening@zscaler.com</Strong></i> who can help review this account.”</p> 
+                        </td>
+                     </tr>
+                  </table>
+               </div>
+            </div>
+         </div>
+      </div>
+   </apex:pageBlock>
+   <!--<apex:pageBlock rendered="{!IF(((Opportunity.StageName = '8 - Expecting Order' || Opportunity.StageName = '13 - Closed & Approved By Finance') && (Opportunity.Account.Amber_Road_Status__c='Potential Match' || Opportunity.Account.Amber_Road_Status__c='Match')),true,false)}">-->
+    <script src="/soap/ajax/28.0/connection.js" type="text/javascript"></script>
+    <script src="/soap/ajax/28.0/apex.js" type="text/javascript"></script>
+   <script> 
+    //Retrieve Stage.
+    //Query the Opportunity Record.
+      result = sforce.connection.query("SELECT id,StageName,Accountid,Account.type,Account.Amber_Road_Status__c FROM Opportunity WHERE id=apexpages.currentpage().getparameters().get('id')");
+      records = result.getArray("records");
+      console.log('records  '+records);
+   </script>
+</apex:page>

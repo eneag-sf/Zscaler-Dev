@@ -1,0 +1,75 @@
+<apex:page >
+  
+  
+  <apex:pageBlock title="Tracking Evals in Salesforce.com">
+  
+  
+
+
+
+Use Significant Customer Interactions to Track Eval Progress within Salesforce.com. The SCI user exeperince has been enhanced to track the following customer Evals : <br></br>
+ - Security Preview <br></br>
+ - POC Shared <br></br>
+ - POC Inline <br></br><br></br>
+ 
+ The Eval Progress Notes object has been retired and will not accept new entires. Please read the FAQs below for more insight on this change.
+
+</apex:pageBlock>
+
+  <br></br>
+  <apex:pageBlock title="FAQ : Using SCIs for tracking Eval Progress">
+  <style>
+
+      body .bPageBlock .pbBody .red .pbSubheader{
+
+          background-color:#c00000;
+
+      }
+
+      body .bPageBlock .pbBody .grey .pbSubheader{
+
+          background-color:#c0c0c0;
+
+      }
+
+      body .bPageBlock .pbBody .grey .pbSubheader h3{
+
+          color:#000;
+
+      }
+
+  </style>
+  <apex:outputPanel styleClass="grey" layout="block">
+   <apex:pageBlockSection title="1. How do I use SCI for tracking evals within Salesfoce.com?" columns="1">
+ 
+       <br></br>
+       For each eval you execute at the custome site, please create a new SCI for that opportunity. Choose One of the following under the 'Type of Interaction' Field <br></br>
+         - Security Preview <br></br> 
+         - POC Shared <br></br>
+         - POC Inline <br></br>
+       If the interaction type is a POC Inline, you can initiate a provisioning request from the SCI itself. 
+       
+   </apex:pageBlockSection>
+    
+   <apex:pageBlockSection title="2. How do I track progress for Inline POCs?" columns="1">
+       <br></br>
+       - If your SCI is of the type 'POC Inline', please use the 'POC Phases' section of the SCI page layout to track progress. <br></br>
+       - Create the appropriate phases as your POC Proceeds. Not all Phases will be needed for each POC.<br></br>
+       - You can create activities and attach documents under each Phase.<br></br>
+   </apex:pageBlockSection>
+   <apex:pageBlockSection title="3. What happens to my old Eval Notes?" columns="1"> 
+       <br></br>
+       - For existing Eval notes, an SCI record with an appropriate Interaction Type has been created.<br></br>
+       - Where applicable, You can access the legacy eval notes from an SCI using the 'Evaluation progress Notes (Legacy) Link'.<br></br>
+       - If you don't see an SCI for an Eval in progress, please create one with the appropriate interaction type.<br></br>
+   </apex:pageBlockSection>
+   <apex:pageBlockSection title="4. How do I get more information on the change?" columns="1"> 
+       <br></br>
+       - Please write to z-sales-ops@zscaler.com with your specific questions. <br></br>
+       - EMEA Sales and SE org will be trained on the changes during the SE Training on the 16th April 2015. <br></br>
+   </apex:pageBlockSection>
+
+
+ </apex:outputPanel>
+</apex:pageBlock>
+</apex:page>

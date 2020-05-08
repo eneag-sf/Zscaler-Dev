@@ -1,0 +1,13 @@
+body{
+    font-family: Salesforce Sans,Arial,sans-serif !important;
+}
+label{
+    font-family: Salesforce Sans,Arial,sans-serif !important;
+    font-size: .75rem;
+    font-weight: 700;
+}
+.zs-case-creation h2{
+    font-family: Salesforce Sans,Arial,sans-serif !important;
+    font-size: 1.2rem;
+    font-weight: 700;
+}

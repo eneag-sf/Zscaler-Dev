@@ -1,0 +1,102 @@
+<apex:page standardController="Account" extensions="ContactThatMattersControllerExt" standardStylesheets="true" tabStyle="Account" id="thePage">
+    <apex:form id="theForm">
+        <apex:pageBlock id="thePageBlock" mode="inlineEdit"> <!-- title="Contacts That Matter"   mode="inlineEdit"-->
+            
+            <!-- <apex:pageBlockSection columns="1" rendered="{!contactList.size > 0}"> headerValue="Desktop" -->
+              <!-- <apex:pageBlockSectionItem>  <apex:outputField  <apex:inlineEditSupport event="ondblClick"  -->
+                <apex:inlineEditSupport />
+                <apex:pageBlockTable value="{!contactList}" var="con" id="thePageBlockTable" >
+                    <apex:column headerValue="Name">
+                        <a href="/{!con.Id}" target="_blank">{!con.Name}</a>
+                    </apex:column>
+                    <apex:column Headervalue="Title">
+                        <apex:outputfield value="{!con.Title}"/>
+                    </apex:column>
+                    <!-- <apex:column value="{!con.Key_Exec__c}" headerValue="Key Exec"/> -->
+                    <apex:column Headervalue="Level From CIO">
+                        <apex:outputfield value="{!con.Level_From_CIO__c}"/>
+                    </apex:column>
+                    <apex:column Headervalue="Head of IT">
+                        <apex:outputfield value="{!con.Head_of_IT__c}"/>
+                    </apex:column>
+                    <apex:column Headervalue="Head of Security">
+                        <apex:outputfield value="{!con.Head_of_Security__c}"/>
+                    </apex:column>
+                    <apex:column Headervalue="Head of Networking">
+                        <apex:outputfield value="{!con.Head_of_Networking__c}"/>
+                    </apex:column>
+                    <apex:column Headervalue="Security">
+                        <apex:outputfield value="{!con.Security__c}"/>
+                    </apex:column>
+                    <apex:column Headervalue="Network">
+                        <apex:outputfield value="{!con.Network__c}"/>
+                    </apex:column>
+                    <apex:column Headervalue="Desktop">
+                        <apex:outputfield value="{!con.Desktop__c}"/>
+                    </apex:column>
+                    <apex:column Headervalue="Application">
+                        <apex:outputfield value="{!con.Application__c}"/>
+                    </apex:column>
+                    <apex:column Headervalue="Architecture">
+                        <apex:outputfield value="{!con.Architecture__c}"/>
+                    </apex:column>
+                    <apex:column Headervalue="Operations">
+                        <apex:outputfield value="{!con.Operations__c}"/>
+                    </apex:column>
+                    <apex:column Headervalue="Budget Authority">
+                        <apex:outputfield value="{!con.Budget_Authority__c}"/>
+                    </apex:column>
+                    <apex:column Headervalue="Influencer">
+                        <apex:outputfield value="{!con.Influencer__c}"/>
+                    </apex:column>
+                    <apex:column Headervalue="Champion">
+                        <apex:outputfield value="{!con.Champion__c}"/>
+                    </apex:column>
+                    <apex:column Headervalue="Distractor">
+                        <apex:outputfield value="{!con.Distractor__c}"/>
+                    </apex:column>
+                    <apex:column Headervalue="Service Owner">
+                        <apex:outputfield value="{!con.Service_Owner__c}"/>
+                    </apex:column>
+                    <apex:column Headervalue="Send CIO Report">
+                        <apex:outputfield value="{!con.Send_CIO_Report__c}"/>
+                    </apex:column>
+                    <apex:column Headervalue="Key Contact Status">
+                        <apex:outputfield value="{!con.Key_Contact_Status__c}"/>
+                    </apex:column>
+                    <apex:inlineEditSupport event="ondblClick" 
+                        showOnEdit="saveButton,cancelButton" hideOnEdit="editButton" /> 
+                    
+                     <!--<apex:column value="{!con.Title}" headerValue="Title"/>
+                    <apex:column value="{!con.Key_Exec__c}" headerValue="Key Exec"/>
+                    <apex:column value="{!con.Level_From_CIO__c}" headerValue="Level From CIO"/>
+                    <apex:column value="{!con.Security__c}" headerValue="Security"/> 
+                    <apex:column value="{!con.Network__c}" headerValue="Network"/>
+                    <apex:column value="{!con.Desktop__c}" headerValue="Desktop" />
+                    <apex:column value="{!con.Application__c}" headerValue="Application"/>
+                    <apex:column value="{!con.Architecture__c}" headerValue="Architecture"/>
+                    <apex:column value="{!con.Operations__c}" headerValue="Operations"/>
+                    <apex:column value="{!con.Budget_Authority__c}" headerValue="Budget Authority"/> 
+                    <apex:column value="{!con.Influencer__c}" headerValue="Influencer"/>
+                    <apex:column value="{!con.Champion__c}" headerValue="Champion"/>
+                    <apex:column value="{!con.Distractor__c}" headerValue="Distractor"/>
+                    <apex:column value="{!con.Service_Owner__c}" headerValue="Service Owner"/>
+                    <apex:column value="{!con.Send_CIO_Report__c}" headerValue="Email Insights Report"/>
+                    <apex:column value="{!con.Key_Contact_Status__c}" headerValue="Key Contact Status"/>
+                     <apex:inlineEditSupport event="ondblClick" 
+                        showOnEdit="saveButton,cancelButton" hideOnEdit="editButton" />     -->                 
+                </apex:pageBlockTable>
+                
+                <apex:pageBlockButtons >
+                    <apex:commandButton value="Save" action="{!Updatecontacts}" id="saveButton" style="display: none;"/>
+                <apex:commandButton value="Cancel" action="{!Cancel}" id="cancelButton" style="display:none;" /> 
+                </apex:pageBlockButtons>
+                    
+                <!-- </apex:pageBlockSectionItem> -->
+           <!-- </apex:pageBlockSection> 
+            <apex:pageBlockSection rendered="{!NOT(contactList.size > 0)}" columns="1">
+                No records to display.
+            </apex:pageBlockSection> -->
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

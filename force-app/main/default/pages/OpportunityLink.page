@@ -1,0 +1,5 @@
+<apex:page standardController="Deal_Reg__c"  extensions="OpportunityLinkControllerExt">
+    <apex:form >
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<apex:outputText ><b>Associated Opportunity</b>&nbsp;&nbsp;&nbsp;&nbsp;</apex:outputText><a href="/{!oppId}" target="_blank">{!oppName}</a>
+    </apex:form>
+</apex:page>

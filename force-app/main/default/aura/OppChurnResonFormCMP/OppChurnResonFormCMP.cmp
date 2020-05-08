@@ -1,0 +1,1540 @@
+<aura:component controller="OppLossChurnReasonCntrl" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction">   
+    
+    <aura:attribute name="recordId" type="Id" />	
+    <aura:attribute name="oppId" type="Id" />	
+    <aura:attribute name="section1" type="boolean" default="false" />
+    <aura:attribute name="section2" type="boolean" default="false" />
+    <aura:attribute name="section3" type="boolean" default="false" />
+    <aura:attribute name="summary" type="boolean" default="false" />
+    <aura:attribute name="section1Completed" type="boolean" default="false" />
+    <aura:attribute name="section2Completed" type="boolean" default="false" />
+    <aura:attribute name="section3Completed" type="boolean" default="false" />
+    <aura:attribute name="summaryCompleted" type="boolean" default="false" />
+    <aura:attribute name="renwalNotesError" type="boolean" default="false" />
+    
+    <aura:attribute name="isSubmit" type="boolean" default="false" />
+    <aura:attribute name="activeTab" type="string" default="section1" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>   
+    <aura:attribute name="initData" type="object" default="" />
+    <aura:attribute name="pickListData" type="object" default="" />
+    <aura:attribute name="showErrors" type="boolean" default="false" />
+    <aura:attribute name="errorMessage" type="string" default="" />
+    <aura:attribute name="ChurnRecord" type="Churn__c" default="{ 'sobjectType': 'Churn__c',
+                                                                'Opp_Loss_Primary_Reason__c': '','Opp_Loss_Primary_Reason_Notes__c': '','Opp_Loss_OtherPrimary_Notes__c': '',
+                                                                'Opp_Loss_Secondary_Reason__c': '','Opp_Loss_Secondary_Reason_Notes__c': '','Opp_Loss_OtherSecondary_Notes__c': '',
+                                                                'Price_Were_Low__c': '','SSL_inspection__c': '','Branch_Breakout__c': '',
+                                                                'Apps_Moved_To_The_Cloud__c': '','Zapp_deployments__c': '','Implementing_Zero_Trust__c': '',
+                                                                'ExperienceFeaturesZIAPrimaryReason__c': '','Features_ZIA_Primary_Reason_Notes__c': '','ExperienceFeaturesZIASecondaryReason__c': '',
+                                                                'ExperienceFeaturesZPAPrimaryReason__c': '','Features_ZPA_Primary_Reason_Notes__c': '','ExperienceFeaturesZPASecondaryReason__c': '',
+                                                                'ExperienceMissingfunctionality__c': '','Engagement__c': '','Regular_Meeting__c': '',
+                                                                'Had_Internal_Champion__c': '','Relationships_With_Teams__c': '','Executive_Engagement__c': '',
+                                                                'Other_Primary_Reason__c': '','Other_Primary_Reason_Notes__c': '','Other_Secondary_Reason__c': '',
+                                                                'Lifetime_Value_Primary_Reason__c': '','Lifetime_Value_Primary_Reason_Notes__c': '','Lifetime_Value_Secondary_Reason__c': '',
+                                                                'Renewalquestion__c': '','ZIA_Primary_Competitor__c': '','ZIA_Other_Primary_Competitor__c': '',
+                                                                'ZIA_Secondary_Competitor__c': '','ZIA_Other_Secondary_Competitor__c': '','ZPA_Primary_Competitor__c': '',
+                                                                'ZPA_Other_Primary_Competitor__c': '','ZPA_Secondary_Competitor__c': '','ZPA_Other_Secondary_Competitor__c': '',
+                                                                'Features_ZPA_Secondary_Reason_Notes__c': '','Features_ZIA_Secondary_Reason_Notes__c': '','Lifetime_Value_Secondary_Reason_Notes__c': '',
+                                                                'Other_Secondary_Reason_Notes__c': '','AdditionalNotes__c': '','DowngradingFrom__c':'','DowngradingTo__c':'',
+                                                                'DonotrenewZIAProducts__c':'','DonotrenewZPAProducts__c':'','DonotrenewSupportProducts__c':'','Others__c':'',
+                                                                'Price_As_A_Factor__c':'','Lost_Analysis_Call__c':'','Renewal_Question_Notes__c':''}"/>
+    <aura:attribute name="isLossCallConducted" type="boolean" default="false" />
+    <aura:attribute name="lostCallValue" type="string" default="" />
+    <aura:attribute name="noSCIFound" type="boolean" default="false" />
+    <aura:attribute name="SCIList" type="list" default="[]" />
+    <aura:attribute name="SCINumber" type="string" default="" />
+    <aura:attribute name="opportunityStage" type="string" default="" />
+    <aura:attribute name="confirmEncloser" type="boolean" default="false" />
+    
+    <aura:attribute name="ClosureQuestion" type="boolean" default="false" />
+    <aura:attribute name="customerdiv" type="boolean" default="false" />
+    <aura:attribute name="experencediv" type="boolean" default="false" />
+    <aura:attribute name="experenceZPAdiv" type="boolean" default="false" />
+    <aura:attribute name="SSLinspectiondiv" type="boolean" default="false" />
+    <aura:attribute name="BranchBreakoutdiv" type="boolean" default="false" />
+    <aura:attribute name="Appsmovedtotheclouddiv" type="boolean" default="false" />
+    <aura:attribute name="Zappdeploymentsdiv" type="boolean" default="false" />
+    <aura:attribute name="ImplementingZeroTrustdiv" type="boolean" default="false" />
+    <aura:attribute name="ZPACompetitorsdiv" type="boolean" default="false" />
+    <aura:attribute name="ZIACompetitorsdiv" type="boolean" default="false" />
+    <aura:attribute name="RenewalQuestiondiv" type="boolean" default="false" />
+    
+    
+    <aura:attribute name="isReductionCheck" type="boolean" default="false" />
+    <aura:attribute name="isDowngradingCheck" type="boolean" default="false" />
+    <aura:attribute name="isRenewAdvancedCheck" type="boolean" default="false" />
+    <aura:attribute name="isOtherCheck" type="boolean" default="false" />
+    
+    <aura:attribute name="isAdvancedZIA" type="boolean" default="false" />
+    <aura:attribute name="isAdvancedZPA" type="boolean" default="false" />
+    <aura:attribute name="isAdvancedSupport" type="boolean" default="false" />
+    
+    <aura:attribute name="DonotrenewZIAProducts" type="string" default="" />
+    <aura:attribute name="DonotrenewZPAProducts" type="string" default="" />
+    <aura:attribute name="DonotrenewSupportProducts" type="string" default="" />
+    
+    <aura:attribute name="downgradiononrror" type="boolean" default="false" />
+    <aura:attribute name="ZPAPrimaryReasonrror" type="boolean" default="false" />
+    <aura:attribute name="ZPASecondaryReasonrror" type="boolean" default="false" />
+    <aura:attribute name="ZIAPrimaryReasonrror" type="boolean" default="false" />
+    <aura:attribute name="ZIASecondaryReasonrror" type="boolean" default="false" />
+    <aura:attribute name="LifeSecondaryReasonrror" type="boolean" default="false" />
+    <aura:attribute name="OtherSecondaryReasonrror" type="boolean" default="false" />
+    <aura:attribute name="expFunctionalityError" type="boolean" default="false" />
+    <aura:attribute name="ZIASecondaryCompetitorReasonrror" type="boolean" default="false" />
+    <aura:attribute name="ZIAPrimaryOtherCompetitorReasonrror" type="boolean" default="false" />
+    <aura:attribute name="ZIASecondaryOtherCompetitorReasonrror" type="boolean" default="false" />
+    <aura:attribute name="ZPASecondaryCompetitorReasonrror" type="boolean" default="false" />
+    <aura:attribute name="ZPASecondaryOtherCompetitorReasonrror" type="boolean" default="false" />
+    <aura:attribute name="ZPAPrimaryOtherCompetitorReasonrror" type="boolean" default="false" />
+     <aura:attribute name="SCIReasonrror" type="boolean" default="false" />
+     <aura:attribute name="encloserQuestionError" type="boolean" default="false" />
+    <aura:attribute name="lossAnalysysError" type="boolean" default="false" />
+    
+    <aura:attribute name="SSLinspectionError" type="boolean" default="false" />
+    <aura:attribute name="BranchBreakoutError" type="boolean" default="false" />
+    <aura:attribute name="AppsmovedtothecloudError" type="boolean" default="false" />
+    <aura:attribute name="ZappdeploymentsError" type="boolean" default="false" />
+    <aura:attribute name="ImplementingZeroTrustError" type="boolean" default="false" />
+    
+    <aura:attribute name="oppType" type="string"></aura:attribute>
+
+    
+    <!--loading spinner start-->
+    <aura:attribute name="spinner" type="boolean" default="FALSE"/>
+    <aura:if isTrue="{!v.spinner}">
+        <div aura:id="spinnerId" class="slds-spinner_container">
+            <div class="slds-spinner--brand  slds-spinner slds-spinner--medium slds-is-relative" role="alert">
+                <span class="slds-assistive-text">Loading...</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+    </aura:if>
+    <!-- Loading spinner end-->  
+    
+    
+    <aura:if isTrue="{!v.showErrors}">
+        <!-- Show the message to ui -->
+        <div class="slds-notify slds-notify_toast slds-theme_error">
+            <span class="slds-assistive-text">error</span>
+            <div class="slds-notify__content">
+                <h5 class="slds-text-heading_small slds-align_absolute-center">Error Message </h5>
+                <p class="slds-align_absolute-center">{!v.errorMessage}</p>                
+            </div>
+        </div>
+    </aura:if>
+    
+    <article class="slds-card">
+        <div class="slds-card__body slds-card__body_inner">
+            <div class="slds-path">
+                <div class="slds-grid slds-path__track">
+                    <div class="slds-grid slds-path__scroller-container">
+                        <div class="slds-path__scroller" role="application">
+                            <div class="slds-path__scroller_inner">
+                                <ul class="slds-path__nav" role="listbox" aria-orientation="horizontal">
+                                    <li class="slds-path__item slds-is-incomplete" role="presentation" aura:id="section1" data-id="section1" onclick="{!c.onclickTab}" >
+                                        <a aria-selected="false" class="slds-path__link" href="javascript:void(0);" id="path-6" role="option" tabindex="-1">
+                                            <span class="slds-path__stage">
+                                                <lightning:icon class="icn" iconName="utility:check" size="x-small"  alternativeText="check" />
+                                                <span class="slds-assistive-text">Section - 1 Loss Reason</span>
+                                            </span>
+                                            <span class="slds-path__title">Section - 1 Loss Reason</span>
+                                        </a> 
+                                    </li>
+                                    <li class="slds-path__item slds-is-incomplete" data-id="section2" aura:id="section2" onclick="{!c.onclickTab}">
+                                        <a aria-selected="false" class="slds-path__link" href="javascript:void(0);" id="path-7" role="option" tabindex="-1">
+                                            <span class="slds-path__stage">
+                                                <lightning:icon iconName="utility:check" size="x-small"  alternativeText="check" />
+                                                <span class="slds-assistive-text">Section - 2 Competitors and Notes</span>
+                                            </span>
+                                            <span class="slds-path__title">Section - 2 Competitors and Notes</span>
+                                        </a>
+                                    </li>
+                                    <li class="slds-path__item slds-is-incomplete" data-id="section3" aura:id="section3" onclick="{!c.onclickTab}">
+                                        <a aria-selected="false" class="slds-path__link" href="javascript:void(0);" id="path-7" role="option" tabindex="-1">
+                                            <span class="slds-path__stage">
+                                                <lightning:icon iconName="utility:check" size="x-small"  alternativeText="check" />
+                                                <span class="slds-assistive-text">Section - 3 Competitors and Notes</span>
+                                            </span>
+                                            <span class="slds-path__title">Section - 3 Competitors and Notes</span>
+                                        </a>
+                                    </li>
+                                    <li class="slds-path__item slds-is-incomplete" data-id="summary" aura:id="summary" onclick="{!c.onclickTab}">
+                                        <a aria-selected="false" class="slds-path__link" href="javascript:void(0);" id="path-8" role="option" tabindex="-1">
+                                            <span class="slds-path__stage">
+                                                <lightning:icon iconName="utility:check" size="x-small"  alternativeText="check" />
+                                                <span class="slds-assistive-text">Summary</span>
+                                            </span>
+                                            <span class="slds-path__title">Summary</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </article>
+    <div id="main">  
+        <aura:if isTrue="{!v.summary}">
+            <div class="slds-align_absolute-center slds-m-top_small">
+                <lightning:button label="Submit" title="Submit" onclick="{!c.save}" class="slds-button slds-button_brand" />
+                <lightning:button label="Go Back" title="Go Back" onclick="{!c.backToScreen3}" class="slds-button slds-button_neutral" />
+                <lightning:button label="Cancel" title="Cancel" onclick="{!c.redirectToBack}" class="slds-button slds-button_neutral" />
+                
+            </div>
+            
+            
+            <aura:if isTrue="{!v.ClosureQuestion}">
+                <div class="slds-grid slds-wrap">
+                    <div class="slds-col slds-large-size--1-of-1  slds-medium-size--1-of-1 slds-small-size--1-of-1">
+                        <div class="slds-p-around_small" id="activePR_ClosureQuestion">
+                            <div class="slds-page-header">
+                                <div class="slds-page-header__row">
+                                    <div class="slds-page-header__col-title">
+                                        <div class="slds-media">
+                                            <div class="slds-media__body">
+                                                <div class="slds-page-header__name">
+                                                    <div class="slds-page-header__name-title">
+                                                        <span class="slds-truncate" title="Active Provisioning Requests are present on this Opportunity.">Active Provisioning Requests are present on this Opportunity.</span>
+                                                    </div>
+                                                </div>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="padding-top: 0.5rem !important">
+                                <div class="slds-grid slds-wrap slds-form-element padd_around_4PX">
+                                    <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                        <ui:inputCheckbox name="confirmEncloser" value="{!v.confirmEncloser}" aura:id="confirmEncloser" class="slds-p-vertical_small"/>
+                                        <label>&nbsp;Confirm Opportunity Closure?</label>
+                                        <aura:if isTrue="{!v.encloserQuestionError}">
+                                            <div class="slds-form-element__help error_field" id="stageError-err">Error: This field is required.</div>
+                                        </aura:if>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aura:if>
+            
+            <div class="slds-grid slds-wrap">
+                    <div class="slds-col slds-large-size--1-of-1  slds-medium-size--1-of-1 slds-small-size--1-of-1">
+                        <div class="slds-p-around_small" id="activePR_ClosureQuestion">
+                            <div class="slds-page-header">
+                                <div class="slds-page-header__row">
+                                    <div class="slds-page-header__col-title">
+                                        <div class="slds-media">
+                                            <div class="slds-media__body">
+                                                <div class="slds-page-header__name">
+                                                    <div class="slds-page-header__name-title">
+                                                        <span class="slds-truncate" title="Deal Summary">Deal Summary</span>
+                                                    </div>
+                                                </div>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="padding-top: 0.5rem !important">
+                                <div class="slds-grid slds-wrap slds-form-element padd_around_4PX">
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                        <b>Account Name</b>
+                                    </div>
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                        {!v.initData.Accountname}
+                                    </div>
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                       <b>Lost Amount</b>
+                                    </div>
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                        {!v.initData.lostAmount}
+                                    </div>
+                                </div>
+                                <div class="slds-grid slds-wrap slds-form-element padd_around_4PX">
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                        <b>Opportunity Name</b>
+                                    </div>
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                        {!v.initData.Opportunityname}
+                                    </div>
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                       <b>Geo</b>
+                                    </div>
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                        {!v.initData.geo}
+                                    </div>
+                                </div>
+                                <div class="slds-grid slds-wrap slds-form-element padd_around_4PX">
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                        <b>Type</b>
+                                    </div>
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                        {!v.initData.oppType}
+                                    </div>
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                       <b>Territory Type</b>
+                                    </div>
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                        {!v.initData.territoryType}
+                                    </div>
+                                </div>
+                                <div class="slds-grid slds-wrap slds-form-element padd_around_4PX">
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                        <b>Stage</b>
+                                    </div>
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                        {!v.initData.oppStage}
+                                    </div>
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                       <b>Owner</b>
+                                    </div>
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                        {!v.initData.owner}
+                                    </div>
+                                </div>
+                                <div class="slds-grid slds-wrap slds-form-element padd_around_4PX">
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                        <b>Technical Stage</b>
+                                    </div>
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                        {!v.initData.technicalStage}
+                                    </div>
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                       <b>Products Lost</b>
+                                    </div>
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                        {!v.initData.productLost}
+                                    </div>
+                                </div>
+                                <div class="slds-grid slds-wrap slds-form-element padd_around_4PX">
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                        <b>Primary Partner</b>
+                                    </div>
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                        {!v.initData.primaryPartner}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            
+        </aura:if>
+        <aura:if isTrue="{!v.section1}">
+            <div class="slds-grid slds-wrap">
+                <div class="slds-col slds-large-size--1-of-1  slds-medium-size--1-of-1 slds-small-size--1-of-1">
+                    <div class="slds-p-around_small" id="churnType-div">
+                        <!--OPP LOSS REASON start-->  
+                        <div class="slds-page-header">
+                            <div class="slds-page-header__row">
+                                <div class="slds-page-header__col-title">
+                                    <div class="slds-media">
+                                        <div class="slds-media__body">
+                                            <div class="slds-page-header__name">
+                                                <div class="slds-page-header__name-title">
+                                                    <span class="slds-truncate" title="OPP LOSS REASON">Type Of Churn</span>
+                                                </div>
+                                            </div>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--OPP LOSS REASON body-->
+                        <div style="padding-top: 0.5rem !important">
+                            <div class="slds-grid slds-wrap slds-form-element padd_around_4PX">
+                                <div class="slds-col slds-large-size--1-of-1  slds-medium-size--1-of-1 slds-small-size--1-of-1">
+                                    <!--
+                                    <ui:inputCheckbox disabled="{!v.summary}" name="isReductionCheck" value="{!v.isReductionCheck}" aura:id="isReductionCheck" class="slds-checkbox slds-p-vertical_small"/>
+                                    <label>&nbsp;Reduction in Seats</label>
+                                    -->
+                                    <lightning:input disabled="{!v.summary}" type="checkbox" label="&nbsp;Reduction in Seats" name="isReductionCheck" value="{!v.isReductionCheck}" aura:id="isReductionCheck" checked="{!v.isReductionCheck}" />
+                                </div>
+                                <div class="slds-col slds-large-size--1-of-1  slds-medium-size--1-of-1 slds-small-size--1-of-1">
+                                    <!--<ui:inputCheckbox disabled="{!v.summary}" name="isDowngradingCheck" value="{!v.isDowngradingCheck}" aura:id="isDowngradingCheck" class="slds-p-vertical_small"/>
+                                    <label>&nbsp;Downgrading to a Lower Bundle</label>
+                                    -->
+                                    <lightning:input disabled="{!v.summary}" type="checkbox" label="&nbsp;Downgrading to a Lower Bundle" name="isDowngradingCheck" value="{!v.isDowngradingCheck}" aura:id="isDowngradingCheck" checked="{!v.isDowngradingCheck}" />
+                                </div>
+                                <div class="slds-col slds-large-size--1-of-1  slds-medium-size--1-of-1 slds-small-size--1-of-1">
+                                    <!--<ui:inputCheckbox disabled="{!v.summary}" name="isRenewAdvancedCheck" value="{!v.isRenewAdvancedCheck}" aura:id="isRenewAdvancedCheck" class="slds-p-vertical_small"/>
+                                    <label>&nbsp;Did not Renew Advanced features</label>-->
+                                    <lightning:input disabled="{!v.summary}" type="checkbox" label="&nbsp;Did not Renew Advanced features" name="isRenewAdvancedCheck" value="{!v.isRenewAdvancedCheck}" aura:id="isRenewAdvancedCheck" checked="{!v.isRenewAdvancedCheck}" />
+                                </div>
+                                <div class="slds-col slds-large-size--1-of-1  slds-medium-size--1-of-1 slds-small-size--1-of-1">
+                                    <!--<ui:inputCheckbox disabled="{!v.summary}" name="isOtherCheck" value="{!v.isOtherCheck}" aura:id="isOtherCheck" class="slds-p-vertical_small"/>
+                                    <label>&nbsp;Other (If other, state reason)</label>
+                                    -->
+                                    <lightning:input disabled="{!v.summary}" type="checkbox" label="&nbsp;Other (If other, state reason)" name="isOtherCheck" value="{!v.isOtherCheck}" aura:id="isOtherCheck" checked="{!v.isOtherCheck}" />
+                                </div>
+                                <aura:if isTrue="{!v.isOtherCheck}">
+                                    <div class="slds-col slds-large-size--1-of-1  slds-medium-size--1-of-1 slds-small-size--1-of-1">
+                                        <lightning:textarea disabled="{!v.summary}" name="othersInput" value="{!v.ChurnRecord.Others__c}"  id="othersInput" placeholder="In case of Others, please comment here."/>
+                                    </div>
+                                </aura:if>
+                                
+                            </div>
+                        </div>
+                        <div style="padding-top: 0.5rem !important">
+                            <aura:if isTrue="{!v.isDowngradingCheck}">
+                                <div class="slds-grid slds-wrap slds-form-element padd_around_4PX">
+                                    <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                        <label>Downgrading From</label>
+                                    </div>
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                        <lightning:select disabled="{!v.summary}" aura:id="downgradingFrom" value="{!v.ChurnRecord.DowngradingFrom__c}" name="downgradingFrom" >
+                                            <option value="" text="---None--" />
+                                            <aura:iteration items="{!v.pickListData.downgradingList}" var="rec">
+                                                <option value="{!rec.value}" text="{!rec.label}" selected="{!if(rec.value == v.ChurnRecord.DowngradingFrom__c,'selected','')}"/>
+                                            </aura:iteration>
+                                        </lightning:select> 
+                                    </div>
+                                </div>
+                                <div class="slds-grid slds-wrap slds-form-element padd_around_4PX">
+                                    <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                        <label>Downgrading To</label>
+                                    </div>
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                        <lightning:select disabled="{!v.summary}" aura:id="downgradingTo" value="{!v.ChurnRecord.DowngradingTo__c}" name="downgradingTo" >
+                                            <option value="" text="---None--" />
+                                            <aura:iteration items="{!v.pickListData.downgradingList}" var="rec">
+                                                <option value="{!rec.value}" text="{!rec.label}" selected="{!if(rec.value == v.ChurnRecord.DowngradingTo__c,'selected','')}"/>
+                                            </aura:iteration>
+                                        </lightning:select> 
+                                        <aura:if isTrue="{!v.downgradiononrror}">
+                                            <div class="slds-form-element__help error_field" id="secondarylifetimeResn-err">Error: Downgrading From and Downgrading To can not be same.</div>
+                                        </aura:if>
+                                    </div>
+                                </div>
+                            </aura:if>
+                        </div>
+                    </div>
+                </div>
+                <aura:if isTrue="{!v.isRenewAdvancedCheck}">
+                    <div class="slds-col slds-large-size--1-of-1  slds-medium-size--1-of-1 slds-small-size--1-of-1">
+                        <div class="slds-p-around_small" id="advancedFeature-div">
+                            <!--OPP LOSS REASON start-->  
+                            <div class="slds-page-header">
+                                <div class="slds-page-header__row">
+                                    <div class="slds-page-header__col-title">
+                                        <div class="slds-media">
+                                            <div class="slds-media__body">
+                                                <div class="slds-page-header__name">
+                                                    <div class="slds-page-header__name-title">
+                                                        <span class="slds-truncate" title="Choose The advanced features that is not being renewed">Choose The Advanced Features That Is Not Being Renewed</span>
+                                                    </div>
+                                                </div>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--OPP LOSS REASON body-->
+                            <div style="padding-top: 0.5rem !important">
+                                <div class="slds-grid slds-wrap slds-form-element padd_around_4PX">
+                                    <div class="slds-col slds-large-size--1-of-1  slds-medium-size--1-of-1 slds-small-size--1-of-1">
+                                        <!--<ui:inputCheckbox disabled="{!v.summary}" name="isAdvancedZIA" value="{!v.isAdvancedZIA}" aura:id="isAdvancedZIA" class="slds-checkbox slds-p-vertical_small" />
+                                        <label>&nbsp;ZIA</label>
+                                        -->
+                                        <lightning:input disabled="{!v.summary}" type="checkbox" label="&nbsp;ZIA" name="isAdvancedZIA" value="{!v.isAdvancedZIA}" aura:id="isAdvancedZIA" checked="{!v.isAdvancedZIA}" />
+                                        
+                                        
+                                    </div>
+                                    
+                                    <div class="slds-col slds-large-size--1-of-1  slds-medium-size--1-of-1 slds-small-size--1-of-1 slds-p-around_small">
+                                        <aura:if isTrue="{!v.isAdvancedZIA}">
+                                           <div class="slds-box">
+                                            <lightning:checkboxGroup disabled="{!v.summary}"
+                                                                     aura:id="selectZIA"
+                                                                     name="ZIA"
+                                                                     options="{!v.pickListData.DonotrenewZIAList}"
+                                                                     value="{!v.DonotrenewZIAProducts}"
+                                                                      /> 
+                                                </div>
+                                            <!--<lightning:dualListbox aura:id="selectZIA"
+                                                                   name="ZIA"
+                                                                   label="Select ZIA"
+                                                                   sourceLabel="Available ZIA"
+                                                                   selectedLabel="Selected ZIA"
+                                                                   options="{!v.pickListData.DonotrenewZIAList}"
+                                                                   value="{!v.ChurnRecord.DonotrenewZIAProducts__c}"
+                                                                   />-->
+                                        </aura:if>
+                                    </div>
+                                </div>
+                            </div>	
+                            <div class="slds-grid slds-wrap slds-form-element padd_around_4PX">
+                                <div class="slds-col slds-large-size--1-of-1 slds-medium-size--1-of-1 slds-small-size--1-of-1">
+                                    <!--<ui:inputCheckbox disabled="{!v.summary}" name="isAdvancedZPA" value="{!v.isAdvancedZPA}" aura:id="isAdvancedZPA" class="slds-p-vertical_small" />
+                                    <label>&nbsp;ZPA</label>
+                                    -->
+                                    
+                                    <lightning:input disabled="{!v.summary}" type="checkbox" label="&nbsp;ZPA" name="isAdvancedZPA" value="{!v.isAdvancedZPA}" aura:id="isAdvancedZPA" checked="{!v.isAdvancedZPA}" />
+                                    
+                                </div>
+                                <div class="slds-col slds-large-size--1-of-1  slds-medium-size--1-of-1 slds-small-size--1-of-1 slds-p-around_small">
+                                    <aura:if isTrue="{!v.isAdvancedZPA}">
+                                        <div class="slds-box">
+                                        <lightning:checkboxGroup	disabled="{!v.summary}"
+                                                                     aura:id="selectZPA"
+                                                                     name="ZPA"
+                                                                     options="{!v.pickListData.DonotrenewZPAList}"
+                                                                     value="{!v.DonotrenewZPAProducts}"
+                                                                      /> 
+                                        </div>
+                                       <!-- <lightning:dualListbox aura:id="selectZPA"
+                                                               name="ZPA"
+                                                               label="Select ZPA"
+                                                               sourceLabel="Available ZPA"
+                                                               selectedLabel="Selected ZPA"
+                                                               options="{!v.pickListData.DonotrenewZPAList}"
+                                                               value="{!v.ChurnRecord.DonotrenewZPAProducts__c}"
+                                                               />-->
+                                    </aura:if>
+                                </div>
+                            </div>
+                            <div class="slds-grid slds-wrap slds-form-element padd_around_4PX">
+                                <div class="slds-col slds-large-size--1-of-1  slds-medium-size--1-of-1 slds-small-size--1-of-1">
+                                    <!--<ui:inputCheckbox disabled="{!v.summary}" name="isAdvancedSupport" value="{!v.isAdvancedSupport}" aura:id="isAdvancedSupport" class="slds-p-vertical_small"/>
+                                    <label>&nbsp;Support</label>
+                                    -->
+                                    
+                                    <lightning:input disabled="{!v.summary}" type="checkbox" label="&nbsp;Support" name="isAdvancedSupport" value="{!v.isAdvancedSupport}" aura:id="isAdvancedSupport" checked="{!v.isAdvancedSupport}" />
+                                </div>
+                                <div class="slds-col slds-large-size--1-of-1  slds-medium-size--1-of-1 slds-small-size--1-of-1 slds-p-around_small">
+                                    <aura:if isTrue="{!v.isAdvancedSupport}">
+                                        <div class="slds-box">
+                                        <lightning:checkboxGroup	disabled="{!v.summary}"
+                                                                 aura:id="Support"
+                                                                 name="Support"
+                                                                 options="{!v.pickListData.DonotrenewSupportList}"
+                                                                 value="{!v.DonotrenewSupportProducts}"
+                                                                 /> 
+                                        </div>
+                                       <!-- <lightning:dualListbox aura:id="selectSupport"
+                                                               name="Support"
+                                                               label="Select Support"
+                                                               sourceLabel="Available Support"
+                                                               selectedLabel="Selected Genre"
+                                                               options="{!v.pickListData.DonotrenewSupportList}"
+                                                               value="{!v.ChurnRecord.DonotrenewSupportProducts__c}"
+                                                               />-->
+                                    </aura:if>
+                                </div>
+                            </div>
+                            
+                            
+                        </div>
+                    </div>
+                </aura:if>
+            </div>
+            <aura:if isTrue="{!!v.isSubmit }" >
+                <div class="slds-align_absolute-center">
+                    <lightning:button label="Next" title="Next" onclick="{!c.nextScreen1}" class="slds-button slds-button_brand" />
+                    <lightning:button label="Cancel" title="Cancel" onclick="{!c.redirectToBack}" class="slds-button slds-button_neutral" />
+                    
+                </div>
+            </aura:if>
+        </aura:if>
+        <aura:if isTrue="{!v.section2}">
+            <div class="slds-grid slds-wrap">
+                <div class="slds-col slds-large-size--1-of-1  slds-medium-size--1-of-1 slds-small-size--1-of-1">
+                    <aura:if isTrue="{!v.customerdiv}">
+                        <div class="slds-p-around_small" id="customer-div">
+                            <!--CUSTOMER TRANSFORMATION start--> 
+                            <div class="slds-page-header">
+                                <div class="slds-page-header__row">
+                                    <div class="slds-page-header__col-title">
+                                        <div class="slds-media">
+                                            <div class="slds-media__body">
+                                                <div class="slds-page-header__name">
+                                                    <div class="slds-page-header__name-title">
+                                                        <span class="slds-truncate" title="CUSTOMER TRANSFORMATION STATUS">Customer Transformation Status</span>
+                                                    </div>
+                                                </div>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--CUSTOMER TRANSFORMATION body-->
+                            <div id="CUSTOMERTRANSFORMATION" style="padding-top: 0.5rem !important">
+                                <aura:if isTrue="{!v.SSLinspectiondiv}">
+                                    <div class="slds-grid slds-wrap padd_around_4PX" id="SSLinspection-div">
+                                        <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                            <label>SSL inspection</label>
+                                        </div>
+                                        <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                            <lightning:select disabled="{!v.summary}" aura:id="sslInspection" value="{!v.ChurnRecord.SSL_inspection__c}" name="sslInspection">
+                                                <option value="" text="---None--" />
+                                                <option value="Complete" text="Complete" />
+                                                <option value="In progress" text="In progress" />
+                                                <option value="Not started" text="Not started" />
+                                            </lightning:select>
+                                            <aura:if isTrue="{!v.SSLinspectionError}">
+                                                <div class="slds-form-element__help error_field" id="sslInspection-err">Error: This field is required.</div>
+                                            </aura:if>
+                                        </div>
+                                    </div>
+                                </aura:if>
+                                <aura:if isTrue="{!v.BranchBreakoutdiv}">
+                                    <div class="slds-grid slds-wrap padd_around_4PX" id="BranchBreakout-div">
+                                        <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                            <label>Branch Breakout</label>
+                                        </div>
+                                        <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                            <lightning:select disabled="{!v.summary}" aura:id="branchBreakout" value="{!v.ChurnRecord.Branch_Breakout__c}" name="branchBreakout">
+                                                <option value="" text="---None--" />
+                                                <option value="Complete" text="Complete" />
+                                                <option value="In progress" text="In progress" />
+                                                <option value="Not started" text="Not started" />                               
+                                            </lightning:select>
+                                            <aura:if isTrue="{!v.BranchBreakoutError}">
+                                                <div class="slds-form-element__help error_field" id="branchBreakout-err">Error: This field is required.</div>
+                                            </aura:if>
+                                        </div>
+                                    </div>
+                                </aura:if>
+                                <aura:if isTrue="{!v.Appsmovedtotheclouddiv}">
+                                    <div class="slds-grid slds-wrap padd_around_4PX" id="Appsmovedtothecloud-div">
+                                        <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                            <label>Apps moved to the cloud</label>
+                                        </div>
+                                        <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                            <lightning:select disabled="{!v.summary}" aura:id="appsMovedToTheCloud" value="{!v.ChurnRecord.Apps_Moved_To_The_Cloud__c}" name="appsMovedToTheCloud">
+                                                <option value="" text="---None--" />
+                                                <option value="Complete" text="Complete" />
+                                                <option value="In progress" text="In progress" />
+                                                <option value="Not started" text="Not started" />                                   
+                                            </lightning:select>
+                                            <aura:if isTrue="{!v.AppsmovedtothecloudError}">
+                                                <div class="slds-form-element__help error_field" id="appsMovedToTheCloud-err">Error: This field is required.</div>
+                                            </aura:if>
+                                        </div>
+                                    </div>
+                                </aura:if>
+                                <aura:if isTrue="{!v.Zappdeploymentsdiv}">
+                                    <div class="slds-grid slds-wrap padd_around_4PX" id="Zappdeployments-div">
+                                        <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                            <label>Zapp deployments</label>
+                                        </div>
+                                        <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                            <lightning:select disabled="{!v.summary}" aura:id="zappDeployments"  value="{!v.ChurnRecord.Zapp_deployments__c}" name="zappDeployments" >
+                                                <option value="" text="---None--" />
+                                                <option value="Complete" text="Complete" />
+                                                <option value="In progress" text="In progress" />
+                                                <option value="Not started" text="Not started" />
+                                            </lightning:select>
+                                            <aura:if isTrue="{!v.ZappdeploymentsError}">
+                                                <div class="slds-form-element__help error_field" id="zappDeployments-err">Error: This field is required.</div>
+                                            </aura:if>
+                                        </div>
+                                    </div>
+                                </aura:if>
+                                <aura:if isTrue="{!v.ImplementingZeroTrustdiv}">
+                                    <div class="slds-grid slds-wrap padd_around_4PX" id="ImplementingZeroTrust-div">
+                                        <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                            <label>Implementing Zero Trust</label>
+                                        </div>
+                                        <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                            <lightning:select disabled="{!v.summary}" aura:id="implementingZeroTrust" value="{!v.ChurnRecord.Implementing_Zero_Trust__c}" name="implementingZeroTrust" >
+                                                <option value="" text="---None--" />
+                                                <option value="Complete" text="Complete" />
+                                                <option value="In progress" text="In progress" />
+                                                <option value="Not started" text="Not started" />
+                                            </lightning:select>
+                                            <aura:if isTrue="{!v.ImplementingZeroTrustError}">
+                                                <div class="slds-form-element__help error_field" id="implementingZeroTrust-err">Error: This field is required.</div>
+                                            </aura:if>
+                                        </div>
+                                    </div>
+                                </aura:if>
+                                
+                                
+                            </div>
+                            
+                            <!--CUSTOMER TRANSFORMATION end-->
+                        </div>
+                    </aura:if>
+
+                    <div class="slds-p-around_small" id="experence-div">
+                        <!--EXPERIENCE / FEATURE - ZIA start-->  
+                        <div class="slds-page-header">
+                            <div class="slds-page-header__row">
+                                <div class="slds-page-header__col-title">
+                                    <div class="slds-media">
+                                        <div class="slds-media__body">
+                                            <div class="slds-page-header__name">
+                                                <div class="slds-page-header__name-title">
+                                                    <span class="slds-truncate" title="Issues with Feature-ZIA">Issues With Feature-ZIA</span>
+                                                </div>
+                                            </div>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--EXPERIENCE / FEATURE - ZIA header-->
+                        
+                        <!--EXPERIENCE / FEATURE - ZIA body-->
+                        <div  id="EXPERIENCEFEATUREZIA" style="padding-top: 0.5rem !important">
+                            
+                            <div class="slds-grid slds-wrap padd_around_4PX">
+                                <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                    <label>Primary Reason</label>
+                                    
+                                </div>
+                                <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                    <lightning:select disabled="{!v.summary}" aura:id="ZIAPrimaryResn" value="{!v.ChurnRecord.ExperienceFeaturesZIAPrimaryReason__c}" name="ZIAPrimaryResn" >
+                                        <option value="" text="---None--" />
+                                        <aura:iteration items="{!v.pickListData.ZIAprimaryReasonList}" var="rec">
+                                            <aura:if isTrue="{!v.oppType == 'New Business'}">
+                                                <aura:if isTrue="{!rec.value != 'Deployment - Slow/No Deployment'}">
+                                                    <option value="{!rec.value}" text="{!rec.label}" selected="{!if(rec.value == v.ChurnRecord.ExperienceFeaturesZIAPrimaryReason__c,'selected','')}"/>
+                                                </aura:if>
+                                            </aura:if>
+                                            <aura:if isTrue="{!v.oppType != 'New Business'}">
+                                                <option value="{!rec.value}" text="{!rec.label}" selected="{!if(rec.value == v.ChurnRecord.ExperienceFeaturesZIAPrimaryReason__c,'selected','')}"/>
+                                            </aura:if>
+                                                
+                                            <!--
+                                            <aura:if isTrue="{!(and(v.oppType == 'Renewal Opportunity', rec.value != 'Deployment - Slow/No Deployment'))}">
+                                                <option value="{!rec.value}" text="{!rec.label}" selected="{!if(rec.value == v.ChurnRecord.ExperienceFeaturesZIAPrimaryReason__c,'selected','')}"/>
+                                                <aura:set attribute="else">
+                                                    <option value="{!rec.value}" text="{!rec.label}" selected="{!if(rec.value == v.ChurnRecord.ExperienceFeaturesZIAPrimaryReason__c,'selected','')}" />
+                                                </aura:set>
+                                            </aura:if>
+                                            -->
+                                            
+                                        </aura:iteration>
+                                    </lightning:select>
+                                    <aura:if isTrue="{!v.ZIAPrimaryReasonrror}">
+                                        <div class="slds-form-element__help error_field" id="ZIAPrimaryResn-err">Error: Please select the Primary reason.</div>
+                                    </aura:if>
+                                </div>
+                            </div>
+                            <aura:if isTrue="{!v.ChurnRecord.ExperienceFeaturesZIAPrimaryReason__c != ''}">
+                            <div class="slds-grid slds-wrap padd_around_4PX">
+                                <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                    <label>Primary Reason Notes</label>
+                                </div>
+                                <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                    <lightning:textarea disabled="{!v.summary}" name="ziaPrimaryReasonNotes" value="{!v.ChurnRecord.Features_ZIA_Primary_Reason_Notes__c}" id="ziaPrimaryReasonNotes"/>
+                                </div>
+                            </div>   
+                            </aura:if>
+                            <div class="slds-grid slds-wrap padd_around_4PX">
+                                <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                    <label>Secondary Reason</label>
+                                </div>
+                                <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                    <lightning:select disabled="{!v.summary}" aura:id="ZIASecondaryResn" value="{!v.ChurnRecord.ExperienceFeaturesZIASecondaryReason__c}" name="ZIASecondaryResn" >
+                                        <option value="" text="---None--" />
+                                        <aura:iteration items="{!v.pickListData.ZIAsecondaryReasonList}" var="rec">
+                                            <!--<aura:if isTrue="{!(and(v.oppType == 'Renewal Opportunity', rec.value != 'Deployment - Slow/No Deployment'))}">
+                                                <option value="{!rec.value}" text="{!rec.label}" selected="{!if(rec.value == v.ChurnRecord.ExperienceFeaturesZIASecondaryReason__c,'selected','')}"/>
+                                                <aura:set attribute="else">
+                                                    <option value="{!rec.value}" text="{!rec.label}" selected="{!if(rec.value == v.ChurnRecord.ExperienceFeaturesZIASecondaryReason__c,'selected','')}"/>
+                                                </aura:set>
+                                            </aura:if>
+                                            -->
+                                            <aura:if isTrue="{!v.oppType == 'New Business'}">
+                                                <aura:if isTrue="{!rec.value != 'Deployment - Slow/No Deployment'}">
+                                                    <option value="{!rec.value}" text="{!rec.label}" selected="{!if(rec.value == v.ChurnRecord.ExperienceFeaturesZIASecondaryReason__c,'selected','')}"/>
+                                                </aura:if>
+                                            </aura:if>
+                                            <aura:if isTrue="{!v.oppType != 'New Business'}">
+                                                <option value="{!rec.value}" text="{!rec.label}" selected="{!if(rec.value == v.ChurnRecord.ExperienceFeaturesZIASecondaryReason__c,'selected','')}"/>
+                                            </aura:if>
+                                            
+                                        </aura:iteration>
+                                    </lightning:select>
+                                    <aura:if isTrue="{!v.ZIASecondaryReasonrror}">
+                                        <div class="slds-form-element__help error_field" id="ZIASecondaryResn-err">Error: Primary and Secondary can not be same.</div>
+                                    </aura:if>
+                                </div>
+                            </div>
+                            <aura:if isTrue="{!v.ChurnRecord.ExperienceFeaturesZIASecondaryReason__c != ''}">
+                                <div class="slds-grid slds-wrap slds-form-element padd_around_4PX">
+                                    <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                        <label>Secondary Reason Notes</label>
+                                    </div>
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                        <lightning:textarea disabled="{!v.summary}" name="ZIASecondaryResnNotes" value="{!v.ChurnRecord.Features_ZIA_Secondary_Reason_Notes__c}" aura:id="ZIASecondaryResnNotes"/>
+                                        
+                                    </div>
+                                </div>
+                            </aura:if>
+                            
+                            
+                            
+                        </div>
+                        
+                        <!--EXPERIENCE / FEATURE - ZIA end-->
+                    </div>
+                    <div class="slds-p-around_small" id="experenceZPA-div">
+                        <!--EXPERIENCE / FEATURE - ZPA start-->  
+                        <div class="slds-page-header">
+                            <div class="slds-page-header__row">
+                                <div class="slds-page-header__col-title">
+                                    <div class="slds-media">
+                                        <div class="slds-media__body">
+                                            <div class="slds-page-header__name">
+                                                <div class="slds-page-header__name-title">
+                                                    <span class="slds-truncate" title="Issues with Feature-ZPA	">Issues With Feature-ZPA</span>
+                                                </div>
+                                            </div>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!--EXPERIENCE / FEATURE - ZPA body-->
+                        <div  id="EXPERIENCEFEATUREZPA" style="padding-top: 0.5rem !important">
+                            
+                            <div class="slds-grid slds-wrap padd_around_4PX">
+                                <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                    <label>Primary Reason</label>
+                                </div>
+                                <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                    <lightning:select disabled="{!v.summary}" aura:id="ZPAPrimaryResn" value="{!v.ChurnRecord.ExperienceFeaturesZPAPrimaryReason__c}" name="ZPAPrimaryResn" >
+                                        <option value="" text="---None--" />
+                                        <aura:iteration items="{!v.pickListData.ZPAprimaryReasonList}" var="rec">
+                                            <aura:if isTrue="{!v.oppType == 'New Business'}">
+                                                <aura:if isTrue="{!rec.value != 'Deployment - Slow/No Deployment'}">
+                                                    <option value="{!rec.value}" text="{!rec.label}" selected="{!if(rec.value == v.ChurnRecord.ExperienceFeaturesZPAPrimaryReason__c,'selected','')}"/>
+                                                </aura:if>
+                                            </aura:if>
+                                            <aura:if isTrue="{!v.oppType != 'New Business'}">
+                                                <option value="{!rec.value}" text="{!rec.label}" selected="{!if(rec.value == v.ChurnRecord.ExperienceFeaturesZPAPrimaryReason__c,'selected','')}"/>
+                                            </aura:if>
+                                            
+                                        </aura:iteration>
+                                    </lightning:select>
+                                    <aura:if isTrue="{!v.ZPAPrimaryReasonrror}">
+                                        <div class="slds-form-element__help error_field" id="ZPAPrimaryResn-err">Error: Please select the Primary reason.</div>
+                                    </aura:if>
+                                </div>
+                            </div>
+                            <aura:if isTrue="{!v.ChurnRecord.ExperienceFeaturesZPAPrimaryReason__c != ''}">
+                            <div class="slds-grid slds-wrap padd_around_4PX">
+                                <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                    <label>Primary Reason Notes</label>
+                                </div>
+                                <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                    <lightning:textarea disabled="{!v.summary}" name="zpaPrimaryReasonNotes" value="{!v.ChurnRecord.Features_ZPA_Primary_Reason_Notes__c}" id="zpaPrimaryReasonNotes"/>
+                                </div>
+                            </div>   
+                            </aura:if>
+                            <div class="slds-grid slds-wrap padd_around_4PX">
+                                <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                    <label>Secondary Reason</label>
+                                </div>
+                                <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                    <lightning:select disabled="{!v.summary}" aura:id="ZPASecondaryResn" value="{!v.ChurnRecord.ExperienceFeaturesZPASecondaryReason__c}" name="ZPASecondaryResn" >
+                                        <option value="" text="---None--" />
+                                        <aura:iteration items="{!v.pickListData.ZPAsecondaryReasonList}" var="rec">
+                                            <aura:if isTrue="{!v.oppType == 'New Business'}">
+                                                <aura:if isTrue="{!rec.value != 'Deployment - Slow/No Deployment'}">
+                                                    <option value="{!rec.value}" text="{!rec.label}" selected="{!if(rec.value == v.ChurnRecord.ExperienceFeaturesZPASecondaryReason__c,'selected','')}"/>
+                                                </aura:if>
+                                            </aura:if>
+                                            <aura:if isTrue="{!v.oppType != 'New Business'}">
+                                                <option value="{!rec.value}" text="{!rec.label}" selected="{!if(rec.value == v.ChurnRecord.ExperienceFeaturesZPASecondaryReason__c,'selected','')}"/>
+                                            </aura:if>
+                                        </aura:iteration>
+                                    </lightning:select>
+                                    <aura:if isTrue="{!v.ZPASecondaryReasonrror}">
+                                        <div class="slds-form-element__help error_field" id="ZPASecondaryResn-err">Error: Primary and Secondary can not be same.</div>
+                                    </aura:if>
+                                </div>
+                            </div>
+                            <aura:if isTrue="{!v.ChurnRecord.ExperienceFeaturesZPASecondaryReason__c != ''}">
+                                <div class="slds-grid slds-wrap slds-form-element padd_around_4PX">
+                                    <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                        <label>Secondary Reason Notes</label>
+                                    </div>
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                        <lightning:textarea disabled="{!v.summary}" name="ZPASecondaryResnNotes" value="{!v.ChurnRecord.Features_ZPA_Secondary_Reason_Notes__c}" aura:id="ZPASecondaryResnNotes"/>
+                                        
+                                    </div>
+                                </div>
+                            </aura:if>
+                            
+                            
+                            
+                        </div>
+                        
+                        <!--EXPERIENCE / FEATURE - ZIA end-->
+                    </div>
+                    <div class="slds-p-around_small">
+                        <!--ExperienceMissing start-->  
+                        <div class="slds-page-header">
+                            <div class="slds-page-header__row">
+                                <div class="slds-page-header__col-title">
+                                    <div class="slds-media">
+                                        <div class="slds-media__body">
+                                            <div class="slds-page-header__name">
+                                                <div class="slds-page-header__name-title">
+                                                    <span class="slds-truncate" title="Experience / Missing functionality details">Experience / Missing Functionality Details</span>
+                                                </div>
+                                            </div>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--ExperienceMissing header-->
+                        <!--ExperienceMissing body-->
+                        <div  id="ExperienceMissing" style="padding-top: 0.5rem !important">
+                            
+                            <div class="slds-grid slds-wrap padd_around_4PX">
+                                <div class="slds-col slds-large-size--1-of-1  slds-medium-size--1-of-1 slds-small-size--1-of-1">
+                                    <label>If missing functionality was a key factor in loss, please list features / ER numbers that were deal breakers.Describe specific features, technical limitations and/or stability issues that impacted our ability to close the deal</label>
+                                </div>
+                                <div class="slds-col slds-large-size--1-of-1  slds-medium-size--1-of-1 slds-small-size--1-of-1">
+                                    <lightning:textarea disabled="{!v.summary}" name="ExperienceMissingfunctionality" value="{!v.ChurnRecord.ExperienceMissingfunctionality__c}"  aura:id="ExperienceMissingfunctionality"/>
+                                    <aura:if isTrue="{!v.expFunctionalityError}">
+                                        <div class="slds-form-element__help error_field" id="ExperienceMissingfunctionality-err">Please fill the Experience / Missing functionality details</div>
+                                    </aura:if>
+                                </div>
+                            </div>
+                            
+                            
+                        </div>
+                        
+                        <!--ExperienceMissing end-->
+                    </div>
+                    <div class="slds-p-around_small" id="engagement-div">
+                        <!--ENGAGEMENT start-->  
+                        
+                        
+                        <!--ENGAGEMENT header-->
+                        <div class="slds-page-header">
+                            <div class="slds-page-header__row">
+                                <div class="slds-page-header__col-title">
+                                    <div class="slds-media">
+                                        <div class="slds-media__body">
+                                            <div class="slds-page-header__name">
+                                                <div class="slds-page-header__name-title">
+                                                    <span class="slds-truncate" title="ENGAGEMENT">Engagement</span>
+                                                </div>
+                                            </div>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!--ENGAGEMENT body-->
+                        <div  id="ENGAGEMENT-Div" style="padding-top: 0.5rem !important">
+                            
+                            <div class="slds-grid slds-wrap padd_around_4PX">
+                                <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                    <label>Engagement</label>
+                                </div>
+                                <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                    <lightning:select disabled="{!v.summary}" aura:id="engagement" value="{!v.ChurnRecord.Engagement__c}" name="engagement" >
+                                        <option value="" text="---None--" />
+                                        <option value="Good" text="Good" />
+                                        <option value="Limited" text="Limited" />
+                                        <option value="None" text="None" />
+                                    </lightning:select>
+                                </div>
+                            </div>
+                            <div class="slds-grid slds-wrap padd_around_4PX">
+                                <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                    <label>Regular Meeting</label>
+                                </div>
+                                <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                    <lightning:select disabled="{!v.summary}" aura:id="regularMeeting" value="{!v.ChurnRecord.Regular_Meeting__c}" name="regularMeeting" >
+                                        <option value="" text="---None--" />
+                                        <option value="Regularly">Regularly</option>
+                                        <option value="Occasionally">Occasionally</option>
+                                        <option value="Never">Never</option>
+                                    </lightning:select>
+                                </div>
+                            </div>
+                            <div class="slds-grid slds-wrap padd_around_4PX">
+                                <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                    <label>Had Internal Champion</label>
+                                </div>
+                                <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                    <lightning:select disabled="{!v.summary}" aura:id="hadInternalChampion" value="{!v.ChurnRecord.Had_Internal_Champion__c}" name="hadInternalChampion" >
+                                        <option value="" text="---None--" />
+                                        <option value="Strong">Strong</option>
+                                        <option value="Weak">Weak</option>
+                                        <option value="None">None</option>
+                                    </lightning:select>
+                                </div>
+                            </div>
+                            <div class="slds-grid slds-wrap padd_around_4PX">
+                                <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                    <label>Relationships With Teams</label>
+                                </div>
+                                <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                    <lightning:select disabled="{!v.summary}" aura:id="relationshipsWithTeams" value="{!v.ChurnRecord.Relationships_With_Teams__c}" name="relationshipsWithTeams" >
+                                        <option value="" text="---None--" />
+                                        <option value="Both Network And Security">Both Network And Security</option>
+                                        <option value="Network">Network</option>
+                                        <option value="Security">Security</option>
+                                    </lightning:select>
+                                </div>
+                            </div>
+                            <div class="slds-grid slds-wrap padd_around_4PX">
+                                <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                    <label>Executive Engagement</label>
+                                </div>
+                                <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                    <lightning:select disabled="{!v.summary}" aura:id="executiveEngagement" value="{!v.ChurnRecord.Executive_Engagement__c}" name="executiveEngagement" >
+                                        <option value="" text="---None--" />
+                                        <option value="Regularly">Regularly</option>
+                                        <option value="Occasionally">Occasionally</option>
+                                        <option value="Never">Never</option>
+                                    </lightning:select>
+                                </div>
+                            </div>
+                            
+                            
+                        </div>
+                        
+                        <!--ENGAGEMENT end-->
+                    </div>
+                    <div class="slds-p-around_small" id="other-div">
+                        <!--Other start-->  
+                        
+                        
+                        <!--Other header-->
+                        <div class="slds-page-header">
+                            <div class="slds-page-header__row">
+                                <div class="slds-page-header__col-title">
+                                    <div class="slds-media">
+                                        <div class="slds-media__body">
+                                            <div class="slds-page-header__name">
+                                                <div class="slds-page-header__name-title">
+                                                    <span class="slds-truncate" title="Other">Other</span>
+                                                </div>
+                                            </div>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--Other body-->
+                        <div  id="Other" style="padding-top: 0.5rem !important">
+                            
+                            <div class="slds-grid slds-wrap padd_around_4PX">
+                                <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                    <label>Primary Reason</label>
+                                </div>
+                                <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                    <lightning:select disabled="{!v.summary}" aura:id="primaryotherResn" value="{!v.ChurnRecord.Other_Primary_Reason__c}" name="primaryotherResn" >
+                                        <option value="" text="---None--" />
+                                        <aura:iteration items="{!v.pickListData.OtherPrimaryReasonList}" var="rec">
+                                            <option value="{!rec.value}" text="{!rec.label}" selected="{!if(rec.value == v.ChurnRecord.Other_Primary_Reason__c,'selected','')}"/>
+                                        </aura:iteration>
+                                    </lightning:select>
+                                </div>
+                            </div>
+                            <aura:if isTrue="{!v.ChurnRecord.Other_Primary_Reason__c != ''}">
+                            <div class="slds-grid slds-wrap padd_around_4PX">
+                                <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                    <label>Primary Reason Notes</label>
+                                </div>
+                                <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                    <lightning:textarea disabled="{!v.summary}" name="otherPrimaryReasonNotes" value="{!v.ChurnRecord.Other_Primary_Reason_Notes__c}" id="otherPrimaryReasonNotes"/>
+                                </div>
+                            </div>
+                            </aura:if>
+                            <div class="slds-grid slds-wrap padd_around_4PX">
+                                <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                    <label>Secondary Reason</label>
+                                </div>
+                                <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                    <lightning:select disabled="{!v.summary}" aura:id="secondaryotherResn" value="{!v.ChurnRecord.Other_Secondary_Reason__c}" name="secondaryotherResn" >
+                                        <option value="" text="---None--" />
+                                        <aura:iteration items="{!v.pickListData.OthersecondaryReasonList}" var="rec">
+                                            <option value="{!rec.value}" text="{!rec.label}" selected="{!if(rec.value == v.ChurnRecord.Other_Secondary_Reason__c,'selected','')}"/>
+                                        </aura:iteration>
+                                    </lightning:select>
+                                    <aura:if isTrue="{!v.OtherSecondaryReasonrror}">
+                                        <div class="slds-form-element__help error_field" id="secondaryotherResn-err">Error: Primary and Secondary can not be same.</div>
+                                    </aura:if>
+                                </div>
+                            </div>
+                            <aura:if isTrue="{!v.ChurnRecord.Other_Secondary_Reason__c != ''}">
+                                <div class="slds-grid slds-wrap slds-form-element padd_around_4PX">
+                                    <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                        <label>Secondary Reason Notes</label>
+                                    </div>
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                        <lightning:textarea disabled="{!v.summary}" name="OtherSecondaryResnNotes" value="{!v.ChurnRecord.Other_Secondary_Reason_Notes__c}" aura:id="OtherSecondaryResnNotes"/>
+                                        
+                                    </div>
+                                </div>
+                            </aura:if>
+                            
+                            
+                            
+                            
+                            
+                        </div>
+                    </div>
+                    <div class="slds-p-around_small" id="lifetime-div">
+                        <!--Lifetime start-->  
+                        
+                        
+                        <!--Lifetime header-->
+                        <div class="slds-page-header">
+                            <div class="slds-page-header__row">
+                                <div class="slds-page-header__col-title">
+                                    <div class="slds-media">
+                                        <div class="slds-media__body">
+                                            <div class="slds-page-header__name">
+                                                <div class="slds-page-header__name-title">
+                                                    <span class="slds-truncate" title="LIFETIME VALUE">Lifetime Value</span>
+                                                </div>
+                                            </div>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--Lifetime body-->
+                        <div id="LIFETIMEVALUE" style="padding-top: 0.5rem !important">
+                            
+                            <div class="slds-grid slds-wrap padd_around_4PX">
+                                <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                    <label>Price as a Factor</label>
+                                </div>
+                                <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                    <lightning:select disabled="{!v.summary}" aura:id="primarylifetimeResn" value="{!v.ChurnRecord.Price_As_A_Factor__c}" name="primarylifetimeResn" >
+                                        <option value="" text="---None--" />
+                                        <aura:iteration items="{!v.pickListData.PriceAsAFactor}" var="rec">
+                                            <option value="{!rec.value}" text="{!rec.label}" selected="{!if(rec.value == v.ChurnRecord.Price_As_A_Factor__c,'selected','')}"/>
+                                        </aura:iteration>
+                                    </lightning:select>
+                                </div>
+                            </div>
+                            <aura:if isTrue="{!v.ChurnRecord.Price_As_A_Factor__c != ''}">
+                            <div class="slds-grid slds-wrap padd_around_4PX">
+                                <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                    <label>Price as a Factor Notes</label>
+                                </div>
+                                <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                    <lightning:textarea disabled="{!v.summary}" name="lifetimePrimaryReasonNotes" value="{!v.ChurnRecord.Lifetime_Value_Primary_Reason_Notes__c}" id="lifetimePrimaryReasonNotes"/>
+                                </div>
+                            </div>   
+                            </aura:if>
+                            <div class="slds-grid slds-wrap padd_around_4PX">
+                                <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                    <label>Lifetime Value Issue</label>
+                                </div>
+                                <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                    <lightning:select disabled="{!v.summary}" aura:id="secondarylifetimeResn" value="{!v.ChurnRecord.Lifetime_Value_Secondary_Reason__c}" name="secondarylifetimeResn" >
+                                        <option value="" text="---None--" />
+                                        <aura:iteration items="{!v.pickListData.LifeTimesecondaryReasonList}" var="rec">
+                                            <option value="{!rec.value}" text="{!rec.label}" selected="{!if(rec.value == v.ChurnRecord.Lifetime_Value_Secondary_Reason__c,'selected','')}"/>
+                                        </aura:iteration>
+                                    </lightning:select>
+                                    <aura:if isTrue="{!v.LifeSecondaryReasonrror}">
+                                        <div class="slds-form-element__help error_field" id="secondarylifetimeResn-err">Error: Price and Lifetime can not be same.</div>
+                                    </aura:if>
+                                </div>
+                            </div>
+                            <aura:if isTrue="{!v.ChurnRecord.Lifetime_Value_Secondary_Reason__c != ''}">
+                                <div class="slds-grid slds-wrap slds-form-element padd_around_4PX">
+                                    <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                        <label>Lifetime Value Issue Notes</label>
+                                    </div>
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                        <lightning:textarea disabled="{!v.summary}" name="LifeTimeSecondaryResnNotes" value="{!v.ChurnRecord.Lifetime_Value_Secondary_Reason_Notes__c}" aura:id="LifeTimeSecondaryResnNotes"/>
+                                        
+                                    </div>
+                                </div>
+                            </aura:if>                            
+                            
+                            
+                            
+                            
+                        </div>
+                         <aura:if isTrue="{!v.RenewalQuestiondiv}">
+                        <div id="RenewalQuestion">
+                            <!--Did the customer start-->  
+                            
+                            
+                            <!--Did the customer header-->
+                            <div class="slds-page-header">
+                                <div class="slds-page-header__row">
+                                    <div class="slds-page-header__col-title">
+                                        <div class="slds-media">
+                                            <div class="slds-media__body">
+                                                <div class="slds-page-header__name">
+                                                    <div class="slds-page-header__name-title">
+                                                        <span class="slds-truncate" title="Renewal Engagement Question">Renewal Engagement Question</span>
+                                                    </div>
+                                                </div>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!--Did the customer body-->
+                            <div id="Didthecustomer" style="padding-top: 0.5rem !important">
+                                
+                                <div class="slds-grid slds-wrap padd_around_4PX">
+                                    <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                        <label>Did the customer go from full deployment to a non-renewal, or was the erosion gradual with subscription and ACV dropping off over time?</label>
+                                    </div>
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                        <lightning:select disabled="{!v.summary}" aura:id="RenewalQuestionVal" value="{!v.ChurnRecord.Renewalquestion__c}" name="executiveEngagement" >
+                                            <option value="" text="---None--" />
+                                            <aura:iteration items="{!v.pickListData.RenewalQuestionList}" var="rec">
+                                                <option value="{!rec.value}" text="{!rec.label}" selected="{!if(rec.value == v.ChurnRecord.Renewalquestion__c,'selected','')}"/>
+                                            </aura:iteration>
+                                            
+                                        </lightning:select>
+                                    </div>
+                                </div>
+                                <aura:if isTrue="{!v.ChurnRecord.Renewalquestion__c == 'Other'}">
+                                <div class="slds-grid slds-wrap slds-form-element padd_around_4PX">
+                                    <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                        <label>Notes</label>
+                                    </div>
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                        <lightning:textarea disabled="{!v.summary}" name="renewalQuestionNotes" value="{!v.ChurnRecord.Renewal_Question_Notes__c}" aura:id="renewalQuestionNotes"/>
+                                        <aura:if isTrue="{!v.renwalNotesError}">
+                                            <div class="slds-form-element__help error_field" id="renewalQuestionNotes-err">Error: This Field required.</div>
+                                        </aura:if>
+                                    </div>
+                                </div>
+                                </aura:if>
+                                
+                                
+                            </div>
+                            
+                            <!--Did the customer end-->
+
+                        </div>
+                    </aura:if>
+                        
+                        <!--Lifetime end-->
+                    </div>
+                </div>
+            </div>
+            <aura:if isTrue="{!!v.isSubmit }" >
+                <div class="slds-align_absolute-center">
+                    <lightning:button label="Next" title="Next" onclick="{!c.nextScreen2}" class="slds-button slds-button_brand" />
+                    <lightning:button label="Go Back" title="Go Back" onclick="{!c.backToScreen1}" class="slds-button slds-button_neutral" />
+                    <lightning:button label="Cancel" title="Cancel" onclick="{!c.redirectToBack}" class="slds-button slds-button_neutral" />
+                </div>
+            </aura:if>
+        </aura:if>
+        <aura:if isTrue="{!v.section3}">
+            <div class="slds-grid slds-wrap">
+                <div class="slds-col slds-large-size--1-of-1  slds-medium-size--1-of-1 slds-small-size--1-of-1">
+                    <aura:if isTrue="{!v.ZIACompetitorsdiv}">
+                        <div class="slds-p-around_small" id="ZIACompetitors-div">
+                            <!--OPP LOSS REASON start-->  
+                            <!--OPP LOSS REASON body-->
+                            <div style="padding-top: 0.5rem !important">
+                                <div class="slds-grid slds-wrap slds-form-element padd_around_4PX">
+                                    <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                        <label>ZIA Primary Competitors</label>
+                                    </div>
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                        <lightning:select disabled="{!v.summary}" variant="label-hidden" aura:id="oppLossZIAPrimaryReason" value="{!v.ChurnRecord.ZIA_Primary_Competitor__c}" name="oppLossPrimaryReason" >
+                                            <option value="" text="---None--" />
+                                            <aura:iteration items="{!v.pickListData.ZIAPrimaryCompetitorsList}" var="rec">
+                                                <option value="{!rec.value}" text="{!rec.label}" selected="{!if(rec.value == v.ChurnRecord.ZIA_Primary_Competitor__c,'selected','')}"/>
+                                            </aura:iteration>
+                                        </lightning:select>
+                                    </div>
+                                </div>
+                                <aura:if isTrue="{!and(v.ChurnRecord.ZIA_Primary_Competitor__c != '',v.ChurnRecord.ZIA_Primary_Competitor__c == 'Other')}">
+                                    <div class="slds-grid slds-wrap slds-form-element padd_around_4PX">
+                                        <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                            <label>ZIA Other Primary Competitors</label>
+                                        </div>
+                                        <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                            <lightning:textarea disabled="{!v.summary}" name="input1" value="{!v.ChurnRecord.ZIA_Other_Primary_Competitor__c}" id="oppLossOtherPrimaryCompetitorsNotes"/>
+                                        <aura:if isTrue="{!v.ZIAPrimaryOtherCompetitorReasonrror}">
+                                                <div class="slds-form-element__help error_field" id="ZIASecondaryCompetitors-err">Error: This Field required.</div>
+                                            </aura:if>
+                                        </div>
+                                    </div>
+                                </aura:if>
+                                <div class="slds-grid slds-wrap slds-form-element padd_around_4PX">
+                                    <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                        <label>ZIA Secondary Competitors</label>
+                                    </div>
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                        <lightning:select disabled="{!v.summary}" aura:id="oppLossZIASecondaryReason" value="{!v.ChurnRecord.ZIA_Secondary_Competitor__c}" name="oppLossSecondaryReason" >
+                                            <option value="" text="---None--" />
+                                            <aura:iteration items="{!v.pickListData.ZIASecondaryCompetitorsList}" var="rec">
+                                                <option value="{!rec.value}" text="{!rec.label}" selected="{!if(rec.value == v.ChurnRecord.ZIA_Secondary_Competitor__c,'selected','')}"/>
+                                            </aura:iteration>
+                                        </lightning:select>
+                                        <aura:if isTrue="{!v.ZIASecondaryCompetitorReasonrror}">
+                                            <div class="slds-form-element__help error_field" id="ZIASecondaryCompetitors-err">Error: Primary and Secondary can not be same.</div>
+                                        </aura:if>
+                                    </div>
+                                </div>
+                                <aura:if isTrue="{!and(v.ChurnRecord.ZIA_Secondary_Competitor__c != '',v.ChurnRecord.ZIA_Secondary_Competitor__c == 'Other')}">
+                                    <div class="slds-grid slds-wrap slds-form-element padd_around_4PX">
+                                        <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                            <label>ZIA Other Secondary Competitors</label>
+                                        </div>
+                                        <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                            <lightning:textarea disabled="{!v.summary}" name="input1" value="{!v.ChurnRecord.ZIA_Other_Secondary_Competitor__c}" id="oppLossOtherSecondaryCompetitorsNotes"/>
+                                        <aura:if isTrue="{!v.ZIASecondaryOtherCompetitorReasonrror}">
+                                            <div class="slds-form-element__help error_field" id="ZIASecondaryCompetitors-err">Error: This Field required.</div>
+                                        </aura:if>
+                                        </div>
+                                    </div>
+                                </aura:if>
+                            </div>
+                        </div>
+                    </aura:if>
+                    <aura:if isTrue="{!v.ZPACompetitorsdiv}">
+                        <div class="slds-p-around_small" id="ZPACompetitors-div">
+                            <!--OPP LOSS REASON start-->  
+                            <!--OPP LOSS REASON body-->
+                            <div style="padding-top: 0.5rem !important">
+                                <div class="slds-grid slds-wrap slds-form-element padd_around_4PX">
+                                    <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                        <label>ZPA Primary Competitors</label>
+                                    </div>
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                        <lightning:select disabled="{!v.summary}" variant="label-hidden" aura:id="oppLossZPAPrimaryReason" value="{!v.ChurnRecord.ZPA_Primary_Competitor__c}" name="oppLossPrimaryReason" >
+                                            <option value="" text="---None--" />
+                                            <aura:iteration items="{!v.pickListData.ZPAPrimaryCompetitorsList}" var="rec">
+                                                <option value="{!rec.value}" text="{!rec.label}" selected="{!if(rec.value == v.ChurnRecord.ZPA_Primary_Competitor__c,'selected','')}"/>
+                                            </aura:iteration>
+                                        </lightning:select>
+                                    </div>
+                                </div>
+                                <aura:if isTrue="{!and(v.ChurnRecord.ZPA_Primary_Competitor__c != '',v.ChurnRecord.ZPA_Primary_Competitor__c == 'Other')}">
+                                    <div class="slds-grid slds-wrap slds-form-element padd_around_4PX">
+                                        <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                            <label>ZPA Other Primary Competitors</label>
+                                        </div>
+                                        <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                            <lightning:textarea disabled="{!v.summary}" name="input1" value="{!v.ChurnRecord.ZPA_Other_Primary_Competitor__c}" id="oppLossZPAOtherPrimaryCompetitorsNotes"/>
+                                        <aura:if isTrue="{!v.ZPAPrimaryOtherCompetitorReasonrror}">
+                                                    <div class="slds-form-element__help error_field" id="ZIASecondaryCompetitors-err">Error: This Field required.</div>
+                                            </aura:if>
+                                        </div>
+                                    </div>
+                                </aura:if>
+                                <div class="slds-grid slds-wrap slds-form-element padd_around_4PX">
+                                    <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                        <label>ZPA Secondary Competitors</label>
+                                    </div>
+                                    <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                        <lightning:select disabled="{!v.summary}" aura:id="oppLossZPASecondaryReason" value="{!v.ChurnRecord.ZPA_Secondary_Competitor__c}" name="oppLossSecondaryReason" >
+                                            <option value="" text="---None--" />
+                                            <aura:iteration items="{!v.pickListData.ZPASecondaryCompetitorsList}" var="rec">
+                                                <option value="{!rec.value}" text="{!rec.label}" selected="{!if(rec.value == v.ChurnRecord.ZPA_Secondary_Competitor__c,'selected','')}"/>
+                                            </aura:iteration>
+                                        </lightning:select>
+                                        <aura:if isTrue="{!v.ZPASecondaryCompetitorReasonrror}">
+                                            <div class="slds-form-element__help error_field" id="ZPASecondaryCompetitors-err">Error: Primary and Secondary can not be same.</div>
+                                        </aura:if>
+                                    </div>
+                                </div>
+                                <aura:if isTrue="{!and(v.ChurnRecord.ZPA_Secondary_Competitor__c != '',v.ChurnRecord.ZPA_Secondary_Competitor__c == 'Other')}">
+                                    <div class="slds-grid slds-wrap slds-form-element padd_around_4PX">
+                                        <div class="slds-col slds-large-size--1-of-2  slds-medium-size--1-of-2 slds-small-size--1-of-1">
+                                            <label>ZPA Other Secondary Competitors</label>
+                                        </div>
+                                        <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1">
+                                            <lightning:textarea disabled="{!v.summary}" name="input1" value="{!v.ChurnRecord.ZPA_Other_Secondary_Competitor__c}" id="oppLossZPAOtherSecondaryCompetitorsNotes"/>
+                                        <aura:if isTrue="{!v.ZPASecondaryOtherCompetitorReasonrror}">
+                                                    <div class="slds-form-element__help error_field" id="ZIASecondaryCompetitors-err">Error: This Field required.</div>
+                                            </aura:if>
+                                        </div>
+                                    </div>
+                                </aura:if>
+                            </div>
+                        </div>
+                    </aura:if>
+                    <!--OPP LOSS REASON end-->
+                    
+                    <div class="slds-p-around_small">
+                        <!--OPP LOSS REASON start-->  
+                        <div class="slds-page-header">
+                            <div class="slds-page-header__row">
+                                <div class="slds-page-header__col-title">
+                                    <div class="slds-media">
+                                        <div class="slds-media__body">
+                                            <div class="slds-page-header__name">
+                                                <div class="slds-page-header__name-title">
+                                                    <span class="slds-truncate" title="Additional Notes">Additional Notes</span>
+                                                </div>
+                                            </div>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--OPP LOSS REASON body-->
+                        <div style="padding-top: 0.5rem !important">
+                            <div class="slds-grid slds-wrap slds-form-element padd_around_4PX">
+                                <div class="slds-col slds-large-size--1-of-1  slds-medium-size--1-of-1 slds-small-size--1-of-1">
+                                    <lightning:textarea disabled="{!v.summary}" name="input1" value="{!v.ChurnRecord.AdditionalNotes__c}" id="oppLossPrimaryReasonNotes"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="slds-p-around_small">
+                        <!--OPP LOSS REASON start-->  
+                        <div class="slds-page-header">
+                            <div class="slds-page-header__row">
+                                <div class="slds-page-header__col-title">
+                                    <div class="slds-media">
+                                        <div class="slds-media__body">
+                                            <div class="slds-page-header__name">
+                                                <div class="slds-page-header__name-title">
+                                                    <span class="slds-truncate" title="Loss Analysis Call ">Loss Analysis Call </span>
+                                                </div>
+                                            </div>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--OPP LOSS REASON body-->
+                        <div style="padding-top: 0.5rem !important">
+                            <div class="slds-grid slds-wrap slds-form-element padd_around_4PX">
+                                <div class="slds-col slds-large-size--1-of-1  slds-medium-size--1-of-1 slds-small-size--1-of-1">
+                                    <!--
+                                    <ui:inputCheckbox disabled="{!v.summary}" name="isLossCallConducted" value="{!v.isLossCallConducted}" aura:id="isLossCallConducted" class="slds-p-vertical_small" change="{!c.getSCI}"/>
+                                    <label> Was a call conducted with the Prospect/customer?</label>
+         -->
+                                    <lightning:select disabled="{!v.summary}" aura:id="lostCallConductedId" value="{!v.ChurnRecord.Lost_Analysis_Call__c}" name="oppLossSecondaryReason" onchange="{!c.LostCallSelected}">
+                                        <option value="" text="---None--" />
+                                        <aura:iteration items="{!v.pickListData.LostCallList}" var="rec">
+                                            <option value="{!rec.value}" text="{!rec.label}" selected="{!if(rec.value == v.ChurnRecord.Lost_Analysis_Call__c,'selected','')}"/>
+                                        </aura:iteration>
+                                    </lightning:select>
+                                    <aura:if isTrue="{!v.lossAnalysysError}">
+                                        <div class="slds-form-element__help error_field" id="ZIASecondaryCompetitors-err">Error: This Field required.</div>
+                                    </aura:if>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                        <aura:if isTrue="{!v.ChurnRecord.Lost_Analysis_Call__c == 'Call Conducted'}" >
+                        <div class="slds-p-around_small">
+                            <!--OPP LOSS REASON start-->  
+                            <div class="slds-page-header">
+                                <div class="slds-page-header__row">
+                                    <div class="slds-page-header__col-title">
+                                        <div class="slds-media">
+                                            <div class="slds-media__body">
+                                                <div class="slds-page-header__name">
+                                                    <div class="slds-page-header__name-title">
+                                                        <span class="slds-truncate" title="SCI Number">SCI Number</span>
+                                                    </div>
+                                                </div>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <aura:if isTrue="{!v.summary}">
+                                <div class="slds-col slds-large-size--1-of-4  slds-medium-size--1-of-4 slds-small-size--1-of-1 slds-p-top_small">
+                                    <lightning:select disabled="{!v.summary}"  aura:id="selectedSCI" value="{!v.SCINumber}" name="selectedSCI" >
+                                        <option value="" text="---None--" />
+                                        <aura:iteration items="{!v.SCIList}" var="rec">
+                                            <option value="{!rec.SCIRecord.Id}" text="{!rec.SCIRecord.Name}" selected="{!if(rec.SCIRecord.Id == v.SCINumber,'selected','')}"/>
+                                        </aura:iteration>
+                                    </lightning:select>
+                                </div>
+                            </aura:if>
+                            <!--OPP LOSS REASON body-->
+                            <div style="padding-top: 0.5rem !important">
+                                <div class="slds-grid slds-wrap slds-form-element padd_around_4PX">
+                                    <div class="slds-col slds-large-size--1-of-1  slds-medium-size--1-of-1 slds-small-size--1-of-1">
+                                        <aura:if isTrue="{!v.SCIReasonrror}">
+                                            <div class="slds-form-element__help error_field" id="SCI-err">Error: Please select at least one SCI on this Opportunity. If none of the SCI is related to Loss analysis call, please cancel this form and create an SCI first and refill the Churn/Loss form.</div>
+                                        </aura:if>
+                                        <aura:if isTrue="{!!v.summary}">
+	                                    <table class="slds-table slds-table_bordered slds-no-row-hover" style="border:1px solid #d8dde6">
+                                            <thead >
+                                                <tr id="sciListViewheader">
+                                                    <th scope="col"> <div >Action</div></th>
+                                                    <th scope="col"> <div >SCI Name</div></th>
+                                                    <th scope="col"> <div >SCI Type</div></th>
+                                                    <th scope="col"> <div>Primary Topic Covered</div></th>
+                                                    <th scope="col"> <div >SCI Date</div></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="sciListView">
+                                                <aura:iteration items="{!v.SCIList}" var="rec">
+                                                <tr> 
+                                                    <th scope="col"> <div ><ui:inputRadio name="radio" text="{!rec.SCIRecord.Id}" value="{!rec.isChecked}" label="{!v.con}" change="{!c.onRadioChange}" /></div></th>
+                                                    <th scope="col"> <div >{!rec.SCIRecord.Name}</div></th>
+                                                    <th scope="col"> <div >{!rec.SCIRecord.Type_of_Interaction__c}</div></th>
+                                                    <th scope="col"> <div>{!rec.SCIRecord.Primary_Topic_Covered__c}</div></th>
+                                                    <th scope="col"> <div >{!rec.SCIRecord.Date__c}</div></th>
+                                                
+                                                </tr>
+                                                </aura:iteration>                                                
+                                            </tbody>
+                                            <output id="noSCIpresent" style="display:none">
+                                                No related SCI is present on this Opportunity.
+                                            </output>
+                                        </table>
+                                        </aura:if>
+                                        <aura:if isTrue="{!v.noSCIFound}">
+                                            <div class="slds-form-element__help error_field" id="SCI-err">Error: SCI Records Not found.</div>
+                                        </aura:if>
+                                        
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        </aura:if>
+                    
+                </div>
+            </div>
+            
+            <aura:if isTrue="{!!v.isSubmit }" >
+                <div class="slds-align_absolute-center">
+                    <lightning:button label="Next" title="Next" onclick="{!c.nextScreen3}" class="slds-button slds-button_brand" />
+                    <lightning:button label="Go Back" title="Go Back" onclick="{!c.backToScreen2}" class="slds-button slds-button_neutral" />
+                    <lightning:button label="Cancel" title="Cancel" onclick="{!c.redirectToBack}" class="slds-button slds-button_neutral" />
+                    
+                </div>
+            </aura:if>
+        </aura:if>
+    </div>
+    
+</aura:component>

@@ -1,0 +1,25 @@
+<apex:component controller="ZendeskTicketsListController" access="global">
+    <apex:attribute name="InputAccountId" description="Account ID" assignTo="{!accountId}" type="Id" />
+    <apex:attribute name="InputRetUrl" description="Return Url" assignTo="{!retUrl}" type="Id" />
+    <apex:form >
+        <apex:pageblock >
+            <apex:pageBlockTable var="ticket" value="{!tickets}" rendered="{!tickets.size > 0}">
+                <apex:column headerValue="Zendesk Support Ticket">
+                    <a target="_blank" href="/{!ticket.ticketId}">{!ticket.ticketName}</a>
+                </apex:column>
+                <apex:column headerValue="Status" value="{!ticket.status}" />
+                <apex:column headerValue="Priority" value="{!ticket.priority}" />
+                <apex:column headerValue="Sub Category" value="{!ticket.subarea}" />
+                <apex:column headerValue="Date/Time created" value="{!ticket.datetimeCreated}" />
+                <apex:column headerValue="Date/Time solved" value="{!ticket.datetimeSolved}" />
+                <apex:column headerValue="Type" value="{!ticket.type}" />
+                <apex:column headerValue="Subject" value="{!ticket.subject}" />
+                <apex:column headerValue="Management Notes" value="{!ticket.managementNotes}" />
+            </apex:pageBlockTable>
+            <apex:outputPanel rendered="{!tickets.size == 0}">
+                No records to display
+            </apex:outputPanel>
+        </apex:pageblock>
+        <apex:commandLink action="{!showMore}" rendered="{!tickets.size > 0 && limitValue < recordCount}">Show {!limitValue} More »</apex:commandLink>
+    </apex:form>
+</apex:component>

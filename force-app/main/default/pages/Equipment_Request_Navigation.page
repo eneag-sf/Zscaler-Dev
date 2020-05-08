@@ -1,0 +1,9 @@
+<apex:page showHeader="false" sidebar="false" standardController="Equipment_Request__c" extensions="Equipment_request_redirector" action="{!init}">
+    <apex:slds />
+  
+<div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error" role="alert">
+  <span class="slds-assistive-text">error</span>
+  <h2>{!error}
+  </h2>
+</div>
+</apex:page>

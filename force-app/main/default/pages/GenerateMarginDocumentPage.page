@@ -1,0 +1,89 @@
+<apex:page controller="GenerateMarginDocumentController">
+    <apex:slds />
+    <style>
+        .pbHeader{
+            display:none;
+        }
+        .pbBody{
+            margin:0px !important;
+            background: #fff  !important;
+        }
+        body .bEditBlock .pbBottomButtons,
+        body .apexp .bPageBlock.apexDefaultPageBlock .pbBottomButtons,
+        body .bPageBlock{
+            margin-top: 0px;
+            border: none  !important;
+            background: #fff  !important;
+        }
+
+        .loadingIcon {
+            padding-left: 16px;
+            background-image: url("/img/loading.gif");
+            background-repeat: no-repeat;
+            background-size: 13px 13px;
+        }
+
+        .slds-table_bordered {
+            border-collapse: separate;
+            border-top: 1px solid rgb(217, 219, 221);
+            border-bottom: 1px solid rgb(217, 219, 221);
+            border-right: 1px solid rgb(217, 219, 221);
+            border-left: 1px solid rgb(217, 219, 221);
+        }
+        .btn-disabled {
+            color: gray !important;
+            cursor: not-allowed;
+        }
+        .bPageTitle {
+            margin-bottom:0px;
+        }
+        .content {
+            height: 3rem;
+        }
+        body .pbBody table.list tr.dataRow td {
+            height: 2rem;
+            padding: 5px 2px 4px 5px;
+        }
+    </style>
+    <apex:form >
+        <apex:sectionHeader title="Generate Margin Document" subtitle="{!propObj.Apttus_Proposal__Proposal_Name__c}"/>
+        <apex:pageMessages id="errors"/>
+            <div style="text-align: right;">
+                <a href="/{!id}">Back to Proposal</a>    
+            </div>
+            <apex:outputpanel id="documentGenerated">
+                <apex:outputPanel rendered="{! IF(generatedDocId == '', false,true)}">
+                    <h3 class="slds-section-title--divider slds-m-around--small" style="background-color: #21a0df;color: white;margin:0px;display:block;">
+                        <b>Document Generation Successful</b>
+                    </h3>
+                    <div style="padding:15px;">
+                        <p><b>Attachment:</b> {! attch.Name}</p>
+                        <p><b>Size:</b> {! CEILING(attch.BodyLength/1024)}KB</p>
+                        <br/>
+                        <apex:outputLink value="{!URLFOR($Action.Attachment.Download, generatedDocId)}" target="_blank">Click here to view this file</apex:outputLink>
+                    </div>
+                </apex:outputPanel>
+            </apex:outputpanel>
+            <!-- Apex Function -->
+            <apex:actionFunction action="{!DocGen}" name="generateDocAF" rerender="documentGenerated,errors" status="actionStatus"></apex:actionFunction>
+            <!-- Action Status -->
+            <apex:actionstatus id="actionStatus">
+                <apex:facet name="start">
+                    <div class="slds-spinner_container">
+                        <div id="mySpinner" role="status" class="slds-spinner slds-spinner_medium">
+                            <span class="slds-assistive-text">Loading</span>
+                            <div class="slds-spinner__dot-a"></div>
+                            <div class="slds-spinner__dot-b"></div>
+                        </div>
+                    </div>
+                </apex:facet>
+            </apex:actionstatus>
+        </apex:form>
+        <script>
+            function generateDocJS(){
+                generateDocAF();
+            }
+            // Call generateDocJS which will call generateDocAF (apex function)
+            generateDocJS();
+        </script>
+</apex:page>

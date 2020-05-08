@@ -1,0 +1,140 @@
+<apex:component access="global" controller="Renewal_Notification_EmailController">
+    <apex:attribute name="Opptyrecord1" description="This field is used to display list of Proposal products" 
+                     type="String" assignTo="{!oppId}" />
+    <apex:attribute name="ispastdueoppty1" description="This field is used to get instance URL" 
+                     type="Boolean" assignTo="{!ispastdueoppty}" />
+    <apex:attribute name="isopptycontractextended1" description="This field is used to get instance URL" 
+                     type="Boolean" assignTo="{!isopptycontractextended}" />
+    <apex:attribute name="isopptyextendedexpired1" description="This field is used to get instance URL" 
+                     type="Boolean" assignTo="{!isopptyextendedexpired}" />
+    <apex:attribute name="isupcomingnotification1" description="This field is used to get instance URL" 
+                     type="Boolean" assignTo="{!isupcomingnotification}" />
+    <apex:attribute name="istermination1" description="This field is used to get instance URL" 
+                     type="Boolean" assignTo="{!istermination}" />
+    
+    <table width="100%">
+        <tbody>
+            <tr>
+                <td align="left"><a style="vertical-align: baseline;" href="http://www.zscaler.com"><img style="" src="http://info.zscaler.com/rs/zscaler/images/zlogo-pms306-200x44.png" border="0" alt="Zscaler" height="36" /></a></td>
+                <td style="padding-right: 20px;" align="right"></td>
+            </tr>
+        </tbody>
+    </table>
+    <br/><br/>
+    <b>Hello,</b><br/><br/>      
+    Thank you for being a valued Zscaler Customer.<br/> 
+    <apex:outputPanel rendered="{!istermination}">
+        Your current subscription to the Zscaler services listed in the below table has now expired.<br/> 
+        Your subscription has been past due by {!daystocontract} day(s). <br/> 
+        Please note that your subscription will be terminated effective today. <br/><br/>
+        
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!ispastdueoppty}">
+        Your current subscription to the Zscaler services listed in the below table has now expired. Your subscription is {!daystocontract} day(s) past due.  <br/> 
+        To avoid disruption of Zscaler services, please ensure that Zscaler receives a PO immediately.<br/> <br/>
+        
+        <b><u>What should you do?</u></b><br/>
+        Please contact the Zscaler Renewal Contact {!opp.Owner.Email}<apex:outputPanel rendered="{!NOT(ISNULL(opp.Owner.Phone))}">&nbsp;or {!opp.Owner.Phone}</apex:outputPanel>.<apex:outputPanel rendered="{!NOT(ISNULL(opp.Primary_Partner__c))}">&nbsp;You can also reach out to your contact at {!opp.Primary_Partner__c} to discuss your expired renewal</apex:outputPanel>. <br/> <br/>
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!isopptycontractextended}">
+        We are happy to inform you that your expired subscription to the Zscaler services listed in the below table has now been extended to&nbsp;<apex:outputField value="{!opp.New_Extended_Contract_Date__c}"/>.<br/>
+        Please note that this extension is temporary. To avoid disruption of Zscaler services, ensure that Zscaler receives a PO before the extension expires.<br/><br/>
+
+        
+        <b><u>What should you do?</u></b><br/>
+        Please contact the Zscaler Renewal Contact {!opp.Owner.Email}<apex:outputPanel rendered="{!NOT(ISNULL(opp.Owner.Phone))}">&nbsp;or {!opp.Owner.Phone}</apex:outputPanel> and the reseller/partner to discuss your past due renewal and ensure to raise the renewal purchase order immediately.<br/> <br/>
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!isopptyextendedexpired}">
+        Your subscription to the Zscaler services which was previously extended will expire on&nbsp;<apex:outputField value="{!opp.New_Extended_Contract_Date__c}"/>.<br/> <br/>
+        
+        <b><u>What should you do?</u></b><br/>
+        Please contact the Zscaler Renewal Contact {!opp.Owner.Email}<apex:outputPanel rendered="{!NOT(ISNULL(opp.Owner.Phone))}">&nbsp;or {!opp.Owner.Phone}</apex:outputPanel>.<apex:outputPanel rendered="{!NOT(ISNULL(opp.Primary_Partner__c))}">&nbsp;You can also reach out to your contact at {!opp.Primary_Partner__c} to discuss your upcoming renewal</apex:outputPanel>. <br/> <br/>
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!isupcomingnotification}">
+        Your current subscription to the Zscaler services will expire on&nbsp;<apex:outputField value="{!opp.Contract_End_Date_New__c}"/>.<br/> <br/>
+        
+        <b><u>What should you do?</u></b><br/>
+        Please contact the Zscaler Renewal Contact {!opp.Owner.Email}<apex:outputPanel rendered="{!NOT(ISNULL(opp.Owner.Phone))}">&nbsp;or {!opp.Owner.Phone}</apex:outputPanel>.<apex:outputPanel rendered="{!NOT(ISNULL(opp.Primary_Partner__c))}">&nbsp;You can also reach out to your contact at {!opp.Primary_Partner__c} to discuss your upcoming renewal</apex:outputPanel>.<br/> <br/>
+    </apex:outputPanel>
+    
+    <apex:outputPanel rendered="{!showvalueSummary}">
+        <b><u>Zscaler Value Summary</u></b><br/>
+        <apex:outputText value="{!opp.Account.Zscaler_Customer_Summary__c}" escape="false" />
+ <br/> <br/>
+    </apex:outputPanel>
+    
+    <apex:outputPanel rendered="{!ispastdueoppty || isopptycontractextended || istermination}">
+        <b><u>Expired Subscriptions</u></b><br/><br/>
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!isopptyextendedexpired}">
+        <b><u>Expiring Subscriptions</u></b><br/><br/>
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!isupcomingnotification}">
+        <b><u>Subscriptions coming up for Renewal</u></b><br/><br/>
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!!(isopptycontractextended || isopptyextendedexpired)}">
+        <table border="1" style="border-collapse: collapse; width: 100%">
+            <tr style="font-weight:bold; text-align: center; background-color: #929599;">
+                <td>Product</td>
+                <td>Quantity</td>                                                                        
+                <td>Subscription End Date</td>                                                                        
+            </tr>
+            <apex:repeat value="{!olilst}" var="Item">
+                
+                <tr >
+                    <td style="text-align: center;" ><apex:outputField value="{!Item.Product_Name__r.Name}"/> </td>
+                    <td style="text-align: center;"><apex:outputField value="{!Item.Quantity__c}"/> </td>
+                    <td style="text-align: center;"><apex:outputField value="{!Item.End_Date__c}"/> </td>
+                </tr>
+            </apex:repeat>
+        </table><br/><br/>
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!isopptycontractextended}">
+        <table border="1" style="border-collapse: collapse; width: 100%">
+            <tr style="font-weight:bold; text-align: center; background-color: #929599;">
+                <td>Product</td>
+                <td>Quantity</td>                                                                        
+                <td>Subscription End Date</td>    
+                <td>Subscription Extension Date</td>                                                                        
+            </tr>
+            <apex:repeat value="{!olilst}" var="Item">
+                <tr >
+                    <td style="text-align: center;" ><apex:outputField value="{!Item.Product_Name__r.Name}"/> </td>
+                    <td style="text-align: center;"><apex:outputField value="{!Item.Quantity__c}"/> </td>
+                    <td style="text-align: center;"><apex:outputField value="{!Item.End_Date__c}"/> </td>
+                    <td style="text-align: center;"><apex:outputField value="{!opp.New_Extended_Contract_Date__c}"/> </td>
+                </tr>
+            </apex:repeat>
+        </table><br/><br/>
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!isopptyextendedexpired}">
+        <table border="1" style="border-collapse: collapse; width: 100%">
+            <tr style="font-weight:bold; text-align: center; background-color: #929599;">
+                <td>Product</td>
+                <td>Quantity</td>                                                                        
+                <td>Subscription End Date</td>    
+                <td>Extension End Date</td>                                                                        
+            </tr>
+            <apex:repeat value="{!olilst}" var="Item">
+                <tr >
+                    <td style="text-align: center;" ><apex:outputField value="{!Item.Product_Name__r.Name}"/> </td>
+                    <td style="text-align: center;"><apex:outputField value="{!Item.Quantity__c}"/> </td>
+                    <td style="text-align: center;"><apex:outputField value="{!Item.End_Date__c}"/> </td>
+                    <td style="text-align: center;"><apex:outputField value="{!opp.New_Extended_Contract_Date__c}"/> </td>
+                </tr>
+            </apex:repeat>
+        </table><br/><br/>
+    </apex:outputPanel>
+    
+    <b>Sincerely,</b><br/>
+    <b>Zscaler Billings Team</b><br/><br/>
+    
+    <table class="twelve columns" style="border-spacing:0; border-collapse:collapse; vertical-align:top; text-align:center; width:900px; padding:0;background: #252d34;">
+        <tbody>
+            <tr style="vertical-align:top; text-align:center; padding:0;" align="center">
+                <td class="wrapper last" style="word-break:break-word; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; border-collapse:collapse !important; vertical-align:top; text-align:center; position:relative; color:#999999; font-family:'Helvetica', 'Arial', sans-serif; font-weight:normal; line-height:19px; font-size:11px; margin:0; padding:10px 0px 0px;" align="center" valign="top">Copyright ©{!yearVal} Zscaler, Inc.<br />
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</apex:component>

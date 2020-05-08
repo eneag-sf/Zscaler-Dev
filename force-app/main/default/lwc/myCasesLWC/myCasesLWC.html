@@ -1,0 +1,209 @@
+<template>
+    <div class="zs-case-view">
+        <div style="margin-left: 6%" if:true={error}>
+            <lightning-badge label={error} style="color: red;"></lightning-badge>
+        </div>
+        <h1>{selectedAccount}</h1>
+        <div class="zs-case-view-filter">
+            <lightning-layout pull-to-boundary="small">
+                <lightning-layout-item if:false={allcases} size="2" padding="around-small">
+                    <lightning-combobox class="list-view" style="display: flex;" name="progress" value={value} options={options}
+                        onchange={handleListView}>
+                    </lightning-combobox>
+                </lightning-layout-item>
+                <lightning-layout-item if:true={allcases} size="3" padding="around-small">
+                    <lightning-combobox label="Select Customer:" style="display: flex;" class="list-view"
+                        name="progress" value={accvalue} options={accOptions} onchange={handleaccchange}>
+                    </lightning-combobox>
+                </lightning-layout-item>
+                <lightning-layout-item size="3" padding="around-small">
+                    <lightning-input label="Search Cases:" style="display: flex;" name="search Case" type="search"
+                        value={searchVal} onchange={handleSearchChange}>
+                    </lightning-input>
+                </lightning-layout-item>
+                <lightning-layout-item if:true={allcases} size="4" padding="around-small">
+
+                </lightning-layout-item>
+                <lightning-layout-item if:false={allcases} size="5" padding="around-small">
+
+                </lightning-layout-item>
+
+                <lightning-layout-item size="2" padding="around-small">
+                    <div style="float:right;">
+                        <lightning-button label="Create Case" onclick={redirectToCreateCase} variant="brand">
+                        </lightning-button>
+                    </div>
+                </lightning-layout-item>
+            </lightning-layout>
+        </div>
+        <h2>Existing Case Summary</h2>
+        <div class="zs-case-view-cards">
+            <lightning-layout pull-to-boundary="medium">
+                <lightning-layout-item size="2" padding="around-small">
+                    <lightning-card variant="Narrow" class={myopencasecss} onclick={handleMyOpenCases}>
+                        <div slot="title">
+                            <lightning-icon icon-name="action:new_case" size="small"></lightning-icon>
+                            <span class="zs-case-count-header">My Open Cases</span>
+                        </div>
+                        <p class="zs-case-count">
+                            {myCases}
+                        </p>
+                    </lightning-card>
+                </lightning-layout-item>
+                
+                <lightning-layout-item size="1" padding="around-small">
+
+                </lightning-layout-item>
+                <lightning-layout-item size="2" padding="around-small">
+                    <lightning-card variant="Narrow" class={allopencasecss} onclick={handleAllOpenCases}>
+                        <div slot="title">
+                            <lightning-icon icon-name="action:new_case" size="small"></lightning-icon>
+                            <span class="zs-case-count-header">All Open Cases</span>
+                        </div>
+                        <p class="zs-case-count">
+                            {openCases}
+                        </p>
+                    </lightning-card>
+                </lightning-layout-item>
+                
+                <lightning-layout-item size="1" padding="around-small">
+
+                </lightning-layout-item>
+                <lightning-layout-item size="2" padding="around-small">
+                    <lightning-card variant="Narrow" class={pendingcss} onclick={handlePendingAction}>
+                        <div slot="title">
+                            <lightning-icon icon-name="action:priority" size="small"></lightning-icon>
+                            <div class="zs-case-count-header">Pending Action</div>
+                        </div>
+                        <p class="zs-case-count">
+                            {pcCases}
+                        </p>
+                    </lightning-card>
+                </lightning-layout-item>
+                
+                <lightning-layout-item size="1" padding="around-small">
+
+                </lightning-layout-item>
+                <lightning-layout-item size="2" padding="around-small">
+                    <lightning-card variant="Narrow" class={closedcss} onclick={handleClosedCases}>
+                        <div slot="title">
+                            <lightning-icon icon-name="action:update_status" size="small"></lightning-icon>
+                            <div class="zs-case-count-header">Closed Cases</div>
+                        </div>
+                        <p class="zs-case-count">
+                            {closedCases}
+                        </p>
+                    </lightning-card>
+                </lightning-layout-item>
+            </lightning-layout>
+        </div>
+        <div class="zs-case-view-table">
+            <div style="text-align: right;" if:true={showpagination}>
+                <div class="slds-p-right_small" style="display:inline-block;" if:true={showprevious}><a href="javascript:void(0)"
+                        onclick={goback}>Previous</a></div>
+                <lightning-combobox class="slds-p-right_small" style="display:inline-block;" name="progress"
+                    value={currentpage} options={pageoptions} onchange={handlepagechange}></lightning-combobox>
+                <div class="slds-p-right_small" style="display:inline-block;" if:true={shownext}><a href="javascript:void(0)"
+                        onclick={gonext}>Next</a></div>
+
+            </div>
+            <template if:true={caseData}>
+                <section class="slds-p-top_large">
+                    <!--for demo wrap-->
+                    <div class="tbl-header">
+                        <table cellpadding="0" cellspacing="0" border="0">
+                            <thead>
+                                <tr>
+                                    <th class="table-cell-large" if:true={allcases}>Customer Name</th>
+                                    <th class="table-cell-x-small" title="CaseNumber" onclick={sortdata}>Case #&nbsp;&nbsp;
+                                        <lightning-icon title="CaseNumber" icon-name="utility:sort" size="xx-small"></lightning-icon>
+                                    </th>
+                                    <th class="table-cell-medium" title="Zendesk_Reference_Id__c" onclick={sortdata}>Legacy Ticket #&nbsp;&nbsp;
+                                        <lightning-icon title="Zendesk_Reference_Id__c" icon-name="utility:sort" size="xx-small"></lightning-icon>
+                                    </th>
+                                    <th class="table-cell-x-large" title="Subject" onclick={sortdata}>Subject&nbsp;&nbsp;
+                                        <lightning-icon title="Subject" icon-name="utility:sort" size="xx-small"></lightning-icon>
+                                    </th>
+                                    <th class="table-cell-x-small" >Requestor
+                                    </th>
+                                    <th class="table-cell-small">Case Owner
+                                    </th>
+                                    <th class="table-cell-x-small" title="Priority" onclick={sortdata}>Priority&nbsp;&nbsp;
+                                        <lightning-icon title="Priority" icon-name="utility:sort" size="xx-small"></lightning-icon>
+                                    </th>
+                                    <th class="table-cell-medium" title="LastModifiedDate" onclick={sortdata}>Last Activity&nbsp;&nbsp;
+                                        <lightning-icon title="LastModifiedDate" icon-name="utility:sort" size="xx-small"></lightning-icon>
+                                    </th>
+                                    <th class="table-cell-medium" title="Status" onclick={sortdata}>Status&nbsp;&nbsp;
+                                        <lightning-icon title="Status" icon-name="utility:sort" size="xx-small"></lightning-icon>
+                                    </th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                    <div class="tbl-content">
+                        <table cellpadding="0" cellspacing="0" border="0">
+                            <tbody>
+                                <template for:each={caseData} for:item="cse">
+                                    <template if:true={cse.cs}>
+                                        <tr key={cse.key}>
+                                            <td class="table-cell-large" if:true={allcases}>
+                                                <span title={cse.cs.Account.Name}>{cse.cs.Account.Name}</span>
+                                            </td>
+                                            <td class="table-cell-x-small" >
+                                                <lightning-formatted-url title={cse.cs.CaseNumber} value={cse.cs.Community_url__c}
+                                                    label={cse.cs.CaseNumber}>
+                                                </lightning-formatted-url>
+                                            </td>
+                                            <td class="table-cell-medium" >
+                                                <span title={cse.cs.Zendesk_Reference_Id__c}>{cse.cs.Zendesk_Reference_Id__c}</span>
+                                            </td>
+                                            <td class="table-cell-x-large" >
+                                                <lightning-formatted-url title={cse.cs.Subject} value={cse.cs.Community_url__c}
+                                                    label={cse.cs.Subject}>
+                                                </lightning-formatted-url>
+                                            </td>
+                                            <td class="table-cell-x-small" ><template if:true={cse.cs.ContactId}>
+                                                    <span title={cse.cs.Contact.Name}>{cse.cs.Contact.Name}</span>
+                                                </template></td>
+                                            <td class="table-cell-small" ><span title={cse.cs.Owner.Name}>{cse.cs.Owner.Name}</span></td>
+                                            <td class="table-cell-x-small" ><span class="caseFields" title={cse.cs.Priority}>{cse.cs.Priority}</span> </td>
+                                            <td class="table-cell-medium" >
+                                                <lightning-formatted-date-time value={cse.cs.LastModifiedDate}
+                                                    year="numeric" month="numeric" day="numeric" hour="2-digit"
+                                                    minute="2-digit" time-zone="America/New_York">
+                                                </lightning-formatted-date-time>
+                                            </td>
+                                            <td class="table-cell-medium" >
+                                                <div title={cse.cs.Status} class={cse.classcss}>
+                                                    {cse.cs.Status}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div style="text-align: right;" if:true={showpagination}>
+                        <div class="slds-p-right_small" style="display:inline-block;" if:true={showprevious}><a href="javascript:void(0)"
+                                onclick={goback}>Previous</a></div>
+                        <lightning-combobox class="slds-p-right_small" style="display:inline-block;" name="progress"
+                            value={currentpage} options={pageoptions} onchange={handlepagechange}>
+                        </lightning-combobox>
+                        <div class="slds-p-right_small" style="display:inline-block;" if:true={shownext}><a href="javascript:void(0)"
+                                onclick={gonext}>Next</a></div>
+
+                    </div>
+                </section>
+            </template>
+
+        </div>
+        <template if:true={loading}>
+            <div class="slds-spinner_container">
+                <lightning-spinner variant="brand" size="medium"></lightning-spinner>
+            </div>
+        </template>
+    </div>
+</template>

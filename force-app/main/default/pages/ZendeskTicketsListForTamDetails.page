@@ -1,0 +1,3 @@
+<apex:page standardController="TAM_Details__c" extensions="ZendeskTicketsListForTDController" showHeader="false" sidebar="false" Readonly="true">
+    <c:ZendeskTicketsList InputAccountId="{!accountId}" />
+</apex:page>

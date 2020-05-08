@@ -1,0 +1,426 @@
+@charset "utf-8";
+.minW160 {
+    min-width: 160px;
+}
+.minW80 {
+    min-width: 80px;
+}
+
+.minW100 {
+    min-width: 100px;
+}
+.minW40 {
+    min-width: 40px;
+}
+.maxW100 {
+    max-width: 100px;
+}
+.maxW200 {
+    max-width: 200px;
+}
+.W80 {
+    width: 80px;
+}
+.W100 {
+    width: 100px;
+}
+.W120 {
+    width: 120px;
+}
+.W200 {
+    width: 200px;
+}
+.pointer {
+    cursor: pointer;
+}
+.customizedToolTip {
+    font-size: 12px !important;
+}
+.reportContainer {
+    height: auto;
+    max-height: auto;
+    -webkit-transform: scaleY(1);
+    -o-transform: scaleY(1);
+    -ms-transform: scaleY(1);
+    -moz-transform: scaleY(1);
+    transform: scaleY(1);
+    -webkit-transform-origin: top;
+    -o-transform-origin: top;
+    -ms-transform-origin: top;
+    -moz-transform-origin: top;
+    transform-origin: top;
+    -webkit-transition: -webkit-transform 0.3s ease-out;
+    -o-transition: -webkit-transform 0.3s ease-out;
+    -ms-transition: -webkit-transform 0.3s ease-out;
+    -moz-transition: -webkit-transform 0.3s ease-out;
+    transition: transform 0.3s ease;
+}
+.reportContainer.ng-hide
+{
+    -webkit-transform: scaleY(0);
+    -o-transform: scaleY(0);
+    -ms-transform: scaleY(0);
+    -moz-transform: scaleY(0);
+    transform: scaleY(0);
+}
+.reportContainer.ng-hide-add, .reportContainer.ng-hide-remove {
+    display:block!important;
+}
+.fqTitleCon {
+	width:100%;
+	height:32px;
+	background:#474747;
+	text-shadow:#000 1px 1px 1px;
+	color:#fff;
+	font-size:14px;
+	line-height:32px;
+	font-family:Verdana, Geneva, sans-serif;
+	overflow:hidden;
+}
+.nowrap {
+	white-space: nowrap;
+}
+span.fqTitle {
+	margin:0 10px 0 20px;
+	float:left;
+	height:32px;
+	font-weight:bold;
+}
+.fqSwitch {
+    float:left;
+    margin-left: 4%;
+    margin-top: 3px;
+}
+.ffSwitch {
+    float: left;
+    margin-left: 5%;
+    margin-top: 3px;
+}
+span.fqNum {
+	margin:0 10px 0 5px;
+	float:left;
+	height:32px;
+	color:#fbb167;
+}
+a.fqBtn {
+	float:left;
+}
+a.fqBtn img {
+	margin:7px 3px;
+}
+span.userName {
+	margin:0 10px 0 10px;
+	float:right;
+	height:32px;
+	font-size:13px;
+}
+
+span.displayUnits {
+    float: right;
+    font-size: 12px;
+    margin-right: 10px;
+}
+table .report
+ {
+	/*border:1px solid #336699;*/
+	background-color: #999999;
+	border-spacing: 1px;
+	padding: 0px;
+}
+table .report .header
+ {
+	background-color: #CADBFF;
+	text-align:center;
+    width: 100%;
+
+}
+table .report .header
+ .white {
+	background-color: #FFF;
+}
+table .report th
+ {
+	padding: 3px;
+	border-spacing: 1;
+	font-weight: bold;
+	text-align: center;
+}
+table .report tr.high
+{
+    background-color: #FFCC99;
+}
+table .report tr.high:hover
+{
+    background-color: rgb(253, 200, 85);
+}
+table .report .line {
+	background-color: #FFFFFF;
+}
+table .report .line:hover {
+    background-color: rgb(255, 255, 230);
+}
+table .report .line2 {
+	background-color: #EEEEEE
+}
+table .report .line2:hover {
+    background-color: rgb(255, 255, 230);
+}
+table .borderReport, table .borderReport tr:last-child {
+    border-collapse: collapse;
+    border: 1px solid #808080;
+}
+table .borderReport .header {
+    border-bottom: 2px solid #808080;
+}
+table .borderReport .header th {
+    border-right: 1px solid #808080;
+}
+table .borderReport .line, table .borderReport .line2 {
+    border-bottom: 1px solid #e3deb8;
+    border-right: 1px solid #808080;
+    border-left: 1px solid #808080;
+}
+table .report .editBtn {
+    display: none;
+    cursor:pointer;
+    float:left;
+    margin-top:2px;
+    margin-left:4px;
+    color:#3f3f3f;
+}
+table .report .line:hover .editBtn, table .report .line2:hover .editBtn {
+    display: block;
+}
+table .report .saveBtn {
+    cursor:pointer;
+    float:left;
+    margin-top:4px;
+    margin-left:1px;
+    color: green;
+}
+table .report .undoBtn {
+    cursor:pointer;
+    float:left;
+    margin-top:4px;
+    margin-left:2px;
+    color: red;
+}
+table .report .number {
+	text-align: right;
+}
+table .report td.edit {
+	padding-left: 5px;
+	padding-right: 5px;
+    font-size: 14px;
+    text-align:center;
+}
+table .report input.edit {
+	text-align: right;
+    width: 60px;
+}
+table .report .edit .fa {
+    cursor: pointer;
+}
+table .report td
+ {
+	vertical-align: middle;
+	padding: 3px;
+}
+table .report .line .highlight, table .report .line2 .highlight
+{
+    background-color: rgb(255, 255, 230);
+}
+.list .dataRow .dataCell.redOpp {
+    color: #FC7123;
+    font-weight: bold;
+}
+.pageHeader {
+	background-image: url(/img/cal/header_bkgd.gif);
+	background-repeat: repeat-x;
+}
+ table .report .footer
+{
+	background-color: #4863A0;
+}
+.report .footer td
+{
+    color: #FFF;
+}
+
+.forecastBtn {
+    background: url('images/forecastBtns.png') no-repeat top left;
+    width: 26px;
+    height: 26px;
+    margin: 3px 3px auto auto;
+    font-size: 0px;
+    text-indent: -9999px;
+    float: left;
+}
+.forecastBtn.historyChart { background-position: 0px 0px;  }
+.forecastBtn.historyChart:hover { background-position: 0px -26px;  }
+.forecastBtn.pipelineChanges { background-position: 0px -52px;  }
+.forecastBtn.pipelineChanges:hover { background-position: 0px -78px;  }
+.forecastBtn.changeLog { background-position: 0px -104px;  }
+.forecastBtn.changeLog:hover { background-position: 0px -130px;  }
+.forecastBtn.forecastDashboard { background-position: 0px -156px;  }
+.forecastBtn.forecastDashboard:hover { background-position: 0px -182px;  }
+.forecastBtn.myPipeline { background-position: 0px -208px;  }
+.forecastBtn.myPipeline:hover { background-position: 0px -234px;  }
+.forecastBtn.targetAccounts { background-position: 0px -260px;  }
+.forecastBtn.targetAccounts:hover { background-position: 0px -286px;  }
+.forecastBtn.dealFlow { background-position: 0px -312px;  }
+.forecastBtn.dealFlow:hover { background-position: 0px -338px;  }
+.forecastBtn.overdue { background-position: 0px -364px;  }
+.forecastBtn.overdue:hover { background-position: 0px -390px;  }
+
+.sectionTitle {
+    font-size: 1.2em;
+    font-weight: bold;
+    font-family: Arial,Helvetica,sans-serif;
+    height: 16px;
+    padding: 7px 0px 5px 12px;
+}
+.sectionTitle .fa {
+    cursor: pointer;
+    font-weight: bold;
+    height: 15px;
+}
+.listCaption {
+    margin: 5px auto 5px 50px;
+    vertical-align: middle;
+    line-height: 16px;
+}
+.report .link {
+    text-decoration: underline;
+    cursor: auto;
+}
+.report .em {
+    color: #FC7123;
+    font-weight: bold;
+}
+.report .header .action {
+    margin-left: 2px;
+    margin-right: 2px;
+    cursor: pointer;
+    font-weight: normal;
+}
+.elipsis {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.actionLink {
+    text-decoration: none;
+    cursor: pointer;;
+}
+.comment {
+    border: 0px solid black;
+    position: relative;
+}
+.comment:after {
+    content: "";
+    position: absolute;
+    left: calc(100% - 0.3em);
+    top: 0;
+    border-left: 0.4em solid transparent;
+    border-top: 0.4em solid red;
+}
+.left {
+	float:left;
+}
+.center {
+    text-align: center;
+}
+.clearfix:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+.clearfix {
+	width:0px;
+	height:0px;
+	line-height:0px;
+	font-size:0px;
+	clear:both;
+	display: inline-block;
+}
+/* Added styles for JS Grid plugin */
+
+.jsgrid-table .js-grid-ext_sfdc-name_link
+{
+    word-break: break-all;
+}
+
+.jsGrid-error-notify-container
+{
+  top: 32%;
+  left: 40%;
+}
+.jsGrid-error-notify-container .error-notify
+{
+  padding: 0px;
+  width: 100%;
+}
+.jsGrid-error-notify-container .error-list
+{
+  margin: .5em;
+  padding: .5em;
+  list-style-type: none;
+}
+.jsGrid-error-notify-container .error-list--item
+{
+  padding: .2em;
+  color: #ef5656;
+  margin-left: 0px;
+}
+.jsGrid-error-notify-container .innerContent
+{
+  padding: 13px 13px;
+}
+.jsGrid-c-header
+{
+  position: relative;
+}
+.jsGrid-c-header--icon
+{
+  position: absolute;
+  right: 0px;
+}
+.jsGrid-c-header--content
+{
+  width: 95%;
+  white-space: normal;
+}
+.jsGrid-c-header .opp-list-sort--asc, .jsGrid-c-header .opp-list-sort--desc
+{
+  display: none;
+}
+.jsgrid-edit-row input,
+.jsgrid-edit-row select,
+.jsgrid-edit-row textarea
+{
+  border: 1px solid #cac9c9;
+  border-radius: 4px;
+}
+.jsGrid-edit-row textarea
+{
+  padding: 3px;
+  background-color: white
+}
+.opp-list-sort--asc-on .opp-list-sort--asc,
+.opp-list-sort--desc-on .opp-list-sort--desc
+{
+  display: inline-block;
+}
+
+.report .jsgrid-header-sort:before
+{
+    border-style:  none;
+}
+
+/* Hides from IE-mac \*/
+* html .clearfix {height: 1%;}
+.clearfix {display: block;}
+/* End hide from IE-mac */

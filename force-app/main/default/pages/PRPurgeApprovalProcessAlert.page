@@ -1,0 +1,30 @@
+<apex:page standardController="Provisioning_Request__c" standardStylesheets="true" showHeader="false">
+ <apex:pageBlock rendered="{!IF(Provisioning_Request__c.Provisioning_Status__c='To Be Purged' || Provisioning_Request__c.Provisioning_Status__c='Awaiting Rep Confirmation',true,false)}">
+      <base target="_top" />
+      <div class="orgLoginHistoryWrapper">
+         <div class="errorAndDownloadOptions">
+            <div class="warningElement">
+               <div class="message errorM3" id="ie6DeprecationWarning">
+                  <table  class="messageTable" border="0" cellpadding="2" cellspacing="1" >
+                     <tr>
+                        <td valign="top"><img src="/s.gif" alt="error" class="msgIcon" title="error"/></td>
+                        <td class="messageCell">
+                            <!-- <Strong style="color:red">Traffic alert: {!$User.Traffic_Alert_on_Account__c}</Strong> -->
+                            <p>Purge Process has been initiated for this PR. Please press STOP PURGE button if you wish to stop this PR from being Purged</p> 
+                        </td>
+                     </tr>
+                  </table>
+               </div>
+            </div>
+         </div>
+      </div>
+   </apex:pageBlock>
+    <script src="/soap/ajax/28.0/connection.js" type="text/javascript"></script>
+    <script src="/soap/ajax/28.0/apex.js" type="text/javascript"></script>
+   <script> 
+    //Query the Details of Opportunity and Account.
+      //result = sforce.connection.query("SELECT id,StageName,Accountid,Account.Amber_Road_Status__c FROM Opportunity WHERE //id=apexpages.currentpage().getparameters().get('id')");
+      //records = result.getArray("records");
+      //console.log('records  '+records);
+   </script>
+</apex:page>

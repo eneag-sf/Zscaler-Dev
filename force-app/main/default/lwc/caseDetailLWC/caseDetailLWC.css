@@ -1,0 +1,9 @@
+.field-label {
+    font-family: Salesforce Sans, Arial, sans-serif !important;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+.zs-case-info-comp h3{
+    text-transform: capitalize;
+    font-size: 1.2rem !important;
+}

@@ -1,0 +1,97 @@
+<apex:page StandardController="Provisioning_Request__c" extensions="PRExtcontroller">
+    <style>
+        .popupBackground{
+            background-color:black;
+            opacity: 0.85;
+            filter: alpha(opacity = 20);
+            position: fixed;
+            width: 150%;
+            height: 250%;
+            top: -200px;
+            left: -50px;
+            z-index: 9998;
+            height: 100px;
+            overflow-y: scroll;
+            border: 1px solid gray;
+        }
+        .rich-tabpanel-content {
+            font-size: 100%;
+        }
+        .custPopup{
+            background-color: white;
+            border-width: 2px;
+            border-radius: 10px;
+            z-index: 9999;
+            left: 55%;
+            padding:10px;
+            position: fixed;
+            /* These are the 3 css properties you will need to change so the popup
+            displays in the center of the screen. First set the width. Then set
+            margin-left to negative half of what the width is. You can add
+            the height property for a fixed size pop up if you want.*/
+            width: 700px;
+            height: 155px;
+            margin-left: -35%;
+            top:30%;
+        }
+        .popupBackground{
+            background-color:black;
+            opacity: 0.85;
+            filter: alpha(opacity = 20);
+            position: fixed;
+            width: 150%;
+            height: 250%;
+            top: -200px;
+            left: -50px;
+            z-index: 9998;
+        }
+        .modal-backdrop {
+            background-color: rgba(255,255,255,0.75);
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            width: 100%;
+            height: 100%;
+        }
+
+        .loading-modal {
+            position: relative;
+            height: 200px;
+            width: 500px;
+            top: 20%;
+            background: url({!$Resource.loadingimg}) 50% 0 no-repeat;
+            margin: 0 auto;
+            padding-top: 60px;
+            text-align: center;
+            font-family: Verdana, Geneva, sans-serif;
+        }
+        .loadingIconSearch {
+            background-image: url("/img/loading.gif");
+            background-repeat: no-repeat;
+            background-position: 150px;
+        }
+        .datePicker{
+            z-index:10001;
+            height:auto;
+            position: fixed;
+        }
+    </style>
+    <apex:form >
+        <apex:pageBlock >
+            <apex:outputPanel id="Extensionpopup">
+                <apex:outputPanel styleClass="popupBackground" layout="block" rendered="{!showExtensionPopup}"/>
+                <apex:outputPanel styleClass="custPopup" layout="block" rendered="{!showExtensionPopup}">
+                    <apex:pageMessages ></apex:pageMessages>
+                    <apex:pageblocksection columns="2"  title="Provisioning Request Extension Request" collapsible="false">
+                        <apex:inputTextArea value="{!Prvsn_Rqst.Detailed_Reason_for_Contract_Extension__c}" cols="40" rows="3"/>
+                        <apex:inputField value="{!Prvsn_Rqst.PR_Extension_Requested_Date__c}"/>
+                    </apex:pageblocksection>
+                    <br/>
+                    <apex:commandButton value="Submit for Approval" action="{!submitForApproval}" reRender="Extensionpopup"  style="position:relative;left:360px;background: #009CDA; color: #F3F3EC; padding: 2px 10px; font-size: 1em; text-decoration: none;" status="popUpStatus"/>
+                    <apex:actionStatus id="popUpStatus" startText="Please wait..." stopText="" startStyleClass="loadingIcon" stopStyleClass=""></apex:actionStatus>
+                    <apex:commandButton value="Cancel" action="{!cancelExtensionpopup}" reRender="Extensionpopup"  style="position:relative;left:360px;background: #009CDA; color: #F3F3EC; padding: 2px 10px; font-size: 1em; text-decoration: none;" status="popUpStatus"/>
+                </apex:outputPanel>
+            </apex:outputPanel>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

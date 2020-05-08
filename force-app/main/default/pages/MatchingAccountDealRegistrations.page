@@ -1,0 +1,29 @@
+<apex:page standardController="Account" extensions="MatchingAccountDealRegControllerExt">
+<apex:form >
+        <apex:pageBlock id="block">
+        
+            <apex:pageBlockSection columns="1" rendered="{!matchingDealRegList.size > 0}">
+                <apex:pageBlockSectionItem >
+                    <apex:pageBlockTable value="{!matchingDealRegList}" var="deal" >
+                    <apex:column headerValue="Name">
+                        <a href="/{!deal.Id}" target="_blank">{!deal.Name}</a>
+                    </apex:column>
+                    <apex:column value="{!deal.Partner_Company_Name__c}"/>
+                    <apex:column HeaderValue="Partner Contact Name">
+                        {!deal.Partner_Contact_Name__c} &nbsp; {!deal.Partner_Contact_Last_Name__c}
+                    </apex:column>    
+                    <apex:column value="{!deal.Status__c}"/>
+                    <apex:column value="{!deal.Expiration_Date__c }"/>
+                    <apex:column value="{!deal.End_Customer_Name__c}"/>
+                    
+                </apex:pageBlockTable>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection rendered="{!NOT(matchingDealRegList.size > 0)}">
+                No Matching Deal Registration Found.
+            </apex:pageBlockSection>
+            
+        </apex:pageBlock>
+    </apex:form>
+
+</apex:page>

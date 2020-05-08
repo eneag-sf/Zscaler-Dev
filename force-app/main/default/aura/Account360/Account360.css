@@ -1,0 +1,5 @@
+.THIS.spinnerHolder {
+    position: relative;
+    display: flex;
+    height: -webkit-fill-available;
+}

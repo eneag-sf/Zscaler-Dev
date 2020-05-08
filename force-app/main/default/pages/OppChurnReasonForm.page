@@ -1,0 +1,2598 @@
+<!--
+@Page Name          : OppChurnReasonForm.page
+@Description        : 
+@Author             : pranjalsingh@zscaler.com
+@Group              : 
+@Last Modified By   : pranjalsingh@zscaler.com
+@Last Modified On   : 20/7/2019, 1:17:53 PM
+@Modification Log   : 
+==============================================================================
+Ver         Date                     Author      		      Modification
+==============================================================================
+1.0    20/7/2019, 1:16:15 PM   pranjalsingh@zscaler.com     Initial Version
+-->
+<apex:page standardController="Opportunity" extensions="getOppChurnReasonController,Util_ChurnReasonMethods" showHeader="false" lightningStylesheets="true" standardStylesheets="false" sidebar="false" applyHtmlTag="false" applyBodyTag="false" docType="html-5.0">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" lang="en">
+        <head>
+            <meta charset="utf-8" />
+            <meta http-equiv="x-ua-compatible" content="ie=edge" />
+            <apex:slds />
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <!-- Import the Lightning Design System style sheet -->
+            <apex:slds />
+            <!-- Import the jquery library -->
+            <apex:includeScript value="//code.jquery.com/jquery-2.1.4.min.js" />
+            <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" />
+            <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/jquery-ui.min.js" />
+           
+            <style>
+                .blue-background{
+                background-color: #21a0df !important;
+                border-color: #21a0df !important;
+                color: rgb(255, 255, 255) !important;
+                padding: .5rem .75rem !important;
+                }
+                .displayNone { 
+                display:none; 
+                }
+                .displayBlock {
+                display:block;
+                }
+                .ui-autocomplete-loading { 
+                background: white url(/img/loading32.gif) right center no-repeat;
+                background-size:15px 15px; 
+                }
+                .placeHolder {
+                font-style: italic;
+                }
+                
+                .msgIcon {
+                display: none!important
+                }
+                .customMessage * {
+                color: #fff!important
+                }
+                .customMessage {
+                margin: 5px 0!important;
+                max-width: 1280px;
+                opacity: 1!important;
+                width: 100%;
+                font-size: 12px;
+                border: 0px;
+                padding-left: 10px;
+                }
+                .message {
+                opacity: .1
+                }
+            </style>
+        </head>
+        <!-- This includes lightning framework-->
+        <apex:includeScript value="/lightning/lightning.out.js"/>
+        <div id="progressBarId"></div>
+        <script>
+        function initProgressBar() {
+            $Lightning.use("c:ProgressBarApp", function() {
+                $Lightning.createComponent("c:ProgressBarChurn",{},"progressBarId",
+                                           function(component){});
+            });
+        }
+        initProgressBar();
+        </script>
+        <body class="slds-scope">
+            <div class="slds-form" style="margin-left: 1%;display:none;" id="mainForm3">
+                        <div class="slds-grid slds-gutters"><br/>
+                            <div class="slds-col">
+                                <br/>
+								<center>
+                                <button class="slds-button slds-button_brand finalButtons" style="display:none" id="nextButton4">Submit Form</button>&nbsp;&nbsp;&nbsp;
+                                <button class="slds-button slds-button_neutral finalButtons" style="display:none" id="goBackButton4">Go Back</button>
+                                <button class="slds-button slds-button_neutral finalButtons" id="cancelButton3">Cancel</button>
+								</center>
+							</div>
+                        </div>
+            </div><br/>
+            <div id="successSaveForm" class="alert slds-notify slds-notify--alert slds-theme--success" style="width:50%;text-align: left;margin: 2%;display:none;">
+                <p><strong>Success:</strong><br/>Form has been submitted successfully.</p>
+            </div><br/>
+                <div id="errorSaveForm" class="slds-notify slds-notify--alert slds-theme--error" style="width:50%;text-align: left;margin: 2%;display:none;">
+                    <p id="errorMsgtrace"><strong>Error:</strong>:</p>
+            	</div><br/>
+            <!-- Account Summary Section is displayed at the Summary(final) page. 
+            	 Till then it's hidded.It VF remotes Account data from Opp Id.
+            -->
+            <!-- SPINNER -->
+            <div  id="LoadingvfDIV" class="slds-spinner_container" style="position: fixed;display:none;">
+                <div role="status" class="slds-spinner slds-spinner_medium slds-spinner_brand">
+                    <span class="slds-assistive-text">Loading...</span>
+                    <div class="slds-spinner__dot-a"></div>
+                    <div class="slds-spinner__dot-b"></div>
+                </div>
+            </div>
+            <div id="activePR_ClosureQuestion" style="margin-left: 2%;display:none">
+            	<span>
+                
+			<div class="slds-page-header blue-background" style="font-weight: bold">
+                    <span>Active Provisioning Requests are present on this Opportunity.</span><br/>
+            </div>
+            </span>
+            <br/>
+            <div class="slds-form-element" id="isActivePRpresent-div">
+                <div class="slds-form-element__control">
+                    <div class="slds-checkbox">
+                        <input type="checkbox" name="options" id="isActivePRpresent" value="isActivePRpresent" checked="" />
+                        <label class="slds-checkbox__label" for="isActivePRpresent">
+                            <span class="slds-checkbox_faux"></span>
+                            <span class="slds-form-element__label">Confirm Opportunity Closure?	</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="slds-form-element__help" id="isActivePRpresent-err" style="display:none">This field is required</div>
+                </div> <br/> 
+            </div>              
+            <div name="SummarySetion" style="display:none;margin-left: 2%;" id= "accountNameSection">
+                <div class="slds-grid slds-gutters">
+                    <div class="slds-col">
+                        <span>
+                            <div class="slds-page-header blue-background" style="font-weight: bold">
+                                <span>Deal Summary</span><br/>
+                            </div>
+                        </span><br/></div>
+                </div>
+                <div class="demo-only demo-only--sizing slds-grid slds-wrap">
+                    <div class="slds-size_1-of-4">
+                        <div class="slds-text-align_left slds-m-around_x-small">
+                            <span style="font-weight: bold">Account Name</span>
+                        </div>
+                    </div>
+                    <div class="slds-size_1-of-4">
+                        <div class="slds-text-align_left slds-m-around_x-small" style="overflow-wrap: break-word;">
+                            <output id="accNameVal"></output>
+                        </div>
+                    </div>
+                    <div class="slds-size_1-of-4">
+                        <div class="slds-text-align_left slds-m-around_x-small">
+                            <span style="font-weight: bold">Lost Amount</span>
+                        </div>
+                    </div>
+                    <div class="slds-size_1-of-4">
+                        <div class="slds-text-align_left slds-m-around_x-small" style="overflow-wrap: break-word;">
+                            <output id="lostAmountVal"></output>
+                        </div>
+                    </div>
+                </div>
+                <div class="demo-only demo-only--sizing slds-grid slds-wrap">
+                    <div class="slds-size_1-of-4">
+                        <div class="slds-text-align_left slds-m-around_x-small">
+                            <span style="font-weight: bold">Opportunity Name</span>
+                        </div>
+                    </div>
+                    <div class="slds-size_1-of-4">
+                        <div class="slds-text-align_left slds-m-around_x-small" style="overflow-wrap: break-word;">
+                            <output id="oppNameVal"></output>
+                        </div>
+                    </div>
+                    <div class="slds-size_1-of-4">
+                        <div class="slds-text-align_left slds-m-around_x-small">
+                            <span style="font-weight: bold">Geo</span>
+                        </div>
+                    </div>
+                    <div class="slds-size_1-of-4">
+                        <div class="slds-text-align_left slds-m-around_x-small" style="overflow-wrap: break-word;">
+                            <output id="lostAmountVal">
+                                <output id="geoVal"></output>
+                            </output>
+                        </div>
+                    </div>
+                </div>
+                <div class="demo-only demo-only--sizing slds-grid slds-wrap">
+                    <div class="slds-size_1-of-4">
+                        <div class="slds-text-align_left slds-m-around_x-small"><span style="font-weight: bold">Type</span>
+                        </div>
+                    </div>
+                    <div class="slds-size_1-of-4">
+                        <div class="slds-text-align_left slds-m-around_x-small" style="overflow-wrap: break-word;">
+                            <output id="typeVal"></output></div>
+                    </div>
+                    <div class="slds-size_1-of-4">
+                        <div class="slds-text-align_left slds-m-around_x-small">
+                            <span style="font-weight: bold">Territory Type</span>
+                        </div>
+                    </div>
+                    <div class="slds-size_1-of-4">
+                        <div class="slds-text-align_left slds-m-around_x-small" style="overflow-wrap: break-word;">
+                            <output id="territoryTypeVal"></output>
+                        </div>
+                    </div>
+                </div>
+                <div class="demo-only demo-only--sizing slds-grid slds-wrap">
+                    <div class="slds-size_1-of-4">
+                        <div class="slds-text-align_left slds-m-around_x-small">
+                            <span style="font-weight: bold">Stage</span>
+                        </div>
+                    </div>
+                    <div class="slds-size_1-of-4">
+                        <div class="slds-text-align_left slds-m-around_x-small" style="overflow-wrap: break-word;">
+                            <output id="stageVal"></output>
+                        </div>
+                    </div>
+                    <div class="slds-size_1-of-4">
+                        <div class="slds-text-align_left slds-m-around_x-small">
+                            <span style="font-weight: bold">Owner</span>
+                        </div>
+                    </div>
+                    <div class="slds-size_1-of-4">
+                        <div class="slds-text-align_left slds-m-around_x-small" style="overflow-wrap: break-word;">
+                            <output id="OwnerVal"></output>
+                        </div>
+                    </div>
+                </div>
+                <div class="demo-only demo-only--sizing slds-grid slds-wrap">
+                    <div class="slds-size_1-of-4">
+                        <div class="slds-text-align_left slds-m-around_x-small">
+                            <span style="font-weight: bold">Technical Stage</span>
+                        </div>
+                    </div>
+                    <div class="slds-size_1-of-4">
+                        <div class="slds-text-align_left slds-m-around_x-small" style="overflow-wrap: break-word;">
+                            <output id="techStageVal"></output>
+                        </div>
+                    </div>
+                    <div class="slds-size_1-of-4">
+                        <div class="slds-text-align_left slds-m-around_x-small">
+                            <span style="font-weight: bold">Products Lost</span>
+                        </div>
+                    </div>
+                    <div class="slds-size_1-of-4">
+                        <div class="slds-text-align_left slds-m-around_x-small" style="overflow-wrap: break-word;">
+                            <output id="productsLostVal"></output>
+                        </div>
+                    </div>
+                </div>
+                <div class="demo-only demo-only--sizing slds-grid slds-wrap">
+                    <div class="slds-size_1-of-4">
+                        <div class="slds-text-align_left slds-m-around_x-small">
+                            <span style="font-weight: bold">Primary Partner</span>
+                        </div>
+                    </div>
+                    <div class="slds-size_1-of-4">
+                        <div class="slds-text-align_left slds-m-around_x-small" style="overflow-wrap: break-word;">
+                            <output id="primaryPartnerVal"></output></div>
+                    </div>
+                </div>
+                <br/>
+            </div>
+            <script>
+            function showActivePRsection(){
+                Util_ChurnReasonMethods.isActivePRpresentOnOpp(
+                    '{!$CurrentPage.parameters.oppId}',
+                    function(result, event){
+                        if (event.status) {
+                            console.log('Active PR: '+result);
+                            if(result == true){
+                            	j$('#activePR_ClosureQuestion').show();
+                            }
+                            if(resut != true){
+                                j$('#activePR_ClosureQuestion').hide();
+                            }
+                        } else if (event.type === 'exception') {
+                            alert('Exception: '+result);
+                        } else {
+                            alert('Last Exception');
+                        }
+                    }, 
+                    {escape: true}
+                );
+            }
+            j$ = jQuery.noConflict();
+            j$(document).ready(function(){
+                //Text box for comments in case of others is checked in the page-1.
+                j$("#others").click(function(){
+                    if(j$("#others").prop('checked') == true){
+                        document.getElementById('others-div').style.display = '';
+                    }
+                    else{
+                        document.getElementById('others-div').style.display = 'none';
+                    }
+                });
+                j$("#downgradingBundle").click(function(){
+                    if(j$("#downgradingBundle").prop('checked') == true){
+                        document.getElementById('searchProducts-div').style.display = '';
+                    }
+                    else{
+                        document.getElementById('searchProducts-div').style.display = 'none';
+                    }
+                });
+                j$("#notRenewedAdvFeaturesCheck").click(function(){
+                    if(j$("#notRenewedAdvFeaturesCheck").prop('checked') == true){
+                        document.getElementById('notRenewedAdvFeaturesPanel').style.display = '';
+                    }
+                    else{
+                        document.getElementById('notRenewedAdvFeaturesPanel').style.display = 'none';
+                    }
+                });
+                j$("#ZIAchecklabel").click(function(){
+                    if(j$("#ZIAchecklabel").prop('checked') == true){
+                        document.getElementById('ZIAcheckselect').style.display = '';
+                    }
+                    else{
+                        document.getElementById('ZIAcheckselect').style.display = 'none';
+                    }
+                });
+                j$("#ZPAchecklabel").click(function(){
+                    if(j$("#ZPAchecklabel").prop('checked') == true){
+                        document.getElementById('ZPAcheckselect').style.display = '';
+                    }
+                    else{
+                        document.getElementById('ZPAcheckselect').style.display = 'none';
+                    }
+                });
+                j$("#supportChecklabel").click(function(){
+                    if(j$("#supportChecklabel").prop('checked') == true){
+                        document.getElementById('supportCheckselect').style.display = '';
+                    }
+                    else{
+                        document.getElementById('supportCheckselect').style.display = 'none';
+                    }
+                });
+            });
+            </script>
+            <input type="hidden" id="downgradingFromId"/>
+            <input type="hidden" id="downgradingToId"/>
+            
+            <div class="slds-form" style="margin-left: 1%;" id="mainGlobal">
+                <fieldset class="slds-form-element" id="entireForm">
+                    <br/><br/>
+                    <div id="mainChurnform1" style="margin-left: 1%;">
+                        <div class="slds-grid slds-gutters">
+                            <div class="slds-col">
+                                <span>
+                                    <div class="slds-page-header blue-background" style="font-weight: bold">
+                                        <span>Type of Churn <abbr class="slds-required" title="required">* </abbr></span>
+                                    </div>
+                                </span>
+                            </div>
+                        </div><br/>
+                        <div class="slds-form-element__control" id="churn-div">
+                            <div class="slds-checkbox">
+                                <input type="checkbox" name="options" id="reductionInSeats" value="Reduction in Seats" checked="" />
+                                <label class="slds-checkbox__label" for="reductionInSeats">
+                                    <span class="slds-checkbox_faux"></span>
+                                    <span class="slds-form-element__label">Reduction in Seats</span>
+                                </label>
+                            </div>
+                            <div class="slds-checkbox">
+                                <input type="checkbox" name="options" id="downgradingBundle" value="downgradingBundle" />
+                                <label class="slds-checkbox__label" for="downgradingBundle">
+                                    <span class="slds-checkbox_faux"></span>
+                                    <span class="slds-form-element__label">Downgrading to a Lower Bundle</span>
+                                </label>
+                            </div>
+                            <div class="slds-checkbox">
+                                <input type="checkbox" name="options" id="notRenewedAdvFeaturesCheck" value="notRenewedAdvFeaturesCheck" />
+                                <label class="slds-checkbox__label" for="notRenewedAdvFeaturesCheck">
+                                    <span class="slds-checkbox_faux"></span>
+                                    <span class="slds-form-element__label">Did not Renew Advanced features</span>
+                                </label>
+                            </div>
+                            <div class="slds-checkbox">
+                                <input type="checkbox" name="options" id="others" value="others" />
+                                <label class="slds-checkbox__label" for="others">
+                                    <span class="slds-checkbox_faux"></span>
+                                    <span class="slds-form-element__label">Other (If other, state reason)</span>
+                                </label>
+                            </div>
+                            <div class="slds-form-element__help" id="churn-err" style="display:none">This field is required</div>
+                            <div class="slds-form-element" style="width:50%;display:none;" id="others-div">
+                                <br/><br/>
+                                <div class="slds-form-element__control">
+                                    <textarea id="othersInput" class="slds-textarea" placeholder="In case of Others, please comment here."></textarea>
+                                </div>
+                                <div class="slds-form-element__help" id="others-err" style="display: none;">This field is required</div>
+                            </div><br/>
+                            <!--The search of products using ajax to return on typing three letters here-->
+                            <div class="demo-only demo-only--sizing slds-grid slds-wrap" id="searchProducts-div" style="display:none">
+                                <div class="slds-size_1-of-2">
+                                    <div class="slds-text-align_left slds-m-around_x-small">
+                                        <span style="font-weight: bold">Downgrading From <abbr class="slds-required" title="required">* </abbr></span>
+                                    </div><br/>
+                                    <div class="slds-text-align_left slds-m-around_x-small">
+                                        <span style="font-weight: bold">Downgrading To <abbr class="slds-required" title="required">* </abbr></span>
+                                    </div>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <div class="slds-text-align_left slds-m-around_x-small">
+                                        <div class="slds-form-element" id="downgradingFrom-div">
+                                            <div class="slds-form-element__control">
+                                                <div class="slds-select_container" style="width: 50%;">
+                                                    <select class="slds-select" id="downgradingFrom" required="">
+                                                        <option value="">Please select</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form-element__help" id="downgradingFrom-err" style="display:none">This field is required</div>
+                                        </div>
+                                        
+                                        <br/>
+                                        <div class="slds-form-element" id="downgradingTo-div">
+                                            <div class="slds-form-element__control">
+                                                <div class="slds-select_container" style="width: 50%;">
+                                                    <select class="slds-select" id="downgradingTo" required="">
+                                                        <option value="">Please select</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form-element__help" id="downgradingTo-err" style="display:none">This field is required</div>
+                                        </div>
+                                       <div class="slds-form-element__help" id="downgradeBoth-err" style="display:none">Error: Same values cannot be selected in both the fields.</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="slds-form-element__control" style="display:none;" id="notRenewedAdvFeaturesPanel">
+                                <div class="slds-grid slds-gutters">
+                                    <div class="slds-col">
+                                        <span>
+                                            <div class="slds-page-header blue-background" style="font-weight: bold">
+                                                <span>Choose the advanced features that is not being renewed <abbr class="slds-required" title="required">* </abbr></span>
+                                            </div>
+                                        </span>
+                                    </div>
+                                </div><br/>
+                                <div class="demo-only demo-only--sizing slds-grid slds-wrap" id="donotRenewAdvFeatures-div">
+                                    <div class="slds-size_1-of-2">
+                                        <div class="slds-text-align_left slds-m-around_x-small">
+                                            <div class="slds-checkbox">
+                                                <input type="checkbox" name="options" id="ZIAchecklabel" value="ZIAchecklabel" checked="" />
+                                                <label class="slds-checkbox__label" for="ZIAchecklabel">
+                                                    <span class="slds-checkbox_faux"></span>
+                                                    <span class="slds-form-element__label">ZIA</span>
+                                                </label>
+                                            </div><br/>
+                                            <div class="slds-checkbox">
+                                                <input type="checkbox" name="options" id="ZPAchecklabel" value="ZPAchecklabel" />
+                                                <label class="slds-checkbox__label" for="ZPAchecklabel">
+                                                    <span class="slds-checkbox_faux"></span>
+                                                    <span class="slds-form-element__label">ZPA</span>
+                                                </label>
+                                            </div><br/>
+                                            <div class="slds-checkbox">
+                                                <input type="checkbox" name="options" id="supportChecklabel" value="supportChecklabel" />
+                                                <label class="slds-checkbox__label" for="supportChecklabel">
+                                                    <span class="slds-checkbox_faux"></span>
+                                                    <span class="slds-form-element__label">Support</span>
+                                                </label>
+                                            </div><br/>
+                                        </div>
+                                    </div>
+                                    <div class="slds-size_1-of-2">
+                                        <div class="slds-text-align_left slds-m-around_x-small">
+                                            <div class="slds-form-element" id="notRenewAdvFeatures-div">
+                                                <div class="slds-form-element__control">
+                                                    <div class="slds-select_container" style="width: 50%;display:none;" id="ZIAcheckselect">
+                                                        <select class="slds-select" id="ZIApickval" multiple="true" size="3">
+                                                            <option value=""></option>
+                                                        </select>
+                                                    </div><br/>
+                                                    <div class="slds-select_container" style="width: 50%;display:none;" id="ZPAcheckselect">
+                                                        <select class="slds-select" id="ZPApickval" multiple="true" size="3">
+                                                            <option value=""></option>
+                                                        </select>
+                                                    </div><br/>
+                                                    <div class="slds-select_container" style="width: 50%;display:none;" id="supportCheckselect">
+                                                        <select class="slds-select" id="supportpickval" multiple="true" size="3">
+                                                            <option value=""></option>
+                                                        </select>
+                                                    </div><br/>
+                                                </div>
+                                                
+                                            </div></div>
+                                    </div>
+                                    <div class="slds-form-element__help" id="donotRenewAdvFeatures-err" style="display:none">This field is required</div>
+                                </div>
+                            </div>
+							<center>
+                            <button class="slds-button slds-button_brand localButtons" id="nextMain1Button">Next</button>&nbsp;&nbsp;&nbsp;
+                            <button class="slds-button slds-button_neutral localButtons" id="cancelButton">Cancel</button>
+							</center>
+                        </div> </div>
+                    <!--Tranformation copy part-->
+                    <div class="slds-form" style="margin-left: 1%;display:none;" id="mainForm1">
+                        <br/><br/>
+                        <div class="slds-grid slds-gutters">
+                            <div class="slds-col">
+                                <span>
+                                    <div class="slds-page-header blue-background" style="font-weight: bold">
+                                        <span>TRANSFORMATION</span>
+                                    </div>
+                                </span>
+                            </div>
+                        </div><br/>
+                        <div class="demo-only demo-only--sizing slds-grid slds-wrap">
+                            <div class="slds-size_1-of-2">
+                                <div class="slds-text-align_left slds-m-around_x-small">
+                                    
+                                    <span style="font-weight: bold">
+                                        Primary Reason<abbr class="slds-required" title="required">* </abbr>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="slds-size_1-of-2">
+                                <div class="slds-text-align_left slds-m-around_x-small"><div class="slds-form-element" id="primaryResn-div">
+                                    <div class="slds-form-element__control">
+                                        <div class="slds-select_container" style="width: 50%;">
+                                            <select class="slds-select" id="primaryResn" required="">
+                                                <option value="">Please select</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="slds-form-element__help" id="primaryResn-err" style="display:none">This field is required</div>
+                                    
+                                    </div></div>
+                            </div>
+                        </div>
+                        <div class="demo-only demo-only--sizing slds-grid slds-wrap">
+                            <div class="slds-size_1-of-2">
+                                <div class="slds-text-align_left slds-m-around_x-small">
+                                    <span style="font-weight: bold">Secondary Reason</span>
+                                </div>
+                            </div>
+                            <div class="slds-size_1-of-2">
+                                <div class="slds-text-align_left slds-m-around_x-small"><div class="slds-form-element" id="secondaryResn-div">
+                                    <div class="slds-form-element__control">
+                                        <div class="slds-select_container" style="width: 50%;">
+                                            <select class="slds-select" id="secondaryResn">
+                                                <option value="">Please select</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="slds-form-element__help" id="secondaryResn-err" style="display:none">This field is required</div>
+                                    <div class="slds-form-element__help" id="samePrimeSecond-err" style="display:none">Error: Same values cannot be selected in both the fields.</div>
+                                    </div></div>
+                            </div>
+                        </div>
+                        
+                        <div id="div-ZIA">
+                            <br/><br/>
+                            <div class="slds-grid slds-gutters">
+                                <div class="slds-col">
+                                    <span>
+                                        <div class="slds-page-header blue-background" style="font-weight: bold">
+                                            <span>EXPERIENCE / FEATURE - ZIA</span>
+                                        </div>
+                                    </span>
+                                </div></div><br/>
+                            <div class="demo-only demo-only--sizing slds-grid slds-wrap">
+                                <div class="slds-size_1-of-2">
+                                    <div class="slds-text-align_left slds-m-around_x-small"><span style="font-weight: bold">Primary Reason<abbr class="slds-required" title="required">* </abbr></span>
+                                    </div>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <div class="slds-text-align_left slds-m-around_x-small"><div class="slds-form-element" id="primaryZIAResn-div">
+                                        <div class="slds-form-element__control">
+                                            <div class="slds-select_container" style="width: 50%;">
+                                                <select class="slds-select" id="ZIAPrimaryResn">
+                                                    <option value="">Please select</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="slds-form-element__help" id="primaryZIAResn-err" style="display: none;">This field is required</div>
+                                        </div></div>
+                                </div>
+                            </div>
+                            <div class="demo-only demo-only--sizing slds-grid slds-wrap">
+                                <div class="slds-size_1-of-2">
+                                    <div class="slds-text-align_left slds-m-around_x-small"><span style="font-weight: bold">Secondary Reason</span>
+                                    </div>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <div class="slds-text-align_left slds-m-around_x-small"><div class="slds-form-element" id="secondaryZIAResn-div">
+                                        <div class="slds-form-element__control">
+                                            <div class="slds-select_container" style="width: 50%;">
+                                                <select class="slds-select" id="ZIASecondaryResn">
+                                                    <option value="">Please select</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="slds-form-element__help" id="secondaryZIAResn-err" style="display: none;">This field is required</div>
+                                        <div class="slds-form-element__help" id="samesecondarySecond-err" style="display:none">Error: Same values cannot be selected in both the fields.</div>
+                                        </div></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="div-ZPA">
+                            
+                            <br/><br/>
+                            <div class="slds-grid slds-gutters">
+                                <div class="slds-col">
+                                    <span>
+                                        <div class="slds-page-header blue-background" style="font-weight: bold">
+                                            <span>EXPERIENCE / FEATURE - ZPA</span>
+                                        </div>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="demo-only demo-only--sizing slds-grid slds-wrap">
+                                <div class="slds-size_1-of-2">
+                                    <div class="slds-text-align_left slds-m-around_x-small"><span style="font-weight: bold">Primary Reason<abbr class="slds-required" title="required">* </abbr></span>
+                                    </div>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <div class="slds-text-align_left slds-m-around_x-small"><div class="slds-form-element" id="primaryZPAResn-div">
+                                        <div class="slds-form-element__control">
+                                            <div class="slds-select_container" style="width: 50%;">
+                                                <select class="slds-select" id="ZPAPrimaryResn">
+                                                    <option value="">Please select</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="slds-form-element__help" id="primaryZPAResn-err" style="display:none">This field is required</div>
+                                        </div></div>
+                                </div>
+                            </div>
+                            <div class="demo-only demo-only--sizing slds-grid slds-wrap">
+                                <div class="slds-size_1-of-2">
+                                    <div class="slds-text-align_left slds-m-around_x-small"><span style="font-weight: bold">Secondary Reason</span>
+                                    </div>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <div class="slds-text-align_left slds-m-around_x-small"><div class="slds-form-element" id="secondaryZPAResn-div">
+                                        <div class="slds-form-element__control">
+                                            <div class="slds-select_container" style="width: 50%;">
+                                                <select class="slds-select" id="ZPASecondaryResn">
+                                                    <option value="">Please select</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="slds-form-element__help" id="secondaryZPAResn-err" style="display:none">This field is required</div>
+                                        <div class="slds-form-element__help" id="ZPAsamePrimeSecond-err" style="display:none">Error: Same values cannot be selected in both the fields.</div>
+                                        </div></div>
+                                </div>
+                            </div> 
+                        </div>
+                        <div id="engagement-div"><br/><br/>
+                            <div class="slds-grid slds-gutters">
+                                <div class="slds-col">
+                                    <span>
+                                        <div class="slds-page-header blue-background" style="font-weight: bold">
+                                            <span>ENGAGEMENT</span>
+                                        </div>
+                                    </span>
+                                </div></div><br/>
+                            <div class="demo-only demo-only--sizing slds-grid slds-wrap">
+                                <div class="slds-size_1-of-2">
+                                    <div class="slds-text-align_left slds-m-around_x-small"><span style="font-weight: bold">Primary Reason<abbr class="slds-required" title="required">* </abbr></span>
+                                    </div>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <div class="slds-text-align_left slds-m-around_x-small"><div class="slds-form-element" id="primaryEngagement-div">
+                                        <div class="slds-form-element__control">
+                                            <div class="slds-select_container" style="width: 50%;">
+                                                <select class="slds-select" id="primaryEngagementResn">
+                                                    <option value="">Please select</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="slds-form-element__help" id="primaryEngagementResn-err" style="display: none;">This field is required</div>
+                                        </div></div>
+                                </div>
+                            </div>
+                            <div class="demo-only demo-only--sizing slds-grid slds-wrap">
+                                <div class="slds-size_1-of-2">
+                                    <div class="slds-text-align_left slds-m-around_x-small"><span style="font-weight: bold">Secondary Reason</span>
+                                    </div>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <div class="slds-text-align_left slds-m-around_x-small"><div class="slds-form-element" id="secondaryEngagement-div">
+                                        <div class="slds-form-element__control">
+                                            <div class="slds-select_container" style="width: 50%;">
+                                                <select class="slds-select" id="secondaryEngagementResn">
+                                                    <option value="">Please select</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="slds-form-element__help" id="secondaryEngagementResn-err" style="display: none;">This field is required</div>
+                                        <div class="slds-form-element__help" id="samesecondaryEngagementSecond-err" style="display:none">Error: Same values cannot be selected in both the fields.</div>
+                                        </div></div>
+                                </div>
+                            </div>
+                            <br/><br/>
+                        </div>
+                        <div id="other-div">
+                            <div class="slds-grid slds-gutters">
+                                <div class="slds-col">
+                                    <span>
+                                        <div class="slds-page-header blue-background" style="font-weight: bold">
+                                            <span>OTHER</span>
+                                        </div>
+                                    </span>
+                                </div></div><br/>
+                            <div class="demo-only demo-only--sizing slds-grid slds-wrap">
+                                <div class="slds-size_1-of-2">
+                                    <div class="slds-text-align_left slds-m-around_x-small"><span style="font-weight: bold">Primary Reason</span>
+                                    </div>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <div class="slds-text-align_left slds-m-around_x-small"><div class="slds-form-element" id="primaryother-div">
+                                        <div class="slds-form-element__control">
+                                            <div class="slds-select_container" style="width: 50%;">
+                                                <select class="slds-select" id="primaryotherResn">
+                                                    <option value="">Please select</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="slds-form-element__help" id="primaryotherResn-err" style="display: none;">This field is required</div>
+                                        </div></div>
+                                </div>
+                            </div>
+                            <div class="demo-only demo-only--sizing slds-grid slds-wrap">
+                                <div class="slds-size_1-of-2">
+                                    <div class="slds-text-align_left slds-m-around_x-small"><span style="font-weight: bold">Secondary Reason</span>
+                                    </div>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <div class="slds-text-align_left slds-m-around_x-small">
+                                        <div class="slds-form-element" id="secondaryother-div">
+                                        <div class="slds-form-element__control">
+                                            <div class="slds-select_container" style="width: 50%;">
+                                                <select class="slds-select" id="secondaryotherResn">
+                                                    <option value="">Please select</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="slds-form-element__help" id="secondaryotherResn-err" style="display: none;">This field is required</div>
+                                        <div class="slds-form-element__help" id="samesecondaryotherSecond-err" style="display:none">Error: Same values cannot be selected in both the fields.</div>
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                            <br/><br/>
+                        </div>
+                        <div id="lifetime-div">
+                            <div class="slds-grid slds-gutters">
+                                <div class="slds-col">
+                                    <span>
+                                        <div class="slds-page-header blue-background" style="font-weight: bold">
+                                            <span>LIFETIME VALUE</span>
+                                        </div>
+                                    </span>
+                                </div></div><br/>
+                            <div class="demo-only demo-only--sizing slds-grid slds-wrap">
+                                <div class="slds-size_1-of-2">
+                                    <div class="slds-text-align_left slds-m-around_x-small"><span style="font-weight: bold">Primary Reason<abbr class="slds-required" title="required">* </abbr></span>
+                                    </div>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <div class="slds-text-align_left slds-m-around_x-small"><div class="slds-form-element" id="primarylifetime-div">
+                                        <div class="slds-form-element__control">
+                                            <div class="slds-select_container" style="width: 50%;">
+                                                <select class="slds-select" id="primarylifetimeResn">
+                                                    <option value="">Please select</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="slds-form-element__help" id="primarylifetimeResn-err" style="display: none;">This field is required</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="demo-only demo-only--sizing slds-grid slds-wrap">
+                                <div class="slds-size_1-of-2">
+                                    <div class="slds-text-align_left slds-m-around_x-small"><span style="font-weight: bold">Secondary Reason</span>
+                                    </div>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <div class="slds-text-align_left slds-m-around_x-small"><div class="slds-form-element" id="secondarylifetime-div">
+                                        <div class="slds-form-element__control">
+                                            <div class="slds-select_container" style="width: 50%;">
+                                                <select class="slds-select" id="secondarylifetimeResn">
+                                                    <option value="">Please select</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="slds-form-element__help" id="secondarylifetimeResn-err" style="display: none;">This field is required</div>
+                                        <div class="slds-form-element__help" id="samesecondarylifetimeSecond-err" style="display:none">Error: Same values cannot be selected in both the fields.</div>
+                                        </div></div>
+                                </div>
+                            </div>
+                            <br/>
+                        </div>
+                        
+                        <center>
+                            <button class="slds-button slds-button_brand localButtons" id="nextButton">Next</button>&nbsp;&nbsp;&nbsp;
+                            <button class="slds-button slds-button_neutral localButtons" id="goBackMainscreen">Go Back</button>&nbsp;&nbsp;&nbsp;
+                            <button class="slds-button slds-button_neutral localButtons" id="cancelButton1">Cancel</button>
+                            
+                        </center>
+                        <script>
+                        
+                        //var isZIApresent = '{!isZIAproduct}';
+                        var churnId = '{!$CurrentPage.parameters.cid}';
+                        var seletedSCINumber = '{!SCINumber}';
+                        function getChurnDetails(){
+                            openSpinner();
+                            Visualforce.remoting.Manager.invokeAction(
+                                '{!$RemoteAction.getOppChurnReasonController.getChurn}',
+                                churnId,
+                                function(result, event){
+                                    //alert(event.status);
+                                    if (event.status) {
+                                        var record = result;
+                                        if((result.DowngradingFrom__c != null && result.DowngradingFrom__c != '') ||  (result.DowngradingTo__c != null && result.DowngradingTo__c != '')){
+                                            j$("#downgradingBundle").prop('checked',true);
+                                            document.getElementById('searchProducts-div').style.display = '';
+                                            if(result.DowngradingFrom__c != null && result.DowngradingFrom__c != ''){
+                                                j$('#downgradingFrom option').each(function() {
+                                                    if(j$(this).text() == record.DowngradingFrom__c){
+                                                        j$(this).prop("selected", true);
+                                                    }
+                                                });  
+                                            }
+                                            if(result.DowngradingTo__c != null && result.DowngradingTo__c != ''){
+                                                j$('#downgradingTo option').each(function() {
+                                                    if(j$(this).text() == record.DowngradingTo__c){
+                                                        j$(this).prop("selected", true);
+                                                    }
+                                                });  
+                                            }
+                                            
+                                        }
+                                        if((result.DonotrenewSupportProducts__c != null && result.DonotrenewSupportProducts__c != '') ||  (result.DonotrenewZIAProducts__c != null && result.DonotrenewZIAProducts__c != '') || (result.DonotrenewZPAProducts__c != null && result.DonotrenewZPAProducts__c != '')){
+                                            j$("#ZIAchecklabel").prop('checked',false);
+                                            j$("#ZPAchecklabel").prop('checked',false);
+                                            j$("#supportChecklabel").prop('checked',false);
+                                            document.getElementById('ZIAcheckselect').style.display = 'none';
+                                            document.getElementById('ZPAcheckselect').style.display = 'none';
+                                            document.getElementById('supportCheckselect').style.display = 'none';
+                                            j$("#notRenewedAdvFeaturesCheck").prop('checked',true);
+                                            document.getElementById('notRenewedAdvFeaturesPanel').style.display = '';
+                                            if(result.DonotrenewSupportProducts__c != null && result.DonotrenewSupportProducts__c != ''){
+                                                j$("#supportChecklabel").prop('checked',true);
+                                                document.getElementById('supportCheckselect').style.display = '';
+                                                var values=result.DonotrenewSupportProducts__c;
+                                                j$.each(values.split(";"), function(i,e){
+                                                    j$('#supportpickval option').each(function() {
+                                                        if(j$(this).text() == e){
+                                                            j$(this).prop("selected", true);
+                                                        }
+                                                    }); 
+                                                });
+                                            }
+                                            if(result.DonotrenewZIAProducts__c != null && result.DonotrenewZIAProducts__c != ''){
+                                                j$("#ZIAchecklabel").prop('checked',true);
+                                                document.getElementById('ZIAcheckselect').style.display = '';
+                                                var values=result.DonotrenewZIAProducts__c;
+                                                j$.each(values.split(";"), function(i,e){
+                                                    j$('#ZIApickval option').each(function() {
+                                                        if(j$(this).text() == e){
+                                                            j$(this).prop("selected", true);
+                                                        }
+                                                    }); 
+                                                });
+                                            }
+                                            if(result.DonotrenewZPAProducts__c != null && result.DonotrenewZPAProducts__c != ''){
+                                                j$("#ZPAchecklabel").prop('checked',true);
+                                                document.getElementById('ZPAcheckselect').style.display = '';
+                                                var values=result.DonotrenewZPAProducts__c;
+                                                j$.each(values.split(";"), function(i,e){
+                                                    j$('#ZPApickval option').each(function() {
+                                                        if(j$(this).text() == e){
+                                                            j$(this).prop("selected", true);
+                                                        }
+                                                    }); 
+                                                });
+                                            }
+										}
+                                    	
+                                        if(result.Type_of_Churn__c != null && result.Type_of_Churn__c != ''){
+                                            var values=result.Type_of_Churn__c;
+                                            j$.each(values.split(";"), function(i,e){
+                                                if(e == 'Reduction in Seats'){
+                                                    j$("#reductionInSeats").prop('checked',true);
+                                                }
+                                                if(e == 'Downgrading to a Lower Bundle'){
+                                                    j$("#downgradingBundle").prop('checked',true);
+                                                }
+                                                if(e == 'Did not Renew Advanced features'){
+                                                    j$("#notRenewedAdvFeaturesCheck").prop('checked',true);
+                                                }
+                                                if(e == 'Other (If other, state reason)'){
+                                                    j$("#others").prop('checked',true);
+                                                    document.getElementById('others-div').style.display = '';
+                                                    //document.getElementById('othersInput').value = result.Others__c;
+                                                    j$("#othersInput").val(result.Others__c);
+                                                    
+                                                }
+                                            });
+                                        }
+                                        
+                                        
+                                        j$('#primaryResn option').each(function() {
+                                        if(j$(this).text() == interpretSpecialCharsfromHTMLtoNormal(record.TransformationPrimaryReason__c)){
+                                            j$(this).prop("selected", true);
+                                        }
+                                    });    
+                                    j$('#secondaryResn option').each(function() {
+                                        if(j$(this).text() == interpretSpecialCharsfromHTMLtoNormal(record.TransformationSecondaryReason__c)){
+                                            j$(this).prop("selected", true);
+                                        }
+                                    });
+                                    j$('#ZIAPrimaryResn option').each(function() {
+                                        if(j$(this).text() == interpretSpecialCharsfromHTMLtoNormal(record.ExperienceFeaturesZIAPrimaryReason__c)){
+                                            j$(this).prop("selected", true);
+                                        }
+                                    });    
+                                    j$('#ZIASecondaryResn option').each(function() {
+                                        if(j$(this).text() == interpretSpecialCharsfromHTMLtoNormal(record.ExperienceFeaturesZIASecondaryReason__c)){
+                                            j$(this).prop("selected", true);
+                                        }
+                                    });
+                                    j$('#ZPAPrimaryResn option').each(function() {
+                                        if(j$(this).text() == interpretSpecialCharsfromHTMLtoNormal(record.ExperienceFeaturesZPAPrimaryReason__c)){
+                                            j$(this).prop("selected", true);
+                                        }
+                                    });    
+                                    j$('#ZPASecondaryResn option').each(function() {
+                                        if(j$(this).text() == interpretSpecialCharsfromHTMLtoNormal(record.ExperienceFeaturesZPASecondaryReason__c)){
+                                            j$(this).prop("selected", true);
+                                        }
+                                    });
+                                    j$('#primaryEngagementResn option').each(function() {
+                                        if(j$(this).text() == interpretSpecialCharsfromHTMLtoNormal(record.Engagement_Primary_Reason__c)){
+                                            j$(this).prop("selected", true);
+                                        }
+                                    });
+                                    j$('#secondaryEngagementResn option').each(function() {
+                                        if(j$(this).text() == interpretSpecialCharsfromHTMLtoNormal(record.Engagement_Secondary_Reason__c)){
+                                            j$(this).prop("selected", true);
+                                        }
+                                    });
+                                    j$('#primaryotherResn option').each(function() {
+                                        if(j$(this).text() == interpretSpecialCharsfromHTMLtoNormal(record.Other_Primary_Reason__c)){
+                                            j$(this).prop("selected", true);
+                                        }
+                                    });
+                                    j$('#secondaryotherResn option').each(function() {
+                                        if(j$(this).text() == interpretSpecialCharsfromHTMLtoNormal(record.Other_Secondary_Reason__c)){
+                                            j$(this).prop("selected", true);
+                                        }
+                                    });
+									j$('#primarylifetimeResn option').each(function() {
+                                        if(j$(this).text() == interpretSpecialCharsfromHTMLtoNormal(record.Lifetime_Value_Primary_Reason__c)){
+                                            j$(this).prop("selected", true);
+                                        }
+                                    });
+                                    j$('#secondarylifetimeResn option').each(function() {
+                                        if(j$(this).text() == interpretSpecialCharsfromHTMLtoNormal(record.Lifetime_Value_Secondary_Reason__c)){
+                                            j$(this).prop("selected", true);
+                                        }
+                                    }); 
+                                    j$("#ExperienceMissingfunctionality").val(record.ExperienceMissingfunctionality__c);
+                                    j$('#primaryComp option').each(function() {
+                                        if(j$(this).text() == interpretSpecialCharsfromHTMLtoNormal(record.PrimaryCompetitor__c)){
+                                            j$(this).prop("selected", true);
+                                        }
+                                    }); 
+                                    j$('#secondaryComp option').each(function() {
+                                        if(j$(this).text() == interpretSpecialCharsfromHTMLtoNormal(record.Secondary_Competitors__c)){
+                                            j$(this).prop("selected", true);
+                                        }
+                                    });
+                                    j$("#additionalNotes").val(record.AdditionalNotes__c);
+                                    
+                                    if(record.LossAnalysisCall__c){
+                                        j$("#isLossCallConducted").prop('checked',true);
+                                        j$("#sciNumber").prop('disabled', false);
+                                        getSCIdataTable();
+                                        document.getElementById("sciViewContainer").style.display = '';
+                                    }
+                                    
+                                        /*j$('#closedLost option').each(function() {
+                                        if(j$(this).text() == record.Opportunity__r.StageName){
+                                            j$(this).prop("selected", true);
+                                        }
+                                    });  */
+                                        /**if(record.SCINumber__c != null && record.SCINumber__c != ''){
+                                            $("#isLossCallConducted").prop('checked',true);
+                                            j$("#sciNumber").prop('disabled', false);
+                                            getSCIdataTable();
+                                            document.getElementById("sciViewContainer").style.display = '';
+                                        }**/
+                                        //alert(JSON.stringify(record));
+                                    } else if (event.type === 'exception') {
+                                        alert('Exception: '+result);
+                                    } else {
+                                        alert('Last Exception');
+                                    }
+                                    closeSpinner();
+                                }, 
+                                {escape: true}
+                            ); 
+                        }
+                        
+                        function closeSpinner(){
+                            setTimeout(function(){
+                                document.getElementById('LoadingvfDIV').style.display = 'none';
+                            },1000);
+                        }
+                        function openSpinner(){
+                            document.getElementById('LoadingvfDIV').style.display = '';
+                        }
+                      
+                        function mainScreen1(){
+                            document.getElementById("entireForm").disabled= false;
+                            document.getElementById('mainChurnform1').style.display = "";
+                            document.getElementById('mainForm2').style.display = "none";
+                            document.getElementById('mainForm1').style.display = "none";
+                            //if(isZIAproduct == true)
+                            	document.getElementById('div-ZIA').style.display = "none";
+                            //if(isZIAproduct != true)
+                            	document.getElementById('div-ZPA').style.display = "none";
+                            document.getElementById('mainForm3').style.display = "none";
+                            document.getElementById('accountNameSection').style.display = "none";
+                            j$("#step1").removeClass("slds-is-complete");
+                            j$("#step1").addClass("slds-is-incomplete slds-is-active slds-is-current");
+                            j$("#step2").removeClass("slds-is-complete slds-is-active slds-is-current");
+                            j$("#step2").addClass("slds-is-incomplete");
+                            j$("#step3").removeClass("slds-is-complete slds-is-active slds-is-current");
+                            j$("#step3").addClass("slds-is-incomplete");
+                            j$("#step4").removeClass("slds-is-complete slds-is-active slds-is-current");
+                            j$("#step4").addClass("slds-is-incomplete");
+                            j$(".localButtons").show();
+                            j$(".finalButtons").hide();
+                            document.getElementById('accountNameSection').style.display = 'none';
+                            document.getElementById('mainForm3').style.display = 'none';
+                        }
+                        function mainScreen2(){
+                            document.getElementById("entireForm").disabled= false;
+                            document.getElementById('mainChurnform1').style.display = "none";
+                            document.getElementById('mainForm2').style.display = "none";
+                            j$("#step1").addClass("slds-is-complete");
+                            j$("#step1").removeClass("slds-is-incomplete slds-is-active slds-is-current");
+                            j$("#step2").addClass("slds-is-incomplete slds-is-active slds-is-current");
+                            j$("#step2").removeClass("slds-is-complete");
+                            j$("#step3").removeClass("slds-is-complete slds-is-active slds-is-current");
+                            j$("#step3").addClass("slds-is-incomplete");
+                            j$("#step4").removeClass("slds-is-complete slds-is-active slds-is-current");
+                            j$("#step4").addClass("slds-is-incomplete");
+                            document.getElementById('mainForm1').style.display = "";
+                            //if(isZIApresent == 'true')
+                                document.getElementById('div-ZIA').style.display = "";
+                            //if(isZIApresent != 'true')
+                                document.getElementById('div-ZPA').style.display = "";
+                            document.getElementById('mainForm3').style.display = "none";
+                            document.getElementById('accountNameSection').style.display = "none";
+                            j$(".localButtons").show();
+                            j$(".finalButtons").hide();
+                        }
+                        function mainScreen3(){
+                            //alert('hi');
+                            document.getElementById("entireForm").disabled= false;
+                            var gotSCI = getSelectedSCI();
+                            getSelectedSCIID();
+                            j$('#sci-div').hide();
+                            j$('#sciListView').show();
+                            fetchOppDetails();
+                            j$("#step1").addClass("slds-is-complete");
+                            j$("#step1").removeClass("slds-is-incomplete slds-is-active slds-is-current");
+                            j$("#step2").addClass("slds-is-complete");
+                            j$("#step2").removeClass("slds-is-incomplete slds-is-active slds-is-current");
+                            j$("#step3").addClass("slds-is-incomplete  slds-is-active slds-is-current");
+                            j$("#step3").removeClass("slds-is-complete");
+                            j$("#step4").removeClass("slds-is-complete slds-is-active slds-is-current");
+                            j$("#step4").addClass("slds-is-incomplete");
+                            document.getElementById('accountNameSection').style.display = "none";
+                            document.getElementById('mainChurnform1').style.display = "none";
+                            document.getElementById('mainForm1').style.display = "none";
+                            document.getElementById('mainForm2').style.display = "";
+                            document.getElementById('mainForm3').style.display = "none";
+                            //if(isZIApresent == 'true')
+                                document.getElementById('div-ZIA').style.display = "none";
+                            //if(isZIApresent != 'true')
+                                document.getElementById('div-ZPA').style.display = "none";
+                            j$(".localButtons").show();
+                            j$(".finalButtons").hide();
+                            if(document.getElementById('noSCIpresent').style.display != "none"){
+                                 j$('#sci-div').hide();
+                            }
+                            closeSpinner();
+                        }
+                        function mainScreen4(){
+                            var gotSCI = getSelectedSCI();
+                            getSelectedSCIID();
+                            j$('#sci-div').show();
+                            j$('#sciListView').hide();
+                            showActivePRsection();
+                            //j$('#activePR_ClosureQuestion').show();
+                            fetchOppDetails();
+                            j$("#step1").addClass("slds-is-complete");
+                            j$("#step1").removeClass("slds-is-incomplete slds-is-active slds-is-current");
+                            j$("#step2").addClass("slds-is-complete");
+                            j$("#step2").removeClass("slds-is-incomplete slds-is-active slds-is-current");
+                            j$("#step3").addClass("slds-is-complete");
+                            j$("#step3").removeClass("slds-is-incomplete slds-is-active slds-is-current");
+                            j$("#step4").addClass("slds-is-incomplete  slds-is-active slds-is-current");
+                            j$("#step4").removeClass("slds-is-complete");
+                            document.getElementById('accountNameSection').style.display = "";
+                            document.getElementById('mainChurnform1').style.display = "";
+                            document.getElementById('mainForm2').style.display = "";
+                            document.getElementById('mainForm1').style.display = "";
+                            document.getElementById('mainForm3').style.display = "";
+                            //if(isZIApresent == 'true')
+                                document.getElementById('div-ZIA').style.display = "";
+                            //if(isZIApresent != 'true')
+                                document.getElementById('div-ZPA').style.display = "";
+                            j$(".localButtons").hide();
+                            j$(".finalButtons").show();
+                            if(document.getElementById('noSCIpresent').style.display != "none"){
+                               j$('#sci-div').hide();
+                             }
+                            j$("#entireForm").attr("disabled", "true");
+                            closeSpinner();
+                        }
+                        //Util function to escape special characters.Example- (&amp; = &)
+                        function interpretSpecialCharsfromHTMLtoNormal(encodedString){
+                            var parser = new DOMParser;
+                            var dom = parser.parseFromString(
+                                '<!doctype html><body>' + encodedString,
+                                'text/html');
+                            var decodedString = dom.body.textContent;
+                            return decodedString
+                            console.log(decodedString);
+                        }
+                        
+                        //Remoting to get picklist values
+                        function getpicklist(){
+                            openSpinner();
+                            Util_ChurnReasonMethods.getPicklistValues(
+                                'Churn__c','TransformationPrimaryReason__c',
+                                function(result, event){
+                                    if (event.status) {
+                                        j$.each(result, function(key, value) {
+                                            j$('#primaryResn')
+                                            .append(j$('<option>', { value : key })
+                                                    .text(interpretSpecialCharsfromHTMLtoNormal(value)));
+                                        });
+                                        
+                                    } else if (event.type === 'exception') {
+                                        alert('Exception: '+result);
+                                    } else {
+                                        alert('Last Exception');
+                                    }
+                                }, 
+                                {escape: true}
+                            );
+                            Util_ChurnReasonMethods.getPicklistValues(
+                                'Churn__c','TransformationSecondaryReason__c',
+                                function(result, event){
+                                    if (event.status) {
+                                        j$.each(result, function(key, value) {
+                                            j$('#secondaryResn')
+                                            .append(j$('<option>', { value : key })
+                                                    .text(interpretSpecialCharsfromHTMLtoNormal(value)));
+                                        });
+                                        
+                                    } else if (event.type === 'exception') {
+                                        alert('Exception: '+result);
+                                    } else {
+                                        alert('Last Exception');
+                                    }
+                                }, 
+                                {escape: true}
+                            );
+                            Visualforce.remoting.Manager.invokeAction(
+                                '{!$RemoteAction.getOppChurnReasonController.getPicklistValues}',
+                                'Churn__c','Engagement_Primary_Reason__c',
+                                function(result, event){
+                                    if (event.status) {
+                                        j$.each(result, function(key, value) {
+                                            j$('#primaryEngagementResn')
+                                            .append(j$('<option>', { value : key })
+                                                    .text(interpretSpecialCharsfromHTMLtoNormal(value)));
+                                        });
+                                        
+                                    } else if (event.type === 'exception') {
+                                        alert('Exception: '+result);
+                                    } else {
+                                        alert('Last Exception');
+                                    }
+                                }, 
+                                {escape: true}
+                            );
+                            Visualforce.remoting.Manager.invokeAction(
+                                '{!$RemoteAction.getOppChurnReasonController.getPicklistValues}',
+                                'Churn__c','Engagement_Secondary_Reason__c',
+                                function(result, event){
+                                    if (event.status) {
+                                        j$.each(result, function(key, value) {
+                                            j$('#secondaryEngagementResn')
+                                            .append(j$('<option>', { value : key })
+                                                    .text(interpretSpecialCharsfromHTMLtoNormal(value)));
+                                        });
+                                        
+                                    } else if (event.type === 'exception') {
+                                        alert('Exception: '+result);
+                                    } else {
+                                        alert('Last Exception');
+                                    }
+                                }, 
+                                {escape: true}
+                            ); 
+                            
+                            Visualforce.remoting.Manager.invokeAction(
+                                '{!$RemoteAction.getOppChurnReasonController.getPicklistValues}',
+                                'Churn__c','Lifetime_Value_Primary_Reason__c',
+                                function(result, event){
+                                    if (event.status) {
+                                        j$.each(result, function(key, value) {
+                                            j$('#primarylifetimeResn')
+                                            .append(j$('<option>', { value : key })
+                                                    .text(interpretSpecialCharsfromHTMLtoNormal(value)));
+                                        });
+                                        
+                                    } else if (event.type === 'exception') {
+                                        alert('Exception: '+result);
+                                    } else {
+                                        alert('Last Exception');
+                                    }
+                                }, 
+                                {escape: true}
+                            );
+                            Visualforce.remoting.Manager.invokeAction(
+                                '{!$RemoteAction.getOppChurnReasonController.getPicklistValues}',
+                                'Churn__c','Lifetime_Value_Secondary_Reason__c',
+                                function(result, event){
+                                    if (event.status) {
+                                        j$.each(result, function(key, value) {
+                                            j$('#secondarylifetimeResn')
+                                            .append(j$('<option>', { value : key })
+                                                    .text(interpretSpecialCharsfromHTMLtoNormal(value)));
+                                        });
+                                        
+                                    } else if (event.type === 'exception') {
+                                        alert('Exception: '+result);
+                                    } else {
+                                        alert('Last Exception');
+                                    }
+                                }, 
+                                {escape: true}
+                            );
+                            Visualforce.remoting.Manager.invokeAction(
+                                '{!$RemoteAction.getOppChurnReasonController.getPicklistValues}',
+                                'Churn__c','Other_Primary_Reason__c',
+                                function(result, event){
+                                    if (event.status) {
+                                        j$.each(result, function(key, value) {
+                                            j$('#primaryotherResn')
+                                            .append(j$('<option>', { value : key })
+                                                    .text(interpretSpecialCharsfromHTMLtoNormal(value)));
+                                        });
+                                        
+                                    } else if (event.type === 'exception') {
+                                        alert('Exception: '+result);
+                                    } else {
+                                        alert('Last Exception');
+                                    }
+                                }, 
+                                {escape: true}
+                            );
+                            Visualforce.remoting.Manager.invokeAction(
+                                '{!$RemoteAction.getOppChurnReasonController.getPicklistValues}',
+                                'Churn__c','Other_Secondary_Reason__c',
+                                function(result, event){
+                                    if (event.status) {
+                                        j$.each(result, function(key, value) {
+                                            j$('#secondaryotherResn')
+                                            .append(j$('<option>', { value : key })
+                                                    .text(interpretSpecialCharsfromHTMLtoNormal(value)));
+                                        });
+                                        
+                                    } else if (event.type === 'exception') {
+                                        alert('Exception: '+result);
+                                    } else {
+                                        alert('Last Exception');
+                                    }
+                                }, 
+                                {escape: true}
+                            );	
+                            //closeSpinner();
+                        }
+                        function ziapicklistVal(){
+                            openSpinner();
+                            Util_ChurnReasonMethods.getPicklistValues(
+                                'Churn__c','ExperienceFeaturesZIAPrimaryReason__c',
+                                function(result, event){
+                                    if (event.status) {
+                                        j$.each(result, function(key, value) {
+                                            j$('#ZIAPrimaryResn')
+                                            .append(j$('<option>', { value : key })
+                                                    .text(interpretSpecialCharsfromHTMLtoNormal(value)));
+                                        });
+                                        
+                                    } else if (event.type === 'exception') {
+                                        alert('Exception: '+result);
+                                    } else {
+                                        alert('Last Exception');
+                                    }
+                                }, 
+                                {escape: true}
+                            );
+                            
+                            Util_ChurnReasonMethods.getPicklistValues(
+                                'Churn__c','ExperienceFeaturesZIASecondaryReason__c',
+                                function(result, event){
+                                    if (event.status) {
+                                        j$.each(result, function(key, value) {
+                                            j$('#ZIASecondaryResn')
+                                            .append(j$('<option>', { value : key })
+                                                    .text(interpretSpecialCharsfromHTMLtoNormal(value)));
+                                        });
+                                        
+                                    } else if (event.type === 'exception') {
+                                        alert('Exception: '+result);
+                                    } else {
+                                        alert('Last Exception');
+                                    }
+                                }, 
+                                {escape: true}
+                            );
+                            //closeSpinner();
+                        }
+                        function zpapicklistVal(){
+                            openSpinner();
+                            Util_ChurnReasonMethods.getPicklistValues(
+                                'Churn__c','ExperienceFeaturesZPAPrimaryReason__c',
+                                function(result, event){
+                                    if (event.status) {
+                                        j$.each(result, function(key, value) {
+                                            j$('#ZPAPrimaryResn')
+                                            .append(j$('<option>', { value : key })
+                                                    .text(interpretSpecialCharsfromHTMLtoNormal(value)));
+                                        });
+                                        
+                                    } else if (event.type === 'exception') {
+                                        alert('Exception: '+result);
+                                    } else {
+                                        alert('Last Exception');
+                                    }
+                                }, 
+                                {escape: true}
+                            );
+                            
+                            Util_ChurnReasonMethods.getPicklistValues(
+                                'Churn__c','ExperienceFeaturesZPASecondaryReason__c',
+                                function(result, event){
+                                    if (event.status) {
+                                        j$.each(result, function(key, value) {
+                                            j$('#ZPASecondaryResn')
+                                            .append(j$('<option>', { value : key })
+                                                    .text(interpretSpecialCharsfromHTMLtoNormal(value)));
+                                        });
+                                        
+                                    } else if (event.type === 'exception') {
+                                        alert('Exception: '+result);
+                                    } else {
+                                        alert('Last Exception');
+                                    }
+                                }, 
+                                {escape: true}
+                            );
+                            //closeSpinner();
+                        }
+                        
+                        Util_ChurnReasonMethods.getPicklistValues(
+                            'Churn__c','DonotrenewZIAProducts__c',
+                            function(result, event){
+                                if (event.status) {
+                                    j$.each(result, function(key, value) {
+                                        j$('#ZIApickval')
+                                        .append(j$('<option>', { value : key })
+                                                .text(interpretSpecialCharsfromHTMLtoNormal(value)));
+                                    });
+                                    
+                                } else if (event.type === 'exception') {
+                                    alert('Exception: '+result);
+                                } else {
+                                    alert('Last Exception');
+                                }
+                            }, 
+                            {escape: true}
+                        );
+                        
+                        Util_ChurnReasonMethods.getPicklistValues(
+                            'Churn__c','DonotrenewZPAProducts__c',
+                            function(result, event){
+                                if (event.status) {
+                                    j$.each(result, function(key, value) {
+                                        j$('#ZPApickval')
+                                        .append(j$('<option>', { value : key })
+                                                .text(interpretSpecialCharsfromHTMLtoNormal(value)));
+                                    });
+                                    
+                                } else if (event.type === 'exception') {
+                                    alert('Exception: '+result);
+                                } else {
+                                    alert('Last Exception');
+                                }
+                            }, 
+                            {escape: true}
+                        );
+                        
+                        Util_ChurnReasonMethods.getPicklistValues(
+                            'Churn__c','DonotrenewSupportProducts__c',
+                            function(result, event){
+                                if (event.status) {
+                                    j$.each(result, function(key, value) {
+                                        j$('#supportpickval')
+                                        .append(j$('<option>', { value : key })
+                                                .text(interpretSpecialCharsfromHTMLtoNormal(value)));
+                                    });
+                                    
+                                } else if (event.type === 'exception') {
+                                    alert('Exception: '+result);
+                                } else {
+                                    alert('Last Exception');
+                                }
+                            }, 
+                            {escape: true}
+                        );
+                        
+                        //Get values for Primary Competitors
+                        function primaryCompetitors(){
+                            openSpinner();
+                            Util_ChurnReasonMethods.getPicklistValues(
+                                'Churn__c','PrimaryCompetitor__c',
+                                function(result, event){
+                                    if (event.status) {
+                                        j$.each(result, function(key, value) {
+                                            j$('#primaryComp')
+                                            .append(j$('<option>', { value : key })
+                                                    .text(interpretSpecialCharsfromHTMLtoNormal(value)));
+                                        });
+                                        
+                                    } else if (event.type === 'exception') {
+                                        alert('Exception: '+result);
+                                    } else {
+                                        alert('Last Exception');
+                                    }
+                                }, 
+                                {escape: true}
+                            );
+                            //closeSpinner();
+                        }
+                        //Get values for Secondary Competitors
+                        function secondaryCompetitors(){
+                            openSpinner();
+                            Util_ChurnReasonMethods.getPicklistValues(
+                                'Churn__c','Secondary_Competitors__c',
+                                function(result, event){
+                                    if (event.status) {
+                                        j$.each(result, function(key, value) {
+                                            j$('#secondaryComp')
+                                            .append(j$('<option>', { value : key })
+                                                    .text(interpretSpecialCharsfromHTMLtoNormal(value)));
+                                        });
+                                        
+                                    } else if (event.type === 'exception') {
+                                        alert('Exception: '+result);
+                                    } else {
+                                        alert('Last Exception');
+                                    }
+                                }, 
+                                {escape: true}
+                            );
+                            //closeSpinner();
+                        }
+                        //Shows SCI records as a list view wiht radio buttons to select.
+                        function getSCIdataTable(){
+                            openSpinner();
+                        	Util_ChurnReasonMethods.getSCIrecords(
+                                '{!$CurrentPage.parameters.oppId}',
+                                function(result, event){
+                                    closeSpinner();
+                                    if (event.status) {
+                                        if(result != null){
+                                           if(result.length != 0){
+                                            j$('#sci-div').hide();
+                                             document.getElementById('noSCIpresent').style.display = 'none';
+                                            for(i=0; i<result.length; i++){
+                                                j$('#sciListViewheader').show();
+                                                var table = document.getElementById("sciListView");
+                                                var row = table.insertRow();
+                                                var radioButton = document.createElement("input"); 
+                                                radioButton.setAttribute("type", "radio");
+                                                radioButton.setAttribute("name", "sciRowsInput");
+                                                radioButton.setAttribute("id", "sciSelected_"+result[i].Id);
+                                                if(seletedSCINumber == result[i].Id){
+                                                    radioButton.checked = true; 
+                                                }
+                                                else{
+                                                    radioButton.checked = false;
+                                                }
+                                                row.appendChild(radioButton);
+                                                var cell1 = row.insertCell();
+                                                var cell2 = row.insertCell();
+                                                var cell3 = row.insertCell();
+                                                var cell4 = row.insertCell();
+                                                cell3.setAttribute("id","primaryTopicTD");
+                                                if(result[i].Name != null || result[i].Name != undefined)
+                                                	cell1.innerHTML = result[i].Name;
+                                                if(result[i].Type_of_Interaction__c != null || result[i].Type_of_Interaction__c != undefined)
+                                                	cell2.innerHTML = result[i].Type_of_Interaction__c;
+                                                if(result[i].Primary_Topic_Covered__c != null || result[i].Primary_Topic_Covered__c != undefined)
+                                                	cell3.innerHTML = result[i].Primary_Topic_Covered__c;
+                                                if(result[i].Date__c != null || result[i].Date__c != undefined){
+                                                    var d = new Date(result[i].Date__c);
+                                                    cell4.innerHTML = (d.getMonth()+1)+"/"+d.getDate()+"/"+d.getFullYear();
+                                                 }
+                                                document.getElementById('primaryTopicTD').style.width = '20%';
+                                            }//for ends here.
+                                           }else{
+                                           		document.getElementById('noSCIpresent').style.display = '';
+                                           }
+                                        }else{
+                                        	document.getElementById('noSCIpresent').style.display = '';
+                                        }
+                                    } else if (event.type === 'exception') {
+                                        alert('Exception: '+result);
+                                    } else {
+                                        alert('Last Exception');
+                                    }
+                                }, 
+                                {escape: true}
+                            );
+                        }
+                        function removeSCIDataTable(){
+                        	var myNode = document.getElementById("sciListView");
+                            while (myNode.firstChild) {
+                                myNode.removeChild(myNode.firstChild);
+                            }
+                        }
+                        function getSelectedSCI(){
+                            openSpinner();
+                            var radios = document.getElementsByName('sciRowsInput');
+                            for (var i = 0, length = radios.length; i < length; i++) {
+                                if (radios[i].checked) {
+                                    console.log(j$("input[name=sciRowsInput]:checked").attr('id'));
+                            		var str = j$("input[name=sciRowsInput]:checked").attr('id');
+                                    if(str != null || str != undefined){
+                                        var res = str.split("_");
+                                        return res[1];
+                                    }
+                                }
+                                
+                            }
+                            closeSpinner();
+                        }
+                        
+                        //Method to display selected SCI in summary as a text box output rather than list.
+                    		function getSelectedSCIID(){console.log('here it came: '+getSelectedSCI());
+                            	Util_ChurnReasonMethods.getSCIname(
+                                    getSelectedSCI(),
+                                    function(result, event){
+                                        if (event.status) {
+                                            if(result != null){console.log('selected sci:'+result);
+                                             	document.getElementById('sciNumber').value = result;
+                                            }   
+                                        } else if (event.type === 'exception') {
+                                                console.log('Exception: '+event.message);
+                                        } else {
+                                                console.log('Exception: '+event.message);
+                                        }
+                                     }, 
+                                     {escape: true}
+                                 );
+                            }
+                        
+                        var selectedSCI = [];
+                        function getsciNumber(){
+                            openSpinner();
+                            Util_ChurnReasonMethods.getSCI(
+                                '{!$CurrentPage.parameters.oppId}',
+                                function(result, event){
+                                    if (event.status) {
+                                        if(result != null){
+                                            j$.each(result, function(key, value) {
+                                                j$('#sciNumber')
+                                                .append(j$('<option>', { key : value })
+                                                        .text(key));
+                                                //console.log('sci: '+key+' '+value);
+                                                selectedSCI[key] = value;
+                                                //console.log('mySelectedSCI: '+selectedSCI[key]);
+                                            });
+                                         }
+                                    } else if (event.type === 'exception') {
+                                        alert('Exception: '+result);
+                                    } else {
+                                        alert('Last Exception');
+                                    }
+                                }, 
+                                {escape: true}
+                            );
+                            //closeSpinner();
+                        }
+
+                        //Get values for Products in Downgrade from and to.
+                        function downgradeProducts(){
+                            openSpinner();
+                            Util_ChurnReasonMethods.getProducts(
+                                '{!$CurrentPage.parameters.oppId}',
+                                function(result, event){
+                                    if (event.status) {
+                                        if(result != null){console.log('loading this: '+result);
+                                            j$.each(result, function(key, value) {
+                                            j$('#downgradingFrom')
+                                            .append(j$('<option>', { value : key })
+                                                    .text(interpretSpecialCharsfromHTMLtoNormal(value)));
+                                        	});
+                                            
+                                         	j$.each(result, function(key, value) {
+                                            j$('#downgradingTo')
+                                            .append(j$('<option>', { value : key })
+                                                    .text(interpretSpecialCharsfromHTMLtoNormal(value)));
+                                        	});
+                                        }
+                                    } else if (event.type === 'exception') {
+                                        alert('Exception: '+event.message);
+                                    } else {
+                                        alert('Last Exception');
+                                    }
+                                }, 
+                                {escape: true}
+                            );
+                            //closeSpinner();
+                        }
+                        
+                        j$ = jQuery.noConflict();
+                        j$(document).ready(function(){
+                            
+                            downgradeProducts();
+                            //Load values in Transformation Primary and Secondary picklists - Page1.
+                            getpicklist();
+                            //if(isZIApresent == 'true'){
+                                //Load values in ZIA form
+                                ziapicklistVal();
+                            //}
+                            //if(isZIApresent != 'true'){
+                                //Load values in ZPA form
+                                zpapicklistVal();
+                            // }
+                            //Load values in Primary Competitors
+                            primaryCompetitors();
+                            //Load values in Secondary Competitors
+                            secondaryCompetitors();
+                            //Put on check of SCI required
+                            getsciNumber();
+                            
+                            //Validations
+                            callFieldValidations();
+                            if(churnId != null && churnId != ''){
+                                getChurnDetails();
+                                fetchOppDetails();
+                            }
+                            else{
+                                fetchOppDetails();
+                                closeSpinner();
+                            }
+                            
+                            j$('#progressBarId').on( "mouseover", function() {
+                                j$("#step1").on("click", function(){
+                                    	mainScreen1();
+                                });
+                                j$("#step2").on("click", function(){
+                                    if(mainPageValidations() != true){
+                                    	console.log('step2');mainScreen2();
+                                    }
+                                });
+                                j$("#step3").on("click", function(){
+                                    if(page1Validations() != true){
+                                    	console.log('step3');mainScreen3();
+                                     }
+                                });
+                                j$("#step4").on("click", function(){
+                                    //alert('page2Validations_extnd' + page2Validations_extnd());
+                                    //alert('page2Validations' + page2Validations());
+                                    if(page2Validations() != true && page2Validations_extnd() != true){
+                                        //console.log('step4');
+                                        mainScreen4();
+                                    }
+                                });
+                                
+                            });
+                            
+                            j$("#cancelButton").click(function(){
+                                var usrResponse = confirm('The form is not submitted if you leave the page changes made will not be saved.');
+                                if(usrResponse == true){
+                                    //window.close();
+                                    if(churnId != null && churnId != ''){
+                                        window.location.replace("{!$Site.BaseUrl}/" + churnId);
+                                    }
+                                    else{
+                                        window.location.replace("{!$Site.BaseUrl}/{!$CurrentPage.parameters.oppId}");
+                                    }
+                                }
+                                if(usrResponse == false){
+                                    //do nothing
+                                }
+                            });
+                            j$("#cancelButton1").click(function(){
+                                var usrResponse = confirm('The form is not submitted if you leave the page changes made will not be saved.');
+                                if(usrResponse == true){
+                                    //window.close();
+                                    if(churnId != null && churnId != ''){
+                                        window.location.replace("{!$Site.BaseUrl}/" + churnId);
+                                    }
+                                    else{
+                                        window.location.replace("{!$Site.BaseUrl}/{!$CurrentPage.parameters.oppId}");
+                                    }
+                                }
+                                if(usrResponse == false){
+                                    //do nothing
+                                }
+                            });
+                            j$("#cancelButton2").click(function(){
+                                var usrResponse = confirm('The form is not submitted if you leave the page changes made will not be saved.');
+                                if(usrResponse == true){
+                                    //window.close();
+                                    if(churnId != null && churnId != ''){
+                                        window.location.replace("{!$Site.BaseUrl}/" + churnId);
+                                    }
+                                    else{
+                                        window.location.replace("{!$Site.BaseUrl}/{!$CurrentPage.parameters.oppId}");
+                                    }
+                                }
+                                if(usrResponse == false){
+                                    //do nothing
+                                }
+                            });
+                            j$("#cancelButton3").click(function(){
+                                var usrResponse = confirm('The form is not submitted if you leave the page changes made will not be saved.');
+                                if(usrResponse == true){
+                                    //window.close();
+                                    if(churnId != null && churnId != ''){
+                                        window.location.replace("{!$Site.BaseUrl}/" + churnId);
+                                    }
+                                    else{
+                                        window.location.replace("{!$Site.BaseUrl}/{!$CurrentPage.parameters.oppId}");
+                                    }
+                                }
+                                if(usrResponse == false){
+                                    //do nothing
+                                }
+                            });
+                            j$("#nextMain1Button").click(function(){
+                                openSpinner();
+                                if(mainPageValidations() != true){
+                                j$("#step1").addClass("slds-is-complete");
+                                j$("#step1").removeClass("slds-is-incomplete slds-is-active slds-is-current");
+                                j$("#step2").addClass("slds-is-incomplete slds-is-active slds-is-current");
+                                document.getElementById('mainChurnform1').style.display = "none";
+                                document.getElementById('mainForm1').style.display = "";
+                                    //if(isZIApresent == 'true'){console.log('True: '+isZIApresent);
+                                     document.getElementById('div-ZIA').style.display = "";
+                                    //document.getElementById('div-ZPA').style.display = "none";
+                                    //}
+                                    //if(isZIApresent != 'true'){console.log('False: '+isZIApresent);
+                                    document.getElementById('div-ZPA').style.display = "";
+                                    //document.getElementById('div-ZIA').style.display = "none";
+                                    //No Method created ->successMessage
+                                    //successMessage();                       
+                                    //}
+                                }
+                                closeSpinner();
+                            });
+                            j$("#nextButton").click(function(){
+                                openSpinner();
+                                if(page1Validations() != true){
+                                    j$("#step2").addClass("slds-is-complete");
+                                    j$("#step2").removeClass("slds-is-incomplete slds-is-active slds-is-current");
+                                    j$("#step3").addClass("slds-is-incomplete slds-is-active slds-is-current");
+                                    document.getElementById('mainChurnform1').style.display = "none";
+                                    document.getElementById('mainForm1').style.display = "none";
+                                    document.getElementById('mainForm2').style.display = "";
+                                    document.getElementById('mainForm3').style.display = "none";
+                                    j$(".localButtons").show();
+                                    j$(".finalButtons").hide();
+                                }
+                                closeSpinner();
+                            });
+                            
+                            j$("#goBackMainscreen").click(function(){
+                                openSpinner();
+                                j$("#step1").removeClass("slds-is-complete");
+                                j$("#step1").addClass("slds-is-incomplete slds-is-active slds-is-current");
+                                
+                                j$("#step2").removeClass("slds-is-incomplete slds-is-active slds-is-current");
+                                j$("#step2").addClass("slds-is-incomplete");
+                                document.getElementById('mainChurnform1').style.display = "";
+                                document.getElementById('mainForm1').style.display = "none";
+                                closeSpinner();
+                            });
+                            
+                            j$("#nextButton2").click(function(){
+                                openSpinner();
+                                if(page1ZPAValidations() != true){
+                                    j$("#step2").addClass("slds-is-complete");
+                                    j$("#step2").removeClass("slds-is-incomplete slds-is-active slds-is-current");
+                                    j$("#step3").addClass("slds-is-incomplete slds-is-active slds-is-current");
+                                    document.getElementById('div-ZIA').style.display = "none";
+                                    document.getElementById('div-ZPA').style.display = "none";
+                                    document.getElementById('mainForm2').style.display = "";
+                                    j$(".localButtons").show();
+                                    j$(".finalButtons").hide();
+                                }
+                                closeSpinner();
+                            });
+                            j$("#goBackZPAButton2").click(function(){
+                                openSpinner();
+                                document.getElementById('nextForm2').style.display = "none";
+                                document.getElementById('mainForm1').style.display = "";
+                                closeSpinner();
+                            });
+                            j$("#nextZIAButton2").click(function(){
+                                //openSpinner();
+                                if(page1ZIAValidations() != true){
+                                    j$("#step1").addClass("slds-is-complete");
+                                    j$("#step1").removeClass("slds-is-incomplete slds-is-active slds-is-current");
+                                    j$("#step2").addClass("slds-is-incomplete slds-is-active slds-is-current");
+                                    document.getElementById('div-ZIA').style.display = "none";
+                                    document.getElementById('div-ZPA').style.display = "none";
+                                    document.getElementById('mainForm2').style.display = "";
+                                }
+                                //closeSpinner();
+                            });
+                            j$("#goBackZIAButton2").click(function(){
+                                openSpinner();
+                                document.getElementById('div-ZIA').style.display = "none";
+                                document.getElementById('mainForm1').style.display = "";
+                                closeSpinner();
+                            });
+                            j$("#nextButton3").click(function(){
+                                openSpinner();
+                                if(page2Validations() != true && page2Validations_extnd() != true){
+                                	j$("#entireForm").attr("disabled", "true");
+                                    //j$("#activePR_ClosureQuestion").show();
+                                    showActivePRsection();
+                                    var gotSCI = getSelectedSCI();
+                                    getSelectedSCIID();
+                                	fetchOppDetails();
+                                    j$("#step3").addClass("slds-is-complete");
+                                    j$("#step3").removeClass("slds-is-incomplete slds-is-active slds-is-current");
+                                    j$("#step4").addClass("slds-is-incomplete slds-is-active slds-is-current");
+                                    
+                                    j$("#step4").removeClass("slds-is-complete");
+                                    document.getElementById('accountNameSection').style.display = "";
+                                    document.getElementById('mainForm1').style.display = "";
+                                    //if(isZIApresent == 'true')
+                                        document.getElementById('div-ZIA').style.display = "";
+                                    //if(isZIApresent != 'true')
+                                        document.getElementById('div-ZPA').style.display = "";
+                                    document.getElementById('mainForm2').style.display = "";
+                                    document.getElementById('mainForm3').style.display = "";
+                                	document.getElementById('mainChurnform1').style.display = "";
+                                	j$('#sci-div').show();
+                            		j$('#sciListView').hide();
+                                    if(document.getElementById('noSCIpresent').style.display != "none"){
+                                    	j$('#sci-div').hide();
+                                    }
+                                    j$(".localButtons").hide();
+                                    j$(".finalButtons").show();
+                                }
+                                closeSpinner();
+                            });
+                            j$("#goBackButton3").click(function(){
+                                openSpinner();
+                                j$("#step2").removeClass("slds-is-complete slds-is-active slds-is-current");
+                                j$("#step2").addClass("slds-is-incomplete slds-is-active slds-is-current");
+                                j$("#step3").removeClass("slds-is-complete slds-is-active slds-is-current");
+                                j$("#step3").addClass("slds-is-incomplete");
+                                document.getElementById('accountNameSection').style.display = "none";
+                                document.getElementById('mainChurnform1').style.display = "none";
+                                document.getElementById('mainForm1').style.display = "";
+                                document.getElementById('mainForm2').style.display = "none";
+                                document.getElementById('mainForm3').style.display = "none";
+                                //if(isZIApresent == 'true')
+                                    document.getElementById('div-ZIA').style.display = "";
+                                //if(isZIApresent != 'true')
+                                    document.getElementById('div-ZPA').style.display = "";
+                                closeSpinner();
+                                
+                            });
+
+                            j$("#goBackButton4").click(function(){
+                                openSpinner();
+                                document.getElementById("entireForm").disabled= false;
+                                j$('#sci-div').hide();
+                            	j$('#sciListView').show();
+                                j$("#step3").removeClass("slds-is-complete slds-is-active slds-is-current");
+                                j$("#step3").addClass("slds-is-incomplete slds-is-active slds-is-current");
+                                j$("#step4").removeClass("slds-is-complete slds-is-active slds-is-current");
+                                j$("#step4").addClass("slds-is-incomplete");
+                                document.getElementById('accountNameSection').style.display = "none";
+                                document.getElementById('mainChurnform1').style.display = "none";
+                                document.getElementById('mainForm1').style.display = "none";
+                                document.getElementById('mainForm2').style.display = "";
+                                document.getElementById('mainForm3').style.display = "none";
+                                //if(isZIApresent == 'true')
+                                    document.getElementById('div-ZIA').style.display = "";
+                                //if(isZIApresent != 'true')
+                                    document.getElementById('div-ZPA').style.display = "";
+                                j$(".localButtons").show();
+                                j$(".finalButtons").hide();
+                                closeSpinner();
+                            });
+                            function saveForm(){
+                                openSpinner();
+                                if(mainPageValidations() != true && page1Validations() != true){
+                                //##SCI null checks
+                                var sciNumber = selectedSCI[j$("#sciNumber").find('option:selected').text()];
+                                if(sciNumber !== undefined){
+                                    //do something
+                                }
+                                else{
+                                    sciNumber = '';
+                                }
+                                    var sciSelected;
+                                //Modified SCI way - from list view, get the selected.
+                                   if(getSelectedSCI() != null || getSelectedSCI() != undefined)
+                                       sciSelected = getSelectedSCI();
+                                    else
+                                        sciSelected = '';
+                            //ZIA,ZPA, Support values sanitized.        
+                            var ZIApickvalSelected,ZPApickvalSelected,SupportpickvalSelected;
+                            //##do not renew - multiselect picklist values
+                            if(j$("#ZIAchecklabel").prop('checked') == true){
+                                ZIApickvalSelected = j$('#ZIApickval').find('option:selected').map(function () {
+                                                                return $(this).text();
+                                                            }).get().join(';');
+                             }else{
+                             	ZIApickvalSelected = null;
+                             }
+                             if(j$("#ZPAchecklabel").prop('checked') == true){
+                                ZPApickvalSelected = j$('#ZPApickval').find('option:selected').map(function () {
+                                                                return $(this).text();
+                                                            }).get().join(';');    
+                             }else{
+                             	ZPApickvalSelected = null;
+                             }
+                             if(j$("#supportChecklabel").prop('checked') == true){
+                                SupportpickvalSelected = j$('#supportpickval').find('option:selected').map(function () {
+                                                                return $(this).text();
+                                                            }).get().join(';');
+                             }else{
+                             	SupportpickvalSelected = null;
+                             } 
+                             var exprnceMissingFunc = j$("#ExperienceMissingfunctionality").val() != undefined ? j$("#ExperienceMissingfunctionality").val() : null;
+                                Visualforce.remoting.Manager.invokeAction(
+                                    '{!$RemoteAction.getOppChurnReasonController.saveForm}',
+                                    '{!$CurrentPage.parameters.oppId}',
+                                    '{!$CurrentPage.parameters.cid}',
+                                    j$("#primaryResn").find('option:selected').text(),
+                                    j$("#secondaryResn").find('option:selected').text(),
+                                    j$("#ZIAPrimaryResn").find('option:selected').text(),
+                                    j$("#ZIASecondaryResn").find('option:selected').text(),
+                                    j$("#ZPAPrimaryResn").find('option:selected').text(),
+                                    j$("#ZPASecondaryResn").find('option:selected').text(),
+                                    j$("#primaryEngagementResn").find('option:selected').text(),
+                                    j$("#secondaryEngagementResn").find('option:selected').text(),
+                                    j$("#primaryotherResn").find('option:selected').text(),
+                                    j$("#secondaryotherResn").find('option:selected').text(),
+                                    j$("#primarylifetimeResn").find('option:selected').text(),
+                                    j$("#secondarylifetimeResn").find('option:selected').text(),                                    
+                                    exprnceMissingFunc,
+                                    j$("#primaryComp").find('option:selected').text(),
+                                    j$("#secondaryComp").find('option:selected').text(),
+                                    //j$("#isProductSelectedInput").val(),
+                                    j$("#additionalNotes").val(),
+                                    sciSelected,
+                                    j$('#downgradingFrom').find('option:selected').text(),
+                                    j$('#downgradingTo').find('option:selected').text(),
+                                    //j$('#ZIApickval').find('option:selected').text(),
+                                    ZIApickvalSelected,
+                                    ZPApickvalSelected,
+                                    SupportpickvalSelected,
+                                    j$("#reductionInSeats").prop('checked'),
+                                    j$("#downgradingBundle").prop('checked'),
+                                    j$("#notRenewedAdvFeaturesCheck").prop('checked'),
+                                    j$('#others').prop('checked'),
+                                    j$("#othersInput").val(),
+                                    j$("#isLossCallConducted").prop('checked'),
+                                    j$('#isActivePRpresent').prop('checked'),
+                                    function(result, event){
+                                        closeSpinner();
+                                        if (event.status) {
+                                            //alert('The form has been submitted successfully.');
+                                            j$('#successSaveForm').show();
+                                            window.location.replace("{!$Site.BaseUrl}/" + result);
+                                        } else if (event.type === 'exception') {
+                                            //alert('Exception: '+event.message);
+                                            j$('#errorSaveForm').show();
+                                        	document.getElementById('errorMsgtrace').innerHTML+= event.message;
+                                        } else {
+                                            j$('#errorSaveForm').show();
+                                        	document.getElementById('errorMsgtrace').innerHTML+= event.message;
+                                            //alert('Last Exception: '+result);
+                                        }
+                                    }, 
+                                    {escape: true}
+                                );
+                               }
+                                else{
+                                	alert('Please check values in earlier pages, there is some validation error.');
+                                }
+                            }
+                            j$("#nextButton4").click(function(){
+                                if(page6Validations() != true){console.log('Before save');
+                                                               saveForm();console.log('After save');
+                                                              }
+                            });
+                        });
+                        
+                        /**
+              *  All field validations on form is done here in this section.
+              *  Check all required and conditionally reuqired fields here.
+              * 
+              */
+                        function callFieldValidations(){
+                            //When Primary Competitors know the product they selected, they can fill in the product name
+                            /*j$("#isProductSelected"). click(function(){
+                                if(j$("#isProductSelected").prop('checked') == true){
+                                    j$("#isProductSelectedInput").prop('disabled', false);
+                                    j$("#primaryComp").prop('disabled',true);
+                                }
+                                else{
+                                    j$("#isProductSelectedInput").prop('disabled', true);
+                                    j$("#primaryComp").prop('disabled',false);
+                                }
+                            });*/
+                            //When Loss analysis is conducted is true, populate SCI dropdown mandatorily
+                            j$("#isLossCallConducted"). click(function(){
+                                if(j$("#isLossCallConducted").prop('checked') == true){
+                                    j$("#sciNumber").prop('disabled', false);
+                                    getSCIdataTable();
+                                    document.getElementById("sciViewContainer").style.display = '';
+                                }
+                                else{
+                                    j$("#sciNumber").prop('disabled', true);
+                                    document.getElementById("sciViewContainer").style.display = 'none';
+                                    removeSCIDataTable();
+                                }
+                            });
+                        }
+                        //Same value selected in picklist, should throw error
+                        function sameValueinpicklistError(errorMsgElemId,divId,elementId,errorid){
+                            errorMsgElemId.css("display", "");
+                            divId.addClass('slds-has-error');
+                            elementId.prop('aria-describedby',errorid);
+                        }
+                        //Show error message and highlight the field on error.
+                        function showErrOnFieldProperty(errorMsgElemId,divId,elementId,errorid){
+                            errorMsgElemId.css("display", "");
+                            divId.addClass('slds-has-error');
+                            elementId.prop('aria-describedby',errorid);
+                            j$("#samePrimeSecond-err").css("display", "none");
+                        }
+                        //Reset error highlights and message, once errors are resolved.
+                        function resetErrOnFieldProperty(errorMsgElemId,divId){
+                            errorMsgElemId.css("display", "none");
+                            divId.removeClass('slds-has-error');
+                            j$("#samePrimeSecond-err").css("display", "none");
+                        }
+                        
+                        function mainPageValidations(){
+                            //Any of the four checkboxes, when left unchecked - throw error.
+                            if(j$("#downgradingBundle").prop('checked') == false && 
+                               j$("#notRenewedAdvFeaturesCheck").prop('checked') == false && 
+                               j$("#others").prop('checked') == false && 
+                               j$("#reductionInSeats").prop('checked') == false){
+                                showErrOnFieldProperty(j$('#churn-err'),j$('#churn-div'),j$("#churn-div"),"primaryResn-err");
+                                return true;
+                            }
+                            else{
+                                resetErrOnFieldProperty(j$('#churn-err'),j$('#churn-div'));
+                            }
+                            //Any of the four is checked except the first one, if none of the corresponding 
+                            //fields are filled - throw error.
+                            if(j$("#downgradingBundle").prop('checked') != false) {
+                               if(j$("#downgradingFrom").val() == "Please select"){
+                            	showErrOnFieldProperty(j$('#downgradingFrom-err'),j$('#downgradingFrom-div'),j$('#downgradingFrom'),"downgradingFrom");
+                                 return true;
+                               }
+                               else{
+                                resetErrOnFieldProperty(j$('#downgradingFrom-err'),j$('#downgradingFrom-div'));
+                               }
+                               if(j$("#downgradingTo").val() == "Please select"){
+                               	showErrOnFieldProperty(j$('#downgradingTo-err'),j$('#downgradingTo-div'),j$('#downgradingTo'),"downgradingTo");
+                                 return true;
+                               }
+                               else{
+                                resetErrOnFieldProperty(j$('#downgradingTo-err'),j$('#downgradingTo-div'));
+                               }
+                               //If downgrade is populated check, if both are not same values.
+                                if(j$("#downgradingFrom").find('option:selected').text() == j$("#downgradingTo").find('option:selected').text()){
+                                    sameValueinpicklistError(j$('#downgradeBoth-err'),j$('#searchProducts-div'),j$("#downgradingTo"),"downgradeBoth-err");
+                                    return true;
+                                }
+                                else{
+                                    resetErrOnFieldProperty(j$('#downgradeBoth-err'),j$('#searchProducts-div'));
+                                }
+                            }
+                            var ZIApickvalSelected = j$('#ZIApickval').find('option:selected').map(function () {
+                                                                return $(this).text();
+                                                            }).get().join(';');
+                            var ZPApickvalSelected = j$('#ZPApickval').find('option:selected').map(function () {
+                                                                return $(this).text();
+                                                            }).get().join(';');
+                            var SupportpickvalSelected = j$('#supportpickval').find('option:selected').map(function () {
+                                                                return $(this).text();
+                                                            }).get().join(';');
+                            //Resetting unused data when there dependent parent input is unchecked to hide them.
+                            if(j$("#ZIAchecklabel").prop('checked') != true){
+                            	ZIApickvalSelected = "";
+                                j$("#ZIApickval")[0].selectedIndex = -1;
+                            }
+                            if(j$("#ZPAchecklabel").prop('checked') != true){
+                            	ZPApickvalSelected = "";
+                                j$("#ZPApickval")[0].selectedIndex = -1;
+                            }
+                            if(j$("#supportChecklabel").prop('checked') != true){
+                            	SupportpickvalSelected = "";
+                                j$("#supportpickval")[0].selectedIndex = -1;
+                            }
+                            //Same restting for downgrading piclist values.
+                            if(j$("#downgradingBundle").prop('checked') != true){
+                                j$('#downgradingFrom').attr('value','Please select')
+                            	j$('#downgradingTo').attr('value','Please select')
+                            }
+                            if(j$("#notRenewedAdvFeaturesCheck").prop('checked') != false &&
+                               ZIApickvalSelected == "" && 
+                               ZPApickvalSelected == "" && 
+                               SupportpickvalSelected == ""){
+                                 showErrOnFieldProperty(j$('#donotRenewAdvFeatures-err'),j$('#donotRenewAdvFeatures-div'),j$('#donotRenewAdvFeatures-div'),"donotRenewAdvFeatures-err");
+                            	 return true;
+                            }
+                            else{
+                            	resetErrOnFieldProperty(j$('#donotRenewAdvFeatures-err'),j$('#donotRenewAdvFeatures-div'));
+                            }
+                            //Others text area should be populated when checked.
+                            if(j$('#others').prop('checked') == false){
+                            	document.getElementById('othersInput').value = "";
+                              }
+                            if(j$('#othersInput').val() == "" && j$('#others').prop('checked') == true){
+                            	showErrOnFieldProperty(j$('#others-err'),j$('#others-div'),j$('#others-div'),"others-err");
+                                return true;
+                            }
+                            else{
+                            	resetErrOnFieldProperty(j$('#others-err'),j$('#others-div'));
+                            }
+                            
+                            
+                        }
+                        
+                        function page1Validations(){
+                            if(j$("#primaryResn").find('option:selected').text() == "Please select"){
+                                showErrOnFieldProperty(j$('#primaryResn-err'),j$('#primaryResn-div'),j$("#primaryResn"),"primaryResn-err");
+                                return true;
+                            }
+                            if(j$("#primaryResn").find('option:selected').text() != "Please select"){
+                                resetErrOnFieldProperty(j$('#primaryResn-err'),j$('#primaryResn-div'));
+                                
+                            }
+                            /*if(j$("#secondaryResn").find('option:selected').text() == "Please select"){
+                                showErrOnFieldProperty(j$('#secondaryResn-err'),j$('#secondaryResn-div'),j$("#secondaryResn"),"secondaryResn-err");
+                                return true;
+                            }
+                            if(j$("#secondaryResn").find('option:selected').text() != "Please select"){
+                                resetErrOnFieldProperty(j$('#secondaryResn-err'),j$('#secondaryResn-div'));
+                                
+                            }*/
+                            resetErrOnFieldProperty(j$('#samePrimeSecond-err'),j$('#secondaryResn-div'),j$("#secondaryResn"));
+                            if(j$("#primaryResn").find('option:selected').text() == j$("#secondaryResn").find('option:selected').text()){
+                                sameValueinpicklistError(j$('#samePrimeSecond-err'),j$('#secondaryResn-div'),j$("#secondaryResn"),"secondaryResn-err");
+                                return true;
+                            }
+                            //if(isZIApresent == 'true'){
+                                if(j$("#ZIAPrimaryResn").val() == "Please select"){
+                                    showErrOnFieldProperty(j$('#primaryZIAResn-err'),j$('#primaryZIAResn-div'),j$("#primaryZIAResn"),"primaryZIAResn-err");
+                                    return true;
+                                }
+                                if(j$("#ZIAPrimaryResn").val() != "Please select"){
+                                    resetErrOnFieldProperty(j$('#primaryZIAResn-err'),j$('#primaryZIAResn-div'));
+                                    
+                                }
+                            /*if(j$("#ZIASecondaryResn").val() == "Please select"){
+                                    showErrOnFieldProperty(j$('#secondaryZIAResn-err'),j$('#secondaryZIAResn-div'),j$("#secondaryZIAResn"),"secondaryZIAResn-err");
+                                    return true;
+                                }
+                                if(j$("#ZIASecondaryResn").val() != "Please select"){
+                                    resetErrOnFieldProperty(j$('#secondaryZIAResn-err'),j$('#secondaryZIAResn-div'));
+                                    
+                                } */
+                            resetErrOnFieldProperty(j$('#samesecondarySecond-err'),j$('#secondaryZIAResn-div'),j$("#secondaryZIAResn"));
+                            if(j$("#ZIAPrimaryResn").find('option:selected').text() == j$("#ZIASecondaryResn").find('option:selected').text()){
+                                sameValueinpicklistError(j$('#samesecondarySecond-err'),j$('#secondaryZIAResn-div'),j$("#ZIASecondaryResn"),"primaryZIAResn-err");
+                                return true;
+                            }  
+                            
+                            //}
+                            //if(isZIApresent != 'true'){
+                                if(j$("#ZPAPrimaryResn").val() == "Please select"){
+                                    showErrOnFieldProperty(j$('#primaryZPAResn-err'),j$('#primaryZPAResn-div'),j$("#primaryZPAResn"),"primaryZPAResn-err");
+                                    return true;
+                                }
+                                if(j$("#ZPAPrimaryResn").val() != "Please select"){
+                                    resetErrOnFieldProperty(j$('#primaryZPAResn-err'),j$('#primaryZPAResn-div'));
+                                    
+                                }
+                            /*if(j$("#ZPASecondaryResn").val() == "Please select"){
+                                    showErrOnFieldProperty(j$('#secondaryZPAResn-err'),j$('#secondaryZPAResn-div'),j$("#secondaryZPAResn"),"secondaryZPAResn-err");
+                                    return true;
+                                }
+                                if(j$("#ZPASecondaryResn").val() != "Please select"){
+                                    resetErrOnFieldProperty(j$('#secondaryZPAResn-err'),j$('#secondaryZPAResn-div'));
+                                    
+                                }*/
+                            resetErrOnFieldProperty(j$('#ZPAsamePrimeSecond-err'),j$('#secondaryZPAResn-div'),j$("#ZPASecondaryResn"));
+                            if(j$("#ZPAPrimaryResn").find('option:selected').text() == j$("#ZPASecondaryResn").find('option:selected').text()){
+                                sameValueinpicklistError(j$('#ZPAsamePrimeSecond-err'),j$('#secondaryZPAResn-div'),j$("#ZPASecondaryResn"),"primaryZPAResn-err");
+                                return true;
+                            }
+                            //}
+                            
+                            //***********engagement reason validations*****************//
+                            if(j$("#primaryEngagementResn").val() == "Please select"){
+                                showErrOnFieldProperty(j$('#primaryEngagementResn-err'),j$('#primaryEngagement-div'),j$("#primaryEngagementResn"),"primaryEngagementResn-err");
+                                return true;
+                            }
+                            if(j$("#primaryEngagementResn").val() != "Please select"){
+                                resetErrOnFieldProperty(j$('#primaryEngagementResn-err'),j$('#primaryEngagement-div'),j$("#primaryEngagementResn"));
+                                
+                            }
+                            /*if(j$("#secondaryEngagementResn").val() == "Please select"){
+                                showErrOnFieldProperty(j$('#secondaryEngagementResn-err'),j$('#secondaryEngagement-div'),j$("#secondaryEngagementResn"),"secondaryEngagementResn-err");
+                                return true;
+                            }
+                            if(j$("#secondaryEngagementResn").val() != "Please select"){
+                                resetErrOnFieldProperty(j$('#secondaryEngagementResn-err'),j$('#secondaryEngagement-div'),j$("#secondaryEngagementResn"));
+                                
+                            }*/
+                            
+                            resetErrOnFieldProperty(j$('#samesecondaryEngagementSecond-err'),j$('#secondaryEngagement-div'),j$("#secondaryEngagementResn"));
+                            if(j$("#primaryEngagementResn").find('option:selected').text() == j$("#secondaryEngagementResn").find('option:selected').text()){
+                                sameValueinpicklistError(j$('#samesecondaryEngagementSecond-err'),j$('#secondaryEngagement-div'),j$("#secondaryEngagementResn"),"samesecondaryEngagementSecond-err");
+                                return true;
+                            }
+                            
+                            
+                            //***********other reason validations*****************//
+                            /**if(j$("#primaryotherResn").val() == "Please select"){
+                                showErrOnFieldProperty(j$('#primaryotherResn-err'),j$('#primaryother-div'),j$("#primaryotherResn"),"primaryotherResn-err");
+                                return true;
+                            }
+                            if(j$("#primaryotherResn").val() != "Please select"){
+                                resetErrOnFieldProperty(j$('#primaryotherResn-err'),j$('#primaryother-div'),j$("#primaryotherResn"));
+                                
+                            }
+                            if(j$("#secondaryotherResn").val() == "Please select"){
+                                showErrOnFieldProperty(j$('#secondaryotherResn-err'),j$('#secondaryother-div'),j$("#secondaryotherResn"),"secondaryotherResn-err");
+                                return true;
+                            }
+                            if(j$("#secondaryotherResn").val() != "Please select"){
+                                resetErrOnFieldProperty(j$('#secondaryotherResn-err'),j$('#secondaryother-div'),j$("#secondaryotherResn"));
+                                
+                            }**/
+                            
+                            if(j$("#secondaryotherResn").val() != "Please select" && j$("#primaryotherResn").val() != "Please select"){
+                                if(j$("#primaryotherResn").find('option:selected').text() == j$("#secondaryotherResn").find('option:selected').text()){
+                                    sameValueinpicklistError(j$('#samesecondaryotherSecond-err'),j$('#secondaryother-div'),j$("#secondaryotherResn"),"samesecondaryotherSecond-err");
+                                    return true;
+                                }
+                                else{
+                                    resetErrOnFieldProperty(j$('#samesecondaryotherSecond-err'),j$('#secondaryother-div'),j$("#secondaryotherResn"));
+                                }
+                            }
+                            
+                            //***********lifetime reasion validations*****************//
+                            if(j$("#primarylifetimeResn").val() == "Please select"){
+                                showErrOnFieldProperty(j$('#primarylifetimeResn-err'),j$('#primarylifetime-div'),j$("#primarylifetimeResn"),"primarylifetimeResn-err");
+                                return true;
+                            }
+                            if(j$("#primarylifetimeResn").val() != "Please select"){
+                                resetErrOnFieldProperty(j$('#primarylifetimeResn-err'),j$('#primarylifetime-div'),j$("#primarylifetimeResn"));
+                                
+                            }
+                            /*if(j$("#secondarylifetimeResn").val() == "Please select"){
+                                showErrOnFieldProperty(j$('#secondarylifetimeResn-err'),j$('#secondarylifetime-div'),j$("#secondarylifetimeResn"),"secondarylifetimeResn-err");
+                                return true;
+                            }
+                            if(j$("#secondarylifetimeResn").val() != "Please select"){
+                                resetErrOnFieldProperty(j$('#secondarylifetimeResn-err'),j$('#secondarylifetime-div'),j$("#secondarylifetimeResn"));
+                                
+                            }*/
+                            resetErrOnFieldProperty(j$('#samesecondarylifetimeSecond-err'),j$('#secondarylifetime-div'),j$("#secondarylifetimeResn"));
+                            if(j$("#primarylifetimeResn").find('option:selected').text() == j$("#secondarylifetimeResn").find('option:selected').text()){
+                                sameValueinpicklistError(j$('#samesecondarylifetimeSecond-err'),j$('#secondarylifetime-div'),j$("#secondarylifetimeResn"),"samesecondarylifetimeSecond-err");
+                                return true;
+                            }                              
+                            
+                        }
+                        
+                        function page2Validations(){
+                            var radios = document.getElementsByName('sciRowsInput');
+                            if(document.getElementById('isLossCallConducted').checked == true //&&
+                               //document.getElementById('noSCIpresent').style.display != ''
+                              ){
+                                if(j$('input[name='+'sciRowsInput'+']:checked').length){
+                                    document.getElementById('sciValidation').style.display = 'none';
+                                    document.getElementById('sciListView').style.border = '';
+                                    return false;
+                                }
+                                
+                                else{
+                                    document.getElementById('sciValidation').style.display = '';
+                                    document.getElementById('sciListView').style.border = '2px solid red';
+                                    return true;
+                                }
+                            }else{
+                                document.getElementById('sciValidation').style.display = 'none';
+                                document.getElementById('sciListView').style.border = '';
+                                return false;
+                                }
+                            
+                            
+                            /*resetErrOnFieldProperty(j$('#primaryProductSelectedInput-err'),j$('#primaryProductSelectedInput-div'),j$("#isProductSelectedInput"));
+                            resetErrOnFieldProperty(j$('#primaryProduct-err'),j$('#primaryProduct-div'),j$("#primaryComp"));
+                            if(j$("#isProductSelected").prop('checked') == true){
+                                if(j$("#isProductSelectedInput").val() == ""){
+                                    showErrOnFieldProperty(j$('#primaryProductSelectedInput-err'),j$('#primaryProductSelectedInput-div'),j$("#isProductSelectedInput"),"primaryProductSelectedInput-err");
+                                    return true;
+                                }
+                                if(j$("#isProductSelectedInput").val() != ""){
+                                    resetErrOnFieldProperty(j$('#primaryProductSelectedInput-err'),j$('#primaryProductSelectedInput-div'),j$("#isProductSelectedInput"));
+                                } 
+                            }
+                            else{
+                                if(j$("#primaryComp").val() == "Please select"){
+                                    showErrOnFieldProperty(j$('#primaryProduct-err'),j$('#primaryProduct-div'),j$("#primaryComp"),"primaryProduct-err");
+                                    return true;
+                                }
+                                if(j$("#primaryComp").val() != "Please select"){
+                                    resetErrOnFieldProperty(j$('#primaryProduct-err'),j$('#primaryProduct-div'),j$("#primaryComp"));
+                                    
+                                } 
+                                
+                            }
+                            */
+                        }
+                        
+                        function page2Validations_extnd(){
+                            if(j$("#primaryComp").val() == "Please select"){
+                            	showErrOnFieldProperty(j$('#primaryProduct-err'),j$('#primaryProduct-div'),j$("#primaryComp"),"primaryProduct-err");
+                                return true;
+                            }
+                            if(j$("#primaryComp").val() != "Please select"){
+                            	resetErrOnFieldProperty(j$('#primaryProduct-err'),j$('#primaryProduct-div'),j$("#primaryComp"));
+                            }
+                            //If primamry comp is populated check, if both are not same values.
+                            if(j$("#primaryComp").find('option:selected').text() == j$("#secondaryComp").find('option:selected').text()
+                              && j$("#primaryComp").find('option:selected').text() != "Please select"){
+                                sameValueinpicklistError(j$('#competitor-err'),j$('#competitor-div'),j$("#secondaryComp"),"competitor-err");
+                                return true;
+                            }
+                            else{
+                                resetErrOnFieldProperty(j$('#competitor-err'),j$('#competitor-div'));
+                            }
+                            return false;
+                        }
+                        
+                        function page6Validations(){
+                            if(j$('#isActivePRpresent').prop('checked') != true && 
+                               document.getElementById('activePR_ClosureQuestion').style.display != "none"){
+                                showErrOnFieldProperty(j$('#isActivePRpresent-err'),j$('#isActivePRpresent-div'),j$('#isActivePRpresent'),"isActivePRpresent-err");
+                                return true; 
+                            }
+                            else{
+                                resetErrOnFieldProperty(j$('#isActivePRpresent-err'),j$('#isActivePRpresent-div'),j$("#isActivePRpresent"));
+                                return false;
+                            }
+                        }
+                        //Fetch Summary Details on the Summary page
+                        function fetchOppDetails(){
+                            Util_ChurnReasonMethods.getOpp(
+                                '{!$CurrentPage.parameters.oppId}', 
+                                function(result, event){
+                                    if (event.status) {
+                                        //console.log('#: '+result.Primary_Partner__c);
+                                        //alert('#: '+result.OpportunityLineItems[0].ProductCode);
+                                        if(result.Account.Name != null || result.Account.Name != undefined)
+                                        	document.getElementById("accNameVal").innerHTML = result.Account.Name;
+                                        if(result.Amount != null || result.Amount != undefined)
+                                        	document.getElementById("lostAmountVal").innerHTML = '$ '+(result.Amount).toFixed(2);
+                                        if(result.Name != null || result.Name != undefined)
+                                        	document.getElementById("oppNameVal").innerHTML = result.Name;
+                                        if(result.Geo_Account__c != null || result.Geo_Account__c != undefined)
+                                        	document.getElementById("geoVal").innerHTML = result.Geo_Account__c;
+                                        if(result.Type != null || result.Type != undefined)
+                                        	document.getElementById("typeVal").innerHTML = result.Type;
+                                        if(result.Opportunity_Territory_Type__c != null || result.Opportunity_Territory_Type__c != undefined)
+                                        	document.getElementById("territoryTypeVal").innerHTML = result.Opportunity_Territory_Type__c;
+                                        if(result.StageName != null || result.StageName != undefined)
+                                        	document.getElementById("stageVal").innerHTML = result.StageName;
+                                        if(result.Owner.Name != null || result.Owner.Name != undefined)
+                                        	document.getElementById("OwnerVal").innerHTML = result.Owner.Name;
+                                        if(result.Validation_Stage__c != null || result.Validation_Stage__c != undefined)
+                                        	document.getElementById("techStageVal").innerHTML = result.Validation_Stage__c;
+                                        var productsLost = '';
+                                        if(result.OpportunityLineItems != undefined || result.OpportunityLineItems != null)
+                                        for(i=0;i<result.OpportunityLineItems.length;i++){
+                                            productsLost+=result.OpportunityLineItems[i].ProductCode+',';
+                                        }
+                                        if(productsLost != null || productsLost != undefined)
+                                        	document.getElementById("productsLostVal").innerHTML = productsLost.replace(/,\s*$/, "");
+                                        if(result.Primary_Partner__c != null || result.Primary_Partner__c != undefined)
+                                            document.getElementById("primaryPartnerVal").innerHTML = result.Primary_Partner__c;
+                                    } else if (event.type === 'exception') {
+                                        alert('Exception');
+                                    } else {
+                                        alert('Exception');
+                                    }
+                                }, 
+                                {escape: true}
+                            );
+                        }
+                        </script>
+                    </div>
+                    
+                    <div class="slds-form" style="margin-left: 1%;display:none;" id="mainForm2">
+                        <br/><br/>
+                        <div class="slds-grid slds-gutters">
+                            <div class="slds-col">
+                                <span>
+                                    <div class="slds-page-header blue-background" style="font-weight: bold">
+                                        <span>Experience / Missing functionality details</span><br/>
+                                    </div>
+                                    <div><br/><span>If missing functionality was a key factor in loss, please list features / ER numbers that were deal breakers.Describe specific features, technical limitations and/or stability issues that impacted our ability to close the deal</span></div>
+                                    <div class="slds-form-element">
+                                        <br/><br/>
+                                        <div class="slds-form-element__control">
+                                            <textarea id="ExperienceMissingfunctionality" class="slds-textarea" placeholder="Please put your comments here"></textarea>
+                                        </div>
+                                    </div>
+                                    <div id="competitor-div">
+                                        <div class="demo-only demo-only--sizing slds-grid slds-wrap" id="primaryComp-div">
+                                        <div class="slds-size_1-of-2">
+                                            <div class="slds-text-align_left slds-m-around_x-small"><span style="font-weight: bold">Primary Competitors <abbr class="slds-required" title="required">* </abbr></span>
+                                            </div>
+                                            <br/>
+                                            <div class="slds-form-element__control" style="display:none">
+                                                <div class="slds-checkbox">
+                                                    <input type="checkbox" name="options" id="isProductSelected" value="isProductSelected" checked="" />
+                                                    <label class="slds-checkbox__label" for="isProductSelected">
+                                                        <span class="slds-checkbox_faux"></span>
+                                                        <span class="slds-form-element__label">Do we know which product was selected instead?</span>
+                                                    </label>
+                                                </div></div>
+                                        </div>
+                                        <div class="slds-size_1-of-2">
+                                            <div class="slds-text-align_left slds-m-around_x-small"><div class="slds-form-element" id="primaryProduct-div">
+                                                <div class="slds-form-element__control">
+                                                    <div class="slds-select_container" style="width: 50%;">
+                                                        <select class="slds-select" id="primaryComp">
+                                                            <option value="">Please select</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="slds-form-element__help" id="primaryProduct-err" style="display: none;">This field is required</div>
+                                                </div><br/><div class="slds-form-element" id="primaryProductSelectedInput-div" style="display:none">
+                                                <div class="slds-form-element__control">
+                                                    <div style="width: 50%;">
+                                                        <input type="text" id="isProductSelectedInput" placeholder="Enter selected Product Name" class="slds-input" disabled="true"/>
+                                                    </div></div>
+                                                <div class="slds-form-element__help" id="primaryProductSelectedInput-err" style="display: none;">This field is required</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    	<div class="demo-only demo-only--sizing slds-grid slds-wrap">
+                                        <div class="slds-size_1-of-2">
+                                            <div class="slds-text-align_left slds-m-around_x-small"><span style="font-weight: bold">Secondary Competitors</span>
+                                            </div>
+                                        </div>
+                                        <div class="slds-size_1-of-2">
+                                            <div class="slds-text-align_left slds-m-around_x-small"><div class="slds-form-element">
+                                                <div class="slds-form-element__control">
+                                                    <div class="slds-select_container" style="width: 50%;">
+                                                        <select class="slds-select" id="secondaryComp">
+                                                            <option value="">Please select</option>
+                                                        </select>
+                                                    </div>
+                                                    
+                                                </div>
+                                                <div class="slds-form-element__help" id="competitor-err" style="display:none">Error: Same values cannot be selected in both the fields.</div>
+                                                </div></div>
+                                        </div>
+                                    </div>
+                                        
+                                    </div>
+                                     
+                                    <div class="slds-grid slds-gutters">
+                                        <div class="slds-col"><br/>
+                                            <span>
+                                                <div class="slds-page-header blue-background" style="font-weight: bold">
+                                                    <span>Additional Notes</span>
+                                                </div>
+                                            </span>
+                                            <div class="slds-form-element">
+                                                <br/><br/>
+                                                <div class="slds-form-element__control">
+                                                    <textarea id="additionalNotes" required="" class="slds-textarea" placeholder="Please put your comments here"></textarea>
+                                                </div>
+                                            </div>
+                                            <br/>
+                                        </div>
+                                    </div>
+                                    <br/><br/>
+                                    <div class="slds-grid slds-gutters">
+                                        <div class="slds-col">
+                                            <span>
+                                                <div class="slds-page-header blue-background" style="font-weight: bold">
+                                                    <span>Loss Analysis Call</span><br/>
+                                                </div>
+                                            </span><br/>
+                                            <div class="slds-form-element">
+                                                <div class="slds-form-element__control">
+                                                    <div class="slds-checkbox">
+                                                        <input type="checkbox" name="options" id="isLossCallConducted" value="isLossCallConducted" checked="" />
+                                                        <label class="slds-checkbox__label" for="isLossCallConducted">
+                                                            <span class="slds-checkbox_faux"></span>
+                                                            <span class="slds-form-element__label">Was a call conducted with the Prospect/customer?</span>
+                                                        </label>
+                                                    </div>
+                                                </div></div><br/>
+                                            <div id="sciViewContainer" style="display:none">
+                                                <span>
+                                                    <div class="slds-page-header blue-background" style="font-weight: bold">
+                                                        <span>SCI Number</span><br/>
+                                                    </div>
+                                                </span><br/>
+                                                <div class="slds-form-element" id="sci-div" style="display:none">
+                                                    <div class="slds-form-element__control">
+                                                        <div class="slds-select_container" style="width: 20%;">
+                                                            <select class="slds-select" id="sciNumber" disabled="true">
+                                                                
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <span id="sciValidation" style="display:none;"><apex:outputLabel style="color:red" value="{!($Label.Loss_Analysis_Call_Message)}"/><br/></span>
+                                                <table id="sciListView">
+                                                    <tr id="sciListViewheader" style="display:none">
+                                                        <th>Action</th>
+                                                        <th>SCI Name</th>
+                                                        <th>SCI Type</th>
+                                                        <th>Primary Topic Covered</th>
+                                                        <th>SCI Date</th>
+                                                    </tr>
+                                                    <output id="noSCIpresent" style="display:none">No related SCI is present on this Opportunity.</output>
+                                                </table>
+                                                <br/><br/></div>
+                                        </div>
+                                    </div>
+                                    
+									<center>
+                                    <button class="slds-button slds-button_brand localButtons" style="display:none" id="nextButton3">Next</button>&nbsp;&nbsp;&nbsp;
+                                    <button class="slds-button slds-button_neutral localButtons" style="display:none" id="goBackButton3">Go Back</button>
+                                    <button class="slds-button slds-button_neutral localButtons" style="display:none" id="cancelButton2">Cancel</button>
+                                    </center>
+                                </span>
+                                
+                            </div>
+                            
+                        </div>
+                        
+                    </div>
+
+                    
+                </fieldset>
+            </div>
+        </body></html>
+</apex:page>

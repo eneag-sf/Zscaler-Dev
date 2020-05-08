@@ -1,0 +1,29 @@
+<template>
+    <lightning-layout>
+        <template if:true={showPrevious}>
+            <lightning-layout-item class="slds-p-right_small">
+                <lightning-button label="Previous" icon-name="utility:chevronleft" onclick={previousPageHandler}>
+                </lightning-button>
+            </lightning-layout-item>
+        </template>
+        <lightning-layout-item class="slds-p-right_small">
+            <select class="slds-select slds-text-color_success" name="optionSelect" onchange={handlePageChange}>
+                <template for:each={paginationList} for:item="pageNum">
+                    <template if:true={pageNum.isSelected}>
+                        <option key={pageNum.key} value={pageNum.key} selected>{pageNum.value}</option>
+                    </template>
+                    <template if:false={pageNum.isSelected}>
+                        <option key={pageNum.key} value={pageNum.key}>{pageNum.value}</option>
+                    </template>
+                </template>
+            </select>
+        </lightning-layout-item>
+        <!--<lightning-layout-item flexibility="grow"></lightning-layout-item>-->
+        <template if:true={showNext}>
+            <lightning-layout-item>
+                <lightning-button label="Next" icon-name="utility:chevronright" onclick={nextPageHandler}>
+                </lightning-button>
+            </lightning-layout-item>
+        </template>
+    </lightning-layout>
+</template>

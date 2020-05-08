@@ -1,0 +1,328 @@
+<apex:page controller="ProposalLineItemListController" tabStyle="Apttus_Proposal__Proposal__c" showHeader="false" sidebar="false">
+    <apex:includeScript id="jQuery" value="https://code.jquery.com/jquery-3.1.1.min.js" />
+    <style>
+        .evencss {
+            background-color: #f0f0f0;
+        }
+
+        .oddcss {
+            background-color: #ffffff;
+        }
+
+        .evenCss,
+        .oddCss td {
+            border-right: 1px solid black;
+        }
+
+        .evenCss,
+        .oddCss td:last-child {
+            border-right: 0px;
+        }
+
+        .yearWiseSplitList .last,
+        .yearWiseSplitList .last {
+            font-weight: bold;
+        }
+
+        .pgSecHeaderBlue .pbSubheader {
+            background-color: #009CDA!important;
+        }
+
+        .pgSecHeaderBrown .pbSubheader {
+            background-color: #a55647!important;
+        }
+
+        .table-outer {
+            overflow-x: scroll;
+            max-width: 1465px!important;
+        }
+        body .bPageBlock {
+            width: 1500px !important;
+        }
+    </style>
+    <apex:form >
+        <!--pbSubheader brandTertiaryBgr first tertiaryPalette -->
+        <apex:pageBlock >
+            <br/>
+            <br/>
+            <!-- Legacy -->
+            <apex:outputPanel rendered="{!!isPartnerSummit}">
+                <h1 style="color: red"> This Quote is built using Legacy Partner Program</h1>
+                <br/>
+                <br/>
+                <table style="width:100%;" cellspacing="0" cellpadding="0">
+                    <tbody>
+                        <tr>
+                            <td width="20%" style="background-color: #002060; color: #FFFFFF; text-align: center; border: 1px solid black;">Total Discount</td>
+                            <td width="20%" style="background-color: #002060; color: #FFFFFF; text-align: center; border: 1px solid black;">Net Price</td>
+                            <td width="20%" style="background-color: #002060; color: #FFFFFF; text-align: center; border: 1px solid black;">ACV</td>
+                        </tr>
+                        <tr style="border: 1px solid black; text-align: center;">
+                            <td width="20%" style="border: 1px solid black;">
+                                <apex:outputField value="{!proposal.Abs_Total_Discount__c}" />
+                            </td>
+                            <td width="20%" style="border: 1px solid black;">
+                                <apex:outputField value="{!proposal.APTS_Proposal_Net_Price__c}" />
+                            </td>
+                            <td width="20%" style="border: 1px solid black;">
+                                <apex:outputField value="{!proposal.APTS_ACV__c}" />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </apex:outputPanel>
+            <!-- Summit -->
+            <apex:outputPanel rendered="{!isPartnerSummit}">
+                <h1 style="color: red"> This Quote is built using Partner Summit Program</h1>
+                <br/>
+                <br/>
+                <table style="width:100%;" cellspacing="0" cellpadding="0">
+                    <tbody>
+                        <tr>
+                            <td  style="background-color: #002060; color: #FFFFFF; text-align: center; border: 1px solid black;">Customer Discount</td>
+                            <td  style="background-color: #002060; color: #FFFFFF; text-align: center; border: 1px solid black;">Net Price</td>
+                            <td  style="background-color: #002060; color: #FFFFFF; text-align: center; border: 1px solid black;">Total Stackable Margin</td>
+                            <td  style="background-color: #002060; color: #FFFFFF; text-align: center; border: 1px solid black;">Total Deal Discount</td>
+                            <td  style="background-color: #002060; color: #FFFFFF; text-align: center; border: 1px solid black;">Net to Zscaler</td>
+                            <td  style="background-color: #002060; color: #FFFFFF; text-align: center; border: 1px solid black;">ACV</td>
+                            <td  style="background-color: #002060; color: #FFFFFF; text-align: center; border: 1px solid black;">Partner Pricing Type</td>
+                        </tr>
+                        <tr style="border: 1px solid black; text-align: center;">
+                            <td  style="border: 1px solid black;">
+                                <apex:outputField value="{!proposal.Abs_Total_Discount__c}" />
+                            </td>
+                            <td  style="border: 1px solid black;">
+                                <apex:outputField value="{!proposal.APTS_Proposal_Net_Price__c}" />
+                            </td>
+                            <td  style="border: 1px solid black;">
+                                <apex:outputField value="{!proposal.Total_Stackable_Margin__c}" />
+                            </td>
+                            <td  style="border: 1px solid black;">
+                                <apex:outputField value="{!proposal.Total_Deal_Discount__c}" />
+                            </td>
+                            <td  style="border: 1px solid black;">
+                                <apex:outputField value="{!proposal.Total_Net_to_Zscaler__c}" />
+                            </td>
+                            <td  style="border: 1px solid black;">
+                                <apex:outputField value="{!proposal.APTS_ACV__c}" />
+                            </td>
+                            <td  style="border: 1px solid black;">
+                                <apex:outputField value="{!proposal.Model_Type_Partner__c}" />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </apex:outputPanel>
+            <br/>
+            <br/>
+
+            <apex:outputPanel styleClass="pgSecHeaderBlue">
+                <apex:pageBlockSection id="cartSec" columns="1" collapsible="false" showHeader="true" title="Products Available on the Cart for {!proposal.Name}">
+                    <apex:outputPanel id="allProd">
+                        <apex:outputPanel rendered="{!isPartnerSummit}">
+                            <div class="table-outer">
+                                <apex:pageBlockTable value="{!proposalLineItemList}" var="var" rowClasses="oddcss,evencss">
+                                    <apex:column value="{!Var.Product_Name__c}" headerValue="Product Name" />
+                                    <apex:column value="{!Var.APTS_Product_Code__c}" headerValue="SKU" />
+                                    <!-- <apex:column value="{!var.Apttus_QPConfig__BasePrice__c}" headerValue="Base Price"/> -->
+                                    <apex:column headerValue="Base Price">
+                                        <apex:outputText value="{0, number,currency}">
+                                            <apex:param value="{!var.Apttus_QPConfig__BasePrice__c}" />
+                                        </apex:outputText>
+                                    </apex:column>
+                                    <apex:column value="{!var.APTS_Quantity__c}" headerValue="Quantity" />
+                                    <apex:column value="{!var.Apttus_QPConfig__StartDate__c}" headerValue="Start Date" />
+                                    <apex:column value="{!var.Apttus_QPConfig__EndDate__c}" headerValue="End Date" />
+                                    <apex:column value="{!var.Term_to_Show__c}" headerValue="Term" />
+                                    <apex:column value="{!var.APTS_Base_Price_override__c}" headerValue="List Price" />
+                                    <apex:column value="{!var.Apttus_QPConfig__AdjustmentType__c}" headerValue="Adjustment Type" />
+                                    <apex:column value="{!var.APTS_Manual_Discount__c}" headerValue="Adjustment" />
+                                    <apex:column value="{!var.APTS_Net_Price__c}" rendered="{!isPartnerSummit}" headerValue="Net Price" />
+                                    <apex:column value="{!var.APTS_Total_Discount_Percentage__c}" headerValue="Total Discount" />
+                                    <apex:column value="{!var.Apttus_QPConfig__DerivedFromId__r.Partner_Summit_Deal_Reg__c}"
+                                        headerValue="Deal Reg Margin" />
+                                    <apex:column value="{!var.Apttus_QPConfig__DerivedFromId__r.AW_Margin_Formula__c}"
+                                        headerValue="AW Margin" />
+                                    <apex:column value="{!var.Apttus_QPConfig__DerivedFromId__r.POV__c}" headerValue="POV Margin"
+                                    />
+                                    <apex:column value="{!var.Apttus_QPConfig__DerivedFromId__r.Fulfilment_Margin__c}" headerValue="Fulfilment Margin"
+                                    />
+                                    <apex:column value="{!var.Apttus_QPConfig__DerivedFromId__r.Partner_Adjustment__c}" rendered="{!isPartnerAdjustment}" headerValue="Partner Adjustment"
+                                    />
+                                    <apex:column value="{!var.Apttus_QPConfig__DerivedFromId__r.Partner_Adjustment_Type__c}" rendered="{!isPartnerAdjustment}"
+                                        headerValue="Partner Adjustment Type" />
+                                    <apex:column value="{!var.Apttus_QPConfig__DerivedFromId__r.Total_Stackable_Margin__c}" headerValue="Stackable Partner Margin"
+                                    />
+                                    <apex:column value="{!var.Apttus_QPConfig__DerivedFromId__r.Net_to_Zscaler__c}" headerValue="Net to Zscaler" />
+                                    <apex:column value="{!var.Apttus_QPConfig__DerivedFromId__r.Total_Zscaler_Discount__c}" headerValue="Total Zscaler Discount"
+                                    />
+                                    <apex:column value="{!var.APTS_ACV__c}" headerValue="ACV" />
+                                    <apex:column value="{!var.APTS_MRR__c}" headerValue="MRR" />
+                                </apex:pageBlockTable>
+                            </div>
+                        </apex:outputPanel>
+                        <apex:outputPanel rendered="{!!isPartnerSummit}">
+                            <apex:pageBlockTable value="{!proposalLineItemList}" var="var" rowClasses="oddcss,evencss">
+                                <apex:column value="{!Var.Product_Name__c}" headerValue="Product Name" />
+                                <apex:column value="{!Var.APTS_Product_Code__c}" headerValue="SKU" />
+                                <!-- <apex:column value="{!var.Apttus_QPConfig__BasePrice__c}" headerValue="Base Price"/> -->
+                                <apex:column headerValue="Base Price">
+                                    <apex:outputText value="{0, number,currency}">
+                                        <apex:param value="{!var.Apttus_QPConfig__BasePrice__c}" />
+                                    </apex:outputText>
+                                </apex:column>
+                                <apex:column value="{!var.APTS_Quantity__c}" headerValue="Quantity" />
+                                <apex:column value="{!var.Apttus_QPConfig__StartDate__c}" headerValue="Start Date" />
+                                <apex:column value="{!var.Apttus_QPConfig__EndDate__c}" headerValue="End Date" />
+                                <apex:column value="{!var.Term_to_Show__c}" headerValue="Term" />
+                                <apex:column value="{!var.APTS_Base_Price_override__c}" headerValue="List Price" />
+                                <apex:column value="{!var.APTS_Partner_Disc__c}" rendered="{!!isPartnerSummit}" headerValue="Partner Disc" />
+                                <apex:column value="{!var.APTS_Deal_Reg_Disc__c}" rendered="{!!isPartnerSummit}" headerValue="Deal Reg Disc" />
+                                <apex:column value="{!var.APTS_New_Logo_Disc__c}" rendered="{!!isPartnerSummit}" headerValue="New Logo Disc" />
+                                <apex:column value="{!var.Apttus_QPConfig__AdjustmentType__c}" headerValue="Adjustment Type" />
+                                <apex:column value="{!var.APTS_Manual_Discount__c}" headerValue="Adjustment" />
+                                <apex:column value="{!var.APTS_Total_Discount_Percentage__c}" headerValue="Total Discount" />
+                                <apex:column value="{!var.APTS_Net_Price__c}" rendered="{!!isPartnerSummit}" headerValue="Net Price" />
+                                <apex:column value="{!var.APTS_ACV__c}" headerValue="ACV" />
+                                <apex:column value="{!var.APTS_MRR__c}" headerValue="MRR" />
+                            </apex:pageBlockTable>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                </apex:pageBlockSection>
+            </apex:outputPanel>
+            <br/>
+            <apex:outputPanel styleClass="pgSecHeaderBrown" rendered="{!AND(proposal.Generate_Year_Wise_Split__c, NOT(proposal.Is_Year_Wise_Split_Data_Incorrect__c))}">
+                <apex:pageBlockSection id="yearWiseSplit" columns="1" collapsible="false" showHeader="true" title="Year Wise Split for {!proposal.Name}">
+                    <apex:pageBlockTable styleClass="yearWiseSplitList" value="{!yearWiseSplit.splitEntries}" var="yws" rowClasses="oddcss,evencss">
+                        <apex:column value="{!yws.productName}" headerValue="Product Name" />
+                        <apex:column value="{!yws.productCode}" headerValue="Product Code" />
+                        <apex:column headerValue="Quantity">
+                            <apex:outputText value="{0, number}">
+                                <apex:param value="{!IF(NOT(ISBLANK(yws.quantity)), yws.quantity, '')}" />
+                            </apex:outputText>
+                        </apex:column>
+                        <apex:column headerValue="{!yearWiseSplit.year1YearValue}">
+                            <apex:outputText value="{0, number,currency}">
+                                <apex:param value="{!IF(NOT(ISBLANK(yws.year1Cost)), yws.year1Cost, 0.0)}" />
+                            </apex:outputText>
+                        </apex:column>
+                        <apex:column headerValue="{!yearWiseSplit.year2YearValue}" rendered="{!yearWiseSplit.numberOfYears >= 2}">
+                            <apex:outputText value="{0, number,currency}">
+                                <apex:param value="{!IF(NOT(ISBLANK(yws.year2Cost)), yws.year2Cost, 0.0)}" />
+                            </apex:outputText>
+                        </apex:column>
+                        <apex:column headerValue="{!yearWiseSplit.year3YearValue}" rendered="{!yearWiseSplit.numberOfYears >= 3}">
+                            <apex:outputText value="{0, number,currency}">
+                                <apex:param value="{!IF(NOT(ISBLANK(yws.year3Cost)), yws.year3Cost, 0.0)}" />
+                            </apex:outputText>
+                        </apex:column>
+                        <apex:column headerValue="{!yearWiseSplit.year4YearValue}" rendered="{!yearWiseSplit.numberOfYears >= 4}">
+                            <apex:outputText value="{0, number,currency}">
+                                <apex:param value="{!IF(NOT(ISBLANK(yws.year4Cost)), yws.year4Cost, 0.0)}" />
+                            </apex:outputText>
+                        </apex:column>
+                        <apex:column headerValue="{!yearWiseSplit.year5YearValue}" rendered="{!yearWiseSplit.numberOfYears >= 5}">
+                            <apex:outputText value="{0, number,currency}">
+                                <apex:param value="{!IF(NOT(ISBLANK(yws.year5Cost)), yws.year5Cost, 0.0)}" />
+                            </apex:outputText>
+                        </apex:column>
+                        <apex:column headerValue="{!yearWiseSplit.year6YearValue}" rendered="{!yearWiseSplit.numberOfYears >= 6}">
+                            <apex:outputText value="{0, number,currency}">
+                                <apex:param value="{!IF(NOT(ISBLANK(yws.year6Cost)), yws.year6Cost, 0.0)}" />
+                            </apex:outputText>
+                        </apex:column>
+                        <apex:column headerValue="{!yearWiseSplit.year7YearValue}" rendered="{!yearWiseSplit.numberOfYears == 7}">
+                            <apex:outputText value="{0, number,currency}">
+                                <apex:param value="{!IF(NOT(ISBLANK(yws.year7Cost)), yws.year7Cost, 0.0)}" />
+                            </apex:outputText>
+                        </apex:column>
+                        <apex:column headerValue="Total">
+                            <apex:outputText value="{0, number,currency}" style="font-weight: bold;">
+                                <apex:param value="{!IF(NOT(ISBLANK(yws.total)), yws.total, 0.0)}" />
+                            </apex:outputText>
+                        </apex:column>
+                    </apex:pageBlockTable>
+                </apex:pageBlockSection>
+            </apex:outputPanel>
+
+            <apex:outputPanel rendered="{!assetLineItemListlegacy.size > 0}">
+                <br/>
+                <apex:pageBlockSection id="instBase" columns="1" collapsible="false" showHeader="true" title="Install Base for {!proposal.Apttus_Proposal__Account__r.Name} with Legacy Model">
+                    <apex:pageBlockTable value="{!assetLineItemListlegacy}" var="var" rowClasses="oddcss,evencss">
+                        <apex:column value="{!Var.Product_Name__c}" headerValue="Product Name" />
+                        <apex:column value="{!Var.Product_Code__c}" headerValue="SKU" />
+                        <!-- <apex:column value="{!var.Apttus_QPConfig__BasePrice__c}" headerValue="Base Price"/> -->
+
+                        <!-- <apex:column headerValue="Base Price">
+                            <apex:outputText value="{0, number,currency}">
+                                <apex:param value="{!var.Apttus_Config2__BasePrice__c}"/>
+                            </apex:outputText>
+                        </apex:column>-->
+                        <!-- <apex:column value="{!var.Apttus_Config2__Quantity__c}" headerValue="Quantity"/> -->
+                        <apex:column headerValue="Quantity">
+                            <apex:outputText value="{0, number}">
+                                <apex:param value="{!var.Apttus_Config2__Quantity__c}" />
+                            </apex:outputText>
+                        </apex:column>
+                        <apex:column value="{!var.Apttus_Config2__StartDate__c}" headerValue="Start Date" />
+                        <apex:column value="{!var.Apttus_Config2__EndDate__c}" headerValue="End Date" />
+                        <apex:column value="{!var.Term_to_Show__c}" headerValue="Term" />
+                        <!-- <apex:column value="{!var.Apttus_Config2__ListPrice__c}" headerValue="List Price"/> -->
+                        <apex:column value="{!var.APTS_Partner_Disc__c}" headerValue="Partner Disc" />
+                        <apex:column value="{!var.APTS_Deal_Reg_Disc__c}" headerValue="Deal Reg Disc" />
+                        <apex:column value="{!var.APTS_New_Logo_Disc__c}" headerValue="New Logo Disc" />
+                        <apex:column value="{!var.Adjustment_Type__c}" headerValue="Adjustment Type" />
+                        <apex:column value="{!var.Adjustment_Amount__c}" headerValue="Adjustment" />
+                        <apex:column value="{!var.APTS_Total_Discount_Percentage__c}" headerValue="Total Discount" />
+                        <apex:column value="{!var.Apttus_Config2__NetPrice__c}" headerValue="Net Price" />
+                        <apex:column value="{!var.APTS_ACV__c}" headerValue="ACV" />
+                        <apex:column value="{!var.APTS_MRR__c}" headerValue="MRR" />
+                    </apex:pageBlockTable>
+
+                </apex:pageBlockSection>
+            </apex:outputPanel>
+
+            <apex:outputPanel rendered="{!assetLineItemListpartnersummit.size > 0}">
+                <br/>
+                <apex:pageBlockSection columns="1" collapsible="false" showHeader="true" title="Install Base for {!proposal.Apttus_Proposal__Account__r.Name} with Partner Margin Model">
+                    <apex:pageBlockTable value="{!assetLineItemListpartnersummit}" var="var" rowClasses="oddcss,evencss">
+                        <apex:column value="{!Var.Product_Name__c}" headerValue="Product Name" />
+                        <apex:column value="{!Var.Product_Code__c}" headerValue="SKU" />
+                        <!-- <apex:column value="{!var.Apttus_QPConfig__BasePrice__c}" headerValue="Base Price"/> -->
+
+                        <!-- <apex:column headerValue="Base Price">
+                            <apex:outputText value="{0, number,currency}">
+                                <apex:param value="{!var.Apttus_Config2__BasePrice__c}"/>
+                            </apex:outputText>
+                        </apex:column>-->
+                        <!-- <apex:column value="{!var.Apttus_Config2__Quantity__c}" headerValue="Quantity"/> -->
+                        <apex:column headerValue="Quantity">
+                            <apex:outputText value="{0, number}">
+                                <apex:param value="{!var.Apttus_Config2__Quantity__c}" />
+                            </apex:outputText>
+                        </apex:column>
+                        <apex:column value="{!var.Apttus_Config2__StartDate__c}" headerValue="Start Date" />
+                        <apex:column value="{!var.Apttus_Config2__EndDate__c}" headerValue="End Date" />
+                        <apex:column value="{!var.Term_to_Show__c}" headerValue="Term" />
+                        <apex:column value="{!var.Apttus_Config2__ListPrice__c}" headerValue="List Price" />
+                        <apex:column value="{!var.Adjustment_Type__c}" headerValue="Adjustment Type" />
+                        <apex:column value="{!var.Adjustment_Amount__c}" headerValue="Adjustment" />
+                        <apex:column value="{!var.Apttus_Config2__NetPrice__c}" headerValue="Net Price" />
+                        <apex:column value="{!var.APTS_Total_Discount_Percentage__c}" headerValue="Total Discount" />
+                        <apex:column value="{!var.Partner_Summit_Deal_Reg__c}" headerValue="Deal Reg Margin" />
+                        <apex:column value="{!var.AW_Margin_Formula__c}" headerValue="AW Margin" />
+                        <apex:column value="{!var.POV__c}" headerValue="POV Margin" />
+                        <apex:column value="{!var.Fulfilment_Margin__c}" headerValue="Fulfilment Margin" />
+                        <apex:column value="{!var.Total_Stackable_Margin__c}" headerValue="Stackable Margin Total" />
+                        <apex:column value="{!var.Net_to_Zscaler__c}" headerValue="Net to Zscaler" />
+                        <apex:column value="{!var.Total_Zscaler_Discount__c}" headerValue="Total Zscaler Discount" />
+                    </apex:pageBlockTable>
+
+                </apex:pageBlockSection>
+            </apex:outputPanel>
+
+
+        </apex:pageBlock>
+    </apex:form>
+
+</apex:page>

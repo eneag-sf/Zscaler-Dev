@@ -1,0 +1,163 @@
+<apex:page tabStyle="Contact" showChat="false" sidebar="false" standardController="Contact"  id="pgId" extensions="manageAttendeesControllerExt">
+<script type="text/javascript">          
+    function noenter(e){               
+        if(window.event){                    
+            key = window.event.keyCode;     //IE               
+        } 
+        else{                    
+            key = e.which;     //firefox               
+        }     
+        if(key == 13) {                    
+            var ele=document.getElementById('{!$Component.pgId:frmId:pgblck:srchSect:srchBut}'); 
+              ele.click();                     
+            return false;               
+        } else{                    
+            return true;               
+        }          
+    }     
+</script>           
+
+    <apex:form id="frmId">
+    
+    <style type="text/css">
+        .custPopup{
+            background-color: white;
+            border-width: 2px;
+            border-style: solid;
+            z-index: 9999;
+            left: 50%;
+            padding:10px;
+            position: absolute;
+            /* These are the 3 css properties you will need to change so the popup
+            displays in the center of the screen. First set the width. Then set
+            margin-left to negative half of what the width is. You can add
+            the height property for a fixed size pop up if you want.*/
+            width: 900px;
+            height: 300px;
+            margin-left: -450px;
+            top:50px;
+        }
+        .popupBackground{
+            background-color:black;
+            opacity: 0.20;
+            filter: alpha(opacity = 20);
+            position: absolute;
+            width: 100%;
+            height: 150%;
+            top: -200px;
+            left: 0;
+            z-index: 9998;
+        }
+
+    </style>
+    
+    <apex:outputPanel id="pgaddcon">
+    
+        <apex:pageBlock id="pgblck">
+            <apex:pageBlockButtons location="top"  >
+                <apex:outputPanel id="pgButton">
+                    <apex:commandButton value="Back to SCI" action="/{!sc.Id}" style="margin-left: 150px;"/>
+                </apex:outputPanel>
+             </apex:pageBlockButtons>
+            
+        <apex:outputPanel id="sciPnl">    
+            <apex:pageblocksection columns="1" title="SCI External Attendees" >
+                <apex:pageBlockTable value="{!SCIAttendeeList}" var="var" rendered="{!SCIAttendeeList.size > 0}">
+                    <apex:column headerValue="Action" width="60px">
+                   <b> <apex:commandLink reRender="accContactsPnl,sciPnl" value="Delete" action="{!deleteSCIAttendee}">
+                    <apex:param name="SCIAttendee" value="{!Var.id}" assignTo="{!attendeeId}" />
+                    </apex:commandLink></b>
+                     </apex:column>
+                    <apex:column value="{!Var.Attendee_Name__r.Name}" headerValue="Name"/>
+                    <apex:column value="{!Var.Type__c}" headerValue="Attendee Type"/>
+                    <apex:column value="{!Var.Account__c}" headerValue="Account"/>
+                </apex:pageBlockTable>
+            </apex:pageblocksection>
+        </apex:outputPanel>
+
+        <br/>
+        
+        <apex:outputPanel id="tstpopup">
+        
+        <apex:outputPanel styleClass="popupBackground" layout="block" rendered="{!displayPopUp}"/>
+            <apex:outputPanel styleClass="custPopup" layout="block" rendered="{!displayPopUp}">
+            <apex:outputPanel id="hasError">
+                <apex:pageMessages />
+            </apex:outputPanel>
+              <apex:pageblocksection columns="2"   id="condtl">
+                
+                <apex:inputField value="{!sciAttendee.Type__c}" label="Attendee Type"/>
+                <apex:repeat value="{!$ObjectType.contact.FieldSets.NewContactForAttendees}" var="f">
+                    <apex:inputfield value="{!Con[f]}" required="{!OR(f.required, f.dbrequired)}">  
+                    </apex:inputfield>
+                </apex:repeat>  
+                </apex:pageblocksection> 
+                <br/>
+                <apex:commandButton value="Create & Add" action="{!createAndAddAttendee}"   style="position:relative;left:360px;"/>
+                <apex:commandButton value="Cancel" action="{!Cancel}" rerender="tstpopup,pgaddcon,pgblck,sciPnl,srchConts,accContactsPnl" style="position:relative;left:365px;"/>
+            </apex:outputPanel>
+        </apex:outputPanel>
+        
+            <apex:outputPanel id="conSrch">
+                <apex:pageBlockSection columns="1" title="Search Contact" id="srchSect">
+                    <apex:outputPanel id="schSec">
+                        <apex:inputText value="{!srchString}" onkeypress="return noenter()"/> 
+                        <apex:commandButton value="Search" action="{!searchContacts}" style="position:relative;left:50px;" reRender="noConPnl,srchConts,conSrch"  id="srchBut"/>
+                            <apex:commandButton value="Clear Search" action="{!clearSearch}" style="position:relative;left:60px;" reRender="conSrch,schSec,noConPnl"/>
+                            <apex:commandButton value="New Contact"  style="position:relative;left:70px;" action="{!addNewContact}" rerender="tstpopup"/>
+                            <br/>
+                        </apex:outputPanel>
+                    <apex:outputPanel id="noConPnl">
+                        <apex:outputPanel rendered="{!noContactsFound}">
+                            <b>No matching contacts found, Please create a new contact and add as SCI. </b>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                    <apex:outputPanel id="srchConts">
+                        <apex:pageBlockTable value="{!conSearchWrapList}" var="var" rendered="{!conSearchWrapList.size > 0}">
+                            <apex:column headerValue="Action" width="60px">
+                               <b> <apex:commandLink reRender="sciPnl,srchConts,accContactsPnl" value="Add" action="{!addAsSCI}">
+                                <apex:param name="contactId" value="{!Var.Con.id}" assignTo="{!conId}" />
+                                </apex:commandLink></b>
+                            </apex:column>
+                            <apex:column headerValue="Attendee Type">
+                            <apex:selectList size="1" multiselect="false" id="status" value="{!var.selectedType}">
+                                  <apex:selectOptions value="{!var.attendeeType}"></apex:selectOptions>
+                            </apex:selectList>
+                            </apex:column>
+                            <apex:column headerValue="Name">
+                                 <a target="_blank" href="/{!Var.Con.Id}">{!Var.Con.Name}</a>
+                            </apex:column>
+                            <apex:column value="{!Var.con.Account.Name}" headerValue="Account"/>
+                            <apex:column value="{!Var.con.Project_Role__c}" headerValue="Genral Role/Title"/>
+                            <apex:column value="{!Var.con.Email}" headerValue="Email"/>
+                            <apex:column value="{!Var.con.Phone}" headerValue="Phone"/>
+                            
+                        </apex:pageBlockTable>    
+                    </apex:outputPanel>  
+                </apex:pageBlockSection>
+            </apex:outputPanel>
+            
+            <apex:outputPanel id="accContactsPnl">
+                <apex:pageBlockSection columns="1" title="{!accName}" rendered="{!accContctWrapList.size > 0}" >
+                    <apex:pageBlockTable value="{!accContctWrapList}" var="var" >
+                        <apex:column headerValue="Action" width="60px">
+                           <b> <apex:commandLink reRender="sciPnl,accContactsPnl" value="Add" action="{!addAsSCI}">
+                            <apex:param name="contactId" value="{!Var.Con.id}" assignTo="{!conId}" />
+                            </apex:commandLink></b>
+                        </apex:column>
+                        <apex:column headerValue="Name">
+                             <a target="_blank" href="/{!Var.Con.Id}">{!Var.Con.Name}</a>
+                        </apex:column>
+                        <apex:column value="{!Var.con.Account.Name}" headerValue="Account"/>
+                        <apex:column value="{!Var.con.Project_Role__c}" headerValue="Genral Role/Title"/>
+                        <apex:column value="{!Var.con.Email}" headerValue="Email"/>
+                        <apex:column value="{!Var.con.Phone}" headerValue="Phone"/>
+                        
+                    </apex:pageBlockTable>    
+                </apex:pageBlockSection>
+            </apex:outputPanel>
+        </apex:pageBlock>
+        </apex:outputPanel>
+        </apex:form>
+
+</apex:page>

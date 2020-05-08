@@ -1,0 +1,984 @@
+<apex:page controller="RenewalNotificationController" docType="html-5.0" sidebar="false">
+    <script>
+      window.RESOURCE_ROOT = "{!URLFOR($Resource.Multiselect_Forecasting, '')}";
+    </script>
+    <apex:includeScript id="jQuery" value="https://code.jquery.com/jquery-3.1.1.min.js" />
+    <apex:stylesheet id="jQuery-ui" value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular-animate.min.js"></script>
+    <apex:stylesheet value="{!URLFOR($Resource.Multiselect_Forecasting, 'multi-select/style.css')}" />
+    <script src="{!URLFOR($Resource.Multiselect_Forecasting, 'multi-select/multiselect.js')}"/>
+    <script src="{!URLFOR($Resource.Renewal_Notification, 'js/renewal_notification.js')}"></script>
+    <apex:includeScript id="jQuery-autocomplete" value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" />
+    <apex:stylesheet id="jquery-datepicker-css" value="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.4/jquery.datetimepicker.min.css" />
+    <apex:includeScript id="jquery-datepicker" value="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.4/jquery.datetimepicker.min.js" />
+    <script>
+        var j$ = jQuery.noConflict();
+        var recordId = '';
+        var owneremailId = '';
+        var customeremails = '';
+        var partneremails = '';
+        var additionalemailstosend = '';
+        var terminationTemplateId = '';
+        var sub = '';
+        function openEmailpage(recId,owneremail,custemails,partemails,templateId, subject){
+            window.open('/_ui/core/email/author/EmailAuthor?retURL=/'+ recId +'&p3_lkid='+ recId + '&template_id='+ templateId + '&p24=' + custemails + partemails + owneremail + '&p6=' + subject + '&p26=zbilling@zscaler.com','_blank');
+        }
+        function confirmTermination(recId,owneremail,custemails,partemails, additionalemails, terminationTempId, subject){
+            var resp = confirm('Are you sure to Terminate Subscription?');
+            if(resp == true){
+                //terminateOppty(recId);
+                recordId = recId;
+                owneremailId = owneremail;
+                customeremails = custemails;
+                partneremails = partemails;
+                additionalemailstosend = additionalemails;
+                terminationTemplateId = terminationTempId;
+                sub = subject;
+                window.open('/apex/OppLossReasonFormPage?oppId='+ recId + '&custpartowneremails=' + custemails + partemails + additionalemailstosend + owneremail + '&terminationTemplateId=' + terminationTempId + '&subject= ' + sub, '_self');
+            }
+            
+        }
+        function sendterminationemail(){
+            openEmailpage(recordId,owneremailId,customeremails,partneremails + additionalemailstosend ,terminationTemplateId, sub);
+        }
+        var geoandrepmap = {!GeoAndRepPicklistValues};
+        var DaysPastDueSet = {!DaysPastDueArray};
+        var NumberofExtensionsSet = {!NumberofExtensionsArray};
+        var selectedTab = '{!SelectedTab}';
+        var showGEOfilter = {!showGEOfilter};
+        
+        function calloppty(currentpicklist){
+            console.log(currentpicklist);
+            if(currentpicklist == 'geovals'){
+                //angular.element(document.getElementById('ngContainer')).scope().selectedrepvals = [];
+                angular.element(document.getElementById('ngContainer')).scope().loadregvalsmulti();
+            }
+            if(currentpicklist != 'geovals'){
+                angular.element(document.getElementById('ngContainer')).scope().loadOpportunityListing();
+            }
+        }
+        
+        function reloadpickvals(dayspastset, numextset){
+            var ds = new Set();
+            for(var s=0; dayspastset.indexOf('--') != -1 && s < dayspastset.split('--').length; s++){
+                if(dayspastset.split('--')[s] != '')
+                    ds.add(dayspastset.split('--')[s]);
+            }
+            var ns = new Set();
+            for(var index=0; numextset.indexOf('--') != -1 && index < numextset.split('--').length; index++){
+                if(numextset.split('--')[index] != '')
+                    ns.add(numextset.split('--')[index]);
+            }
+            DaysPastDueSet = ds;
+            NumberofExtensionsSet = ns;
+            console.log(DaysPastDueSet);
+            console.log(NumberofExtensionsSet);
+            angular.element(document.getElementById('ngContainer')).scope().loadnoOfExtensionvals();
+            //angular.element(document.getElementById('ngContainer')).scope().loaddayspastduevals();
+        }
+        function scrolliferror(error){
+            if(error == 'true'){
+                window.scrollTo(0,0);
+            }
+        }
+        window.onload = function() {
+            j$('input[type=text]').blur();
+        
+        };
+        function saveOpptyforterminate(recId){
+            
+            var primreason = j$('.Primary_Reason_For_Loss__c').val();
+            var secreason = j$('.Secondary_Reason_For_Loss__c').val();
+            var deallostto = j$('.Deal_Lost_To__c').val();
+            var zpadeallostto = j$('.ZPA_Deal_Lost_To__c').val();
+            if(primreason == '' || secreason == '' || deallostto == '' || zpadeallostto == ''){
+                alert('Please enter the required fields under Opportunity Loss Section');
+                return false;
+            }else{
+                j$('#terminateOppty_loader').removeClass("hideblock");
+                console.log(primreason);
+                console.log(secreason);
+                console.log(deallostto);
+                console.log(zpadeallostto);
+                RenewalNotificationController.terminateOppty(recId, primreason, secreason, deallostto, zpadeallostto, function(result, event) {
+                                            j$('#terminateOppty_loader').addClass("hideblock");
+                                            if (event.type == 'exception' || result != 'Success') {
+                                                if(event.type == 'exception'){
+                                                    alert(event.message);
+                                                }else{
+                                                    alert(result);
+                                                }
+                                            } else {
+                                                cancelOpptyPopup();
+                                                sendterminationemail();
+                                                reloadpickvals('{!DaysPastDueVals}','{!NumberofExtensionsVals}');
+                                                statusfilter();
+                                            }
+                                        });
+            }
+        }
+    </script>
+    <style>
+        .popup-table {
+            height: 100px;
+            overflow-y: scroll;
+            border: 1px solid gray;
+        }
+        .rich-tabpanel-content {
+            font-size: 100%;
+        }
+        .custPopup{
+            background-color: white;
+            border-width: 2px;
+            border-radius: 10px;
+            z-index: 9999;
+            left: 55%;
+            padding:10px;
+            position: fixed;
+            /* These are the 3 css properties you will need to change so the popup
+            displays in the center of the screen. First set the width. Then set
+            margin-left to negative half of what the width is. You can add
+            the height property for a fixed size pop up if you want.*/
+            width: 700px;
+            height: 350px;
+            margin-left: -35%;
+            top:30%;
+        }
+        .popupBackground{
+            background-color:black;
+            opacity: 0.85;
+            filter: alpha(opacity = 20);
+            position: fixed;
+            width: 150%;
+            height: 250%;
+            top: -200px;
+            left: -50px;
+            z-index: 9998;
+        }
+        .modal-backdrop {
+            background-color: rgba(255,255,255,0.75);
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            width: 100%;
+            height: 100%;
+        }
+
+        .loading-modal {
+            position: relative;
+            height: 300px;
+            width: 500px;
+            top: 20%;
+            background: url({!$Resource.loadingimg}) 50% 0 no-repeat;
+            margin: 0 auto;
+            padding-top: 60px;
+            text-align: center;
+            font-family: Verdana, Geneva, sans-serif;
+        }
+
+        .loadingIconSearch {
+            background-image: url("/img/loading.gif");
+            background-repeat: no-repeat;
+            background-position: 150px;
+        }
+
+        .ui-menu.ui-autocomplete.ui-front {
+            overflow-x: hidden;
+            overflow-y: auto;
+            min-height: 40px;
+            max-height: 200px;
+            max-width: 350px;
+            z-index: 9999;
+        }
+
+        .ui-menu .ui-menu-item {
+            border-bottom:
+             1px solid grey;
+        }
+        ul li, ol li {
+            margin-left: 0px;
+            padding-left: 0;
+            /*width: 195px*/
+        }
+        .listCaption{
+            margin-bottom: 10px;
+            padding-bottom: 15px;
+        }
+        .clearfix {
+            width: 0px;
+            height: 0px;
+            line-height: 0px;
+            font-size: 0px;
+            clear: both;
+            display: inline-block;
+        }
+        .rich-tab-active {
+            background-color: #3b4875;
+            font-weight: 900;
+            border: #3b4875;
+            color: white;
+        }
+        .rich-tab-inactive {
+            background-color: #7f939ee0;
+            border: #7f939ee0;
+        }
+        .rich-tab-active, .rich-tab-inactive {
+            background-image: none;
+            height: 20px;
+            width: 130px;
+        }
+        .homeTab .tertiaryPalette, .individualPalette .homeBlock .tertiaryPalette, .layoutEdit .individualPalette .homeBlock .tertiaryPalette {
+            background-color: #496f7b;
+            border-color: #496f7b;
+        }
+        .showblock{
+            display:block;
+        }
+        .hideblock{
+            display:none;
+        }
+        tr.dataRow{
+            text-align: center;
+        }
+        .datePicker{
+            z-index:10001;
+            height:auto;
+            position: fixed;
+        }
+
+    </style>
+    <apex:pageMessages id="pgmsg"/>
+    <apex:form >
+        
+        <apex:actionFunction id="statusfilter" name="statusfilter" action="{!NULL}" status="loadinggif" reRender="pb_up, pb_pd, paginationpanel, paginationpanel1">
+        </apex:actionFunction>
+        <apex:actionFunction id="filteroppty" name="filteroppty" action="{!NULL}" status="loadinggif" reRender="pb_up, pb_pd, paginationpanel, paginationpanel1" oncomplete="reloadpickvals('{!DaysPastDueVals}','{!NumberofExtensionsVals}');">
+            <apex:param name="reqassign" value="" assignTo="{!reqString}"/>
+        </apex:actionFunction>
+        <apex:actionFunction id="saveaf" name="saveaf"  status="loadinggif" action="{!saveoppty}" reRender="pgmsg, pb_up, pb_pd" oncomplete="scrolliferror('{!erroronOpptySave}');">
+            <apex:param name="assignoppIdtoSave" value="" assignTo="{!oppIdtoSave}"/>
+            <apex:param name="assignstatusval" value="" assignTo="{!statusval}"/>
+        </apex:actionFunction>
+        <apex:actionFunction id="terminateOppty" name="terminateOppty" action="{!showEditOppPopup}" status="loadinggif" reRender="Opptypopup">
+            <apex:param name="assignopp" value="" assignTo="{!ContactAddtionoppId}"/>
+        </apex:actionFunction>
+        <!--<apex:actionstatus id="loadinggif">
+            <apex:facet name="start">
+                <div class="waitingSearchDiv" id="el_loading" style="background-color: #fbfbfb; height:100%;opacity:0.65;width:100%;">
+                    <div class="waitingHolder" style="top: 100px; width: 91px;">
+                    <img class="waitingImage" src="/img/loading.gif" title="Please Wait..." />
+                    <span class="waitingDescription">Loading...</span>
+                    </div>
+                </div>
+            </apex:facet>
+        </apex:actionstatus>-->
+        <div id="terminateOppty_loader" class="hideblock">
+            <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.75; z-index: 10001; background-color: black;">
+                &nbsp;
+            </div>
+            <div style="position: fixed; left: 0; top: 0; bottom: 0; right: 0; z-index: 10002; margin: 20% 50%">
+                <img src="{!URLFOR($Resource.Push_To_PROD_Loader)}" style="width:60px;height:60px;" />
+            </div>
+        </div>
+        <apex:actionStatus id="loadinggif">
+            <apex:facet name="start">
+            <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.75; z-index: 10001; background-color: black;">
+                &nbsp;
+            </div>
+            <div style="position: fixed; left: 0; top: 0; bottom: 0; right: 0; z-index: 10002; margin: 20% 50%">
+                <img src="{!URLFOR($Resource.Push_To_PROD_Loader)}" style="width:60px;height:60px;" />
+            </div>
+            </apex:facet>
+        </apex:actionStatus>
+        <apex:tabPanel value="{!SelectedTab}">
+            <apex:tab label="Upcoming Renewals"  name="Upcoming Renewals" id="up_ren" >
+                <p><b>View: {!$User.FirstName} {!$User.LastName}</b></p>
+                <p><b>Viewing {!SelectedTab} for next 100 days</b></p>
+                <apex:pageBlock >
+                        <!--<apex:selectList onchange="statusfilter();" label="Upcoming Notification Status" size="1" value="{!upcomingnotstatus}" multiselect="false">
+                            <apex:selectOptions value="{!status}"/>
+                        </apex:selectList>-->
+                    <div id="ngContainer" ng-app="renewalApp" ng-controller="renewalCtrl" ng-init="loadgeovals();loadregvalsmulti();loaddayspastduevals();loadnoOfExtensionvals();">
+                        <div class="listCaption">
+                            <span><div style="float:left;padding-right:10px"><div style="float:left;padding: 5px;">Deal Band: </div>
+                            <multiselect id="dealband" style="float:left;" class="" multiple="true"
+                                ng-model="selecteddealbandvals"  picklistsrc="dealbandvals"
+                                options="c for c in dealbandvals"></multiselect>
+                            </div>&nbsp;&nbsp;</span>
+                            <span><div style="float:left;padding-right:10px"><div style="float:left;padding: 5px;">Notifications: </div>
+                            <multiselect id="sendnotif" style="float:left;" class="" multiple="true"
+                                ng-model="selectedsendnotification"  picklistsrc="sendnotification"
+                                options="c for c in sendnotification"></multiselect>
+                            </div>&nbsp;&nbsp;</span>
+                            <span><div style="float:left;padding-right:10px"><div style="float:left;padding: 5px;">FC: </div>
+                            <multiselect id="fcval" style="float:left;" class="" multiple="true"
+                                ng-model="selectedFCvals"  picklistsrc="FCvals"
+                                options="c for c in FCvals"></multiselect>
+                            </div>&nbsp;&nbsp;</span>
+                            <span ng-show="showgeorepfilter == true"><div style="float:left;padding-right:10px"><div style="float:left;padding: 5px;">GEO: </div><multiselect id="geoVals" style="float:left;" class="" multiple="true"
+                                ng-model="selectedgeovals"  picklistsrc="geovals"
+                                options="c for c in geovals"></multiselect>
+                            </div>&nbsp;&nbsp;</span>
+                            <span ng-show="showgeorepfilter == true"><div style="float:left;padding-right:10px"><div style="float:left;padding: 5px;">Rep: </div>
+                            <multiselect id="repvals" style="float:left;" class="" multiple="true"
+                                ng-model="selectedrepvals"  picklistsrc="repvals"
+                                options="c for c in repvals"></multiselect>
+                            </div>&nbsp;&nbsp;</span>
+                        </div><div class="clearfix"></div><br/>
+                        <div class="listCaption">
+                            <span><div style="float:left;padding-right:10px"><div style="float:left;padding: 5px;">Close Date Range: </div>
+                            <apex:inputText id="datepicker_cds" value="{!closedatestartfilter}" onchange="statusfilter();" html-placeholder="Start"/>
+                             <script type="text/javascript">
+                                j$('[Id$=datepicker_cds]').datepicker({"dateFormat":"mm/dd/yy"});
+                                //j$('[Id$=datepicker_cds]').keydown(false);
+
+                            </script>
+                            </div>&nbsp;&nbsp;</span>
+                            <span><div style="float:left;padding-right:10px">
+                            <apex:inputText id="datepicker_cde" value="{!closedateEndfilter}" onchange="statusfilter();" html-placeholder="End"/>
+                             <script type="text/javascript">
+                                j$('[Id$=datepicker_cde]').datepicker({"dateFormat":"mm/dd/yy"});
+                                //j$('[Id$=datepicker_cde]').keydown(false);
+
+                            </script>
+                            </div>&nbsp;&nbsp;</span>
+                            <span><div style="float:left;padding-right:10px"><div style="float:left;padding: 5px;">Next Notification Range: </div>
+                            <apex:inputText id="datepicker_nns" value="{!nextnotifstartfilter}" onchange="statusfilter();" html-placeholder="Start"/>
+                             <script type="text/javascript">
+                                j$('[Id$=datepicker_nns]').datepicker({"dateFormat":"mm/dd/yy"});
+                                //j$('[Id$=datepicker_nns]').keydown(false);
+
+                            </script>
+                            </div>&nbsp;&nbsp;</span>
+                            <span><div style="float:left;padding-right:10px">
+                            <apex:inputText id="datepicker_nne" value="{!nextnotifendfilter}"  onchange="statusfilter();" html-placeholder="End"/>
+                             <script type="text/javascript">
+                                j$('[Id$=datepicker_nne]').datepicker({"dateFormat":"mm/dd/yy"});
+                                //j$('[Id$=datepicker_nne]').keydown(false);
+
+                            </script>
+                            </div>&nbsp;&nbsp;</span>
+                        </div><div class="clearfix"></div><br/>
+                        <div class="listCaption">
+                            <span><div style="float:left;padding-right:10px">
+                            <apex:inputText value="{!opptysearchfilter}" onchange="statusfilter()" html-placeholder="Search by Opp Name"/>
+                            </div>&nbsp;&nbsp;</span>
+                            <span><div style="float:left;padding-right:10px"><div style="float:left;padding: 5px;">Contract End Date Range: </div>
+                            <apex:inputText id="datepicker_ceds" value="{!cedstartfilter}" onchange="statusfilter();" html-placeholder="Start"/>
+                             <script type="text/javascript">
+                                j$('[Id$=datepicker_ceds]').datepicker({"dateFormat":"mm/dd/yy"});
+                                //j$('[Id$=datepicker_ceds]').keydown(false);
+
+                            </script>
+                            </div>&nbsp;&nbsp;</span>
+                            <span><div style="float:left;padding-right:10px">
+                            <apex:inputText id="datepicker_cede" value="{!cedendfilter}" onchange="statusfilter();" html-placeholder="End"/>
+                             <script type="text/javascript">
+                                j$('[Id$=datepicker_cede]').datepicker({"dateFormat":"mm/dd/yy"});
+                                //j$('[Id$=datepicker_cede]').keydown(false);
+
+                            </script>
+                            </div>&nbsp;&nbsp;</span>
+                        </div><div class="clearfix"></div><br/>
+                    </div>
+                    <apex:pageBlockButtons >
+                        <apex:commandButton id="cancelButton" value="Refresh Table" onclick="statusfilter(); return false;"/>
+                    </apex:pageBlockButtons>
+                    <apex:outputPanel id="paginationpanel">
+                        <apex:outputpanel rendered="{!opportunityList.size > 0}">
+                            <div class="listCaption">
+                                <div style="float:left;padding: 0px 0px 0px 3px; width:100%">
+                                    <span>
+                                        <apex:commandLink action="{!prevpage}" rerender="paginationpanel, pb_up" value="Previous <<" status="loadinggif" rendered="{!HasPrevious}"/>&nbsp;&nbsp;
+                                        <apex:selectList value="{!PageIndex}" size="1" onchange="statusfilter();" rendered="{!PageCount > 1}">
+                                            <apex:selectOptions value="{!pagenumbers}"/>
+                                        </apex:selectList>&nbsp;&nbsp;
+                                        <apex:commandLink action="{!nextpage}" value="Next >>" rerender="paginationpanel, pb_up" status="loadinggif" rendered="{!HasNext}"/>
+                                    </span>
+                                </div>
+                            </div><div class="clearfix"></div><br/>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                    <apex:outputPanel id="pb_up">
+                            <apex:pageBlockTable value="{!opportunityList}" var="opp">
+                                <apex:column >
+                                    <apex:outputField value="{!opp.opp.Owner.Name}"/> 
+                                    <apex:facet name="header">Owner</apex:facet>
+                                </apex:column>
+                                <apex:column >
+                                    <a href="/{!opp.opp.Id}" target="_blank"><apex:outputField value="{!opp.opp.Name}"/> </a>
+                                    <apex:facet name="header">Opportunity Name</apex:facet>
+                                </apex:column>
+                                <apex:column >
+                                    <apex:outputField value="{!opp.opp.Contract_End_Date_New__c}" />
+                                    <apex:facet name="header">Contract End Date</apex:facet>
+                                </apex:column>
+                                <apex:column >
+                                    <apex:outputField value="{!opp.opp.CloseDate}" />
+                                    <apex:facet name="header">Close Date</apex:facet>
+                                </apex:column>
+                                <apex:column >
+                                    <apex:outputField value="{!opp.opp.Amount}" />
+                                    <apex:facet name="header">Amount</apex:facet>
+                                </apex:column>
+                                <apex:column >
+                                    <apex:outputField value="{!opp.opp.Renewable_ACV__c}" />
+                                    <apex:facet name="header">Renewal ACV</apex:facet>
+                                </apex:column>
+                                <apex:column >
+                                    <apex:outputText value="{!opp.daystocontractdate}"/> 
+                                    <apex:facet name="header">Remaining days in contract</apex:facet>
+                                </apex:column>
+                                <apex:column >
+                                    <apex:outputPanel >
+                                        <span title="Edit" id="edit_{!opp.opp.Id}" style="float:left">
+                                            <img src="{!URLFOR($Resource.Renewal_Notification, 'img/edit.png')}" onclick="toggleinputoutput('{!opp.opp.Id}');return false;" style="width: 15px; height: 15px; float: left;"/>
+                                        </span>
+                                        <span id="save_{!opp.opp.Id}"  style="float:left;padding:2px;" class="hideblock">
+                                            <!--<apex:commandLink status="loadinggif" action="{!saveoppty}" reRender="pgmsg,pb_up" oncomplete="scrolliferror('{!erroronOpptySave}');">
+                                                    <apex:param name="AssignOppId1"
+                                                        value=""
+                                                        assignTo="{!oppIdtoSave}"/>
+                                                    <apex:image id="save" value="{!URLFOR($Resource.Renewal_Notification, 'img/save.png')}" width="15" height="15" alt="Save"/>
+                                            </apex:commandLink>-->
+                                            <img src="{!URLFOR($Resource.Renewal_Notification, 'img/save.png')}" onclick="savefn('{!opp.opp.Id}');return false;" style="width: 15px; height: 15px; float: left;"/>
+                                        </span>
+                                        <!--<span id="cancel_{!opp.opp.Id}"  style="float:left;padding:2px;" class="hideblock">
+                                            <img src="{!URLFOR($Resource.Renewal_Notification, 'img/cancel.png')}" onclick="statusfilter();return false;" style="width: 15px; height: 15px; float: left;"/>
+                                        </span>-->
+                                        <span id="cancel_{!opp.opp.Id}"  style="float:left;padding:2px;" class="hideblock">
+                                            <img src="{!URLFOR($Resource.Renewal_Notification, 'img/cancel.png')}" onclick="cancelfn('{!opp.opp.Id}');return false;" style="width: 15px; height: 15px; float: left;"/>
+                                        </span>
+                                        <span id="output_{!opp.opp.Id}" style="text-align:right" class="showblock">
+                                            <apex:outputField value="{!opp.opp.Renewal_Notification_Status__c}"/> 
+                                        </span>
+                                        <span id="input_{!opp.opp.Id}" style="float:right;" class="hideblock">
+                                            <apex:inputField styleClass="input_status_{!opp.opp.Id}" value="{!opp.opp.Renewal_Notification_Status__c}"/> 
+                                        </span>
+                                        
+                                        <script>
+                                            function toggleinputoutput(oppId){
+                                                j$('#save_'+oppId).removeClass('hideblock');
+                                                j$('#cancel_'+oppId).removeClass('hideblock');
+                                                j$('#edit_'+oppId).addClass('hideblock');
+                                                j$('#output_'+oppId).addClass('hideblock');
+                                                j$('#input_'+oppId).removeClass('hideblock');
+                                            }
+                                            function cancelfn(oppId){
+                                                j$('#save_'+oppId).addClass('hideblock');
+                                                j$('#cancel_'+oppId).addClass('hideblock');
+                                                j$('#edit_'+oppId).removeClass('hideblock');
+                                                j$('#output_'+oppId).removeClass('hideblock');
+                                                j$('#input_'+oppId).addClass('hideblock');
+                                            }
+                                            function savefn(oppId){
+                                                saveaf(oppId, j$('.input_status_'+oppId).val());
+                                            }
+                                        </script>
+                                    </apex:outputPanel>
+                                    <apex:facet name="header">Send Notification</apex:facet>
+                                </apex:column>
+                                <!--<apex:column >
+                                <apex:commandLink status="loadinggif" action="{!saveoppty}" reRender="pgmsg,pb_up" oncomplete="scrolliferror('{!erroronOpptySave}');">
+                                            <apex:param name="AssignOppId1"
+                                                value="{!opp.opp.Id}"
+                                                assignTo="{!oppIdtoSave}"/>
+                                            <apex:image id="save" value="{!URLFOR($Resource.Renewal_Notification, 'img/save.png')}" width="15" height="15" alt="Save"/>
+                                    </apex:commandLink>
+                                    <apex:facet name="header">Action</apex:facet>
+                                </apex:column>-->
+                                <apex:column >
+                                    <apex:outputField value="{!opp.opp.Next_Renewal_Notification_Date__c}" />
+                                    <apex:facet name="header">Next Notification Date</apex:facet>
+                                </apex:column>
+                                <apex:column >
+                                    {!opp.opp.Partner_Account_Contact_Name__c}<br/>
+                                    <apex:commandLink status="loadinggif" action="{!getcontactlists}" reRender="tstpopup1" >
+                                        <apex:param name="AssignOppId1"
+                                            value="{!opp.opp.Id}"
+                                            assignTo="{!ContactAddtionoppId}"/>
+                                        <apex:param name="AssignOppId2"
+                                            value="true"
+                                            assignTo="{!showPopup}"/>
+                                        <apex:param name="AssignOppId3"
+                                            value="{!opp.opp.APTS_Primary_Proposal_Lookup__r.Apttus_QPConfig__BillToAccountId__c}"
+                                            assignTo="{!ContactAddtionaccId}"/>
+                                        <apex:param name="AssignOppId4"
+                                            value="Partner"
+                                            assignTo="{!ispartorcust}"/>
+                                        <apex:outputPanel rendered="{!opp.haspartner}">
+                                            <apex:image value="{!URLFOR($Resource.Renewal_Notification, 'img/download-error.png')}" width="18" height="18" alt="Save" rendered="{!opp.showredpartner}"/>
+                                            <apex:image value="{!URLFOR($Resource.Renewal_Notification, 'img/download.png')}" width="18" height="18" alt="Save" rendered="{!opp.showordinarypartner}"/>
+                                        </apex:outputPanel>
+                                    </apex:commandLink>
+                                    <apex:facet name="header">Add Partner Contacts</apex:facet>
+                                </apex:column>
+                                <apex:column >
+                                    {!opp.customercontactname}<br/>
+                                    <apex:commandLink status="loadinggif" action="{!getcontactlists}" reRender="tstpopup1" >
+                                        <apex:param name="AssignOppId1"
+                                            value="{!opp.opp.Id}"
+                                            assignTo="{!ContactAddtionoppId}"/>
+                                        
+                                        <apex:param name="AssignOppId2"
+                                            value="true"
+                                            assignTo="{!showPopup}"/>
+                                        <apex:param name="AssignOppId3"
+                                            value="{!opp.opp.AccountId}"
+                                            assignTo="{!ContactAddtionaccId}"/>
+                                        <apex:param name="AssignOppId4"
+                                            value="Customer"
+                                            assignTo="{!ispartorcust}"/>
+                                        <apex:outputPanel rendered="{!opp.hasaccount}">
+                                            <apex:image value="{!URLFOR($Resource.Renewal_Notification, 'img/download-error.png')}" width="18" height="18" alt="Save" rendered="{!opp.showredcustomer}"/>
+                                            <apex:image value="{!URLFOR($Resource.Renewal_Notification, 'img/download.png')}" width="18" height="18" alt="Save" rendered="{!opp.showordinarycustomer}"/>
+                                        </apex:outputPanel>
+                                    </apex:commandLink>
+                                    <apex:facet name="header">Add Customer Contacts</apex:facet>
+                                </apex:column>
+                                <apex:column width="5%">
+                                    <apex:commandButton rerender="pgmsg" value="Notify Now" action="{!NULL}" onclick="openEmailpage('{!opp.opp.Id}','{!opp.opp.Owner.Email}','{!opp.customercontactemail}','{!opp.opp.Partner_Account_Contact_Email__c}','{!futurenotificationTemplateId}','Your Zscaler Subscription is coming up for Renewal for the Customer {!URLENCODE(opp.opp.Account.Name)}');" >
+                                    </apex:commandButton>
+                                </apex:column>
+                                <!--<apex:inlineEditSupport event="onmouseover"/>-->
+                            </apex:pageBlockTable>
+                        </apex:outputPanel>
+                        <apex:outputPanel id="tstpopup1">
+                        <apex:outputPanel styleClass="popupBackground" layout="block" rendered="{!showPopup}"/>
+                        <apex:outputPanel styleClass="custPopup" layout="block" rendered="{!showPopup}">
+                            <apex:pageBlockSection columns="1" rendered="{!RenewalRecipientList.size > 0}" collapsible="true" title="Renewal Recipients">
+                                <apex:outputPanel styleClass="popup-table" layout="block">
+                                    <apex:pageBlockTable value="{!RenewalRecipientList}" var="con">
+                                        <apex:column >
+                                            <apex:inputCheckbox value="{!con.checked}"/>
+                                        </apex:column>
+                                        <apex:column >
+                                            <apex:facet name="header">Contact Name</apex:facet>
+                                            <apex:outputText value="{!con.con.Name}"/>
+                                        </apex:column>
+                                        <apex:column >
+                                            <apex:facet name="header">Contact Email</apex:facet>
+                                            <apex:outputText value="{!con.con.Email}"/>
+                                        </apex:column>
+                                    </apex:pageBlockTable>
+                                </apex:outputPanel>
+                            </apex:pageBlockSection>
+                            <apex:pageBlockSection columns="1" rendered="{!NonRenewalRecipientList.size > 0}" collapsible="true" title="Other Contacts on Account">
+                                <apex:outputPanel styleClass="popup-table" layout="block">
+                                    <apex:pageBlockTable value="{!NonRenewalRecipientList}" var="con">
+                                        
+                                        <apex:column >
+                                            <apex:inputCheckbox value="{!con.checked}"/>
+                                        </apex:column>
+                                        <apex:column >
+                                            <apex:facet name="header">Contact Name</apex:facet>
+                                            <apex:outputText value="{!con.con.Name}"/>
+                                        </apex:column>
+                                        <apex:column >
+                                            <apex:facet name="header">Contact Email</apex:facet>
+                                            <apex:outputText value="{!con.con.Email}"/>
+                                        </apex:column>
+                                    </apex:pageBlockTable>
+                                </apex:outputPanel>
+                            </apex:pageBlockSection>
+                            <br/>
+                            <apex:commandButton value="Add New Contact" action="{!showNewContactPopup}" reRender="tstpopup1, tstpopup1_contactcreation" style="position:relative;left:360px;background: #009CDA; color: #F3F3EC; padding: 2px 10px; font-size: 1em; text-decoration: none;" status="popupActionStatus"/>
+                            <apex:actionStatus id="popupActionStatus" startText="Please wait..." stopText="" startStyleClass="loadingIcon" stopStyleClass=""></apex:actionStatus>
+                            <apex:commandButton value="Cancel" action="{!closepopup}" immediate="true" rerender="tstpopup1" style="background: #009CDA; color: #F3F3EC; padding: 2px 10px; font-size: 1em;  text-decoration: none; position:relative;left:365px;" status="popupActionStatus"/>
+                            <apex:commandButton value="Save" action="{!savecontacts}" rerender="tstpopup1,pgmsg,pb_up"  style="background: #009CDA; color: #F3F3EC; padding: 2px 10px; font-size: 1em;  text-decoration: none; position:relative;left:365px;" status="popupActionStatus"/>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                    <apex:outputPanel id="tstpopup1_contactcreation">
+                        <apex:outputPanel styleClass="popupBackground" layout="block" rendered="{!showPopupContact}"/>
+                        <apex:outputPanel styleClass="custPopup" layout="block" rendered="{!showPopupContact}">
+                        <apex:outputPanel id="hasError">
+                            {!popupMessage}
+                        </apex:outputPanel>
+                          <apex:pageblocksection columns="2" title="Add New Contact" id="condtl">
+                            <apex:repeat value="{!$ObjectType.contact.FieldSets.NewContactForAttendees}" var="f">
+                                <apex:inputfield value="{!newContact[f]}" required="{!OR(f.required, f.dbrequired)}">
+                                </apex:inputfield>
+                            </apex:repeat>
+                            </apex:pageblocksection>
+                            <br/>
+                            <apex:commandButton value="Create & Add" action="{!createAndAddContact}" reRender="tstpopup1_contactcreation, tstpopup1" style="position:relative;left:360px;background: #009CDA; color: #F3F3EC; padding: 2px 10px; font-size: 1em; text-decoration: none;" status="popupActionStatus2"/>
+                            <apex:actionStatus id="popupActionStatus2" startText="Please wait..." stopText="" startStyleClass="loadingIcon" stopStyleClass=""></apex:actionStatus>
+                            <button onclick="contactcancelupcoming();return false;" style="background: #009CDA; color: #F3F3EC; padding: 2px 10px; font-size: 1em;  text-decoration: none; position:relative;left:365px;">Cancel</button>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                </apex:pageBlock>
+            </apex:tab>
+            <apex:tab label="Manage Extensions" name="Manage Extensions" id="pd_ren" >
+                <p><b>View: {!$User.FirstName} {!$User.LastName}</b></p>
+                <p><b>{!SelectedTab} for opportunities expired in last 40 days</b></p>
+                <apex:pageBlock >
+                    <div id="ngContainer" ng-app="renewalApp" ng-controller="renewalCtrl" ng-init="loadgeovals();loadregvalsmulti();loaddayspastduevals();loadnoOfExtensionvals();">
+                        <div class="listCaption">
+                            
+                            <span><div style="float:left;padding-right:10px"><div style="float:left;padding: 5px;">Notifications: </div>
+                            <multiselect id="sendnotif" style="float:left;" class="" multiple="true"
+                                ng-model="selectedsendnotification"  picklistsrc="sendnotification"
+                                options="c for c in sendnotification"></multiselect>
+                            </div>&nbsp;&nbsp;</span>
+                            <span ng-show="showgeorepfilter == true"><div style="float:left;padding-right:10px"><div style="float:left;padding: 5px;">GEO: </div><multiselect id="geoVals" style="float:left;" class="" multiple="true"
+                                ng-model="selectedgeovals"  picklistsrc="geovals"
+                                options="c for c in geovals"></multiselect>
+                            </div>&nbsp;&nbsp;</span>
+                            <span ng-show="showgeorepfilter == true"><div style="float:left;padding-right:10px"><div style="float:left;padding: 5px;">Rep: </div>
+                            <multiselect id="repvals" style="float:left;" class="" multiple="true"
+                                ng-model="selectedrepvals"  picklistsrc="repvals"
+                                options="c for c in repvals"></multiselect>
+                            </div>&nbsp;&nbsp;</span>
+                            <span><div style="float:left;padding-right:10px"><div style="float:left;padding: 5px;">Close Date Range: </div>
+                            <apex:inputText id="datepicker_cds" value="{!closedatestartfilter}" onchange="statusfilter();" html-placeholder="Start"/>
+                             <script type="text/javascript">
+                                j$('[Id$=datepicker_cds]').datepicker({"dateFormat":"mm/dd/yy"});
+                                //j$('[Id$=datepicker_cds]').keydown(false);
+
+                            </script>
+                            </div>&nbsp;&nbsp;</span>
+                            <span><div style="float:left;padding-right:10px">
+                            <apex:inputText id="datepicker_cde" value="{!closedateEndfilter}" onchange="statusfilter();" html-placeholder="End"/>
+                             <script type="text/javascript">
+                                j$('[Id$=datepicker_cde]').datepicker({"dateFormat":"mm/dd/yy"});
+                                //j$('[Id$=datepicker_cde]').keydown(false);
+
+                            </script>
+                            </div>&nbsp;&nbsp;</span>
+                            <span><div style="float:left;padding-right:10px"><div style="float:left;padding: 5px;">Days Past Due: </div>
+                            <multiselect id="dayspastduevals" style="float:left;" class="" multiple="true"
+                                ng-model="selecteddayspastduevals"  picklistsrc="dayspastduevals"
+                                options="c for c in dayspastduevals"></multiselect>
+                            </div>&nbsp;&nbsp;</span>
+                        </div><div class="clearfix"></div><br/>
+                        <div class="listCaption">
+                            <span><div style="float:left;padding-right:10px">
+                            <apex:inputText value="{!opptysearchfilter}" onchange="statusfilter()" html-placeholder="Search by Opp Name"/>
+                            </div>&nbsp;&nbsp;</span>
+                            
+                            <span><div style="float:left;padding-right:10px"><div style="float:left;padding: 5px;">Next Notification Range: </div>
+                            <apex:inputText id="datepicker_nns" value="{!nextnotifstartfilter}" onchange="statusfilter();" html-placeholder="Start"/>
+                             <script type="text/javascript">
+                                j$('[Id$=datepicker_nns]').datepicker({"dateFormat":"mm/dd/yy"});
+                                //j$('[Id$=datepicker_nns]').keydown(false);
+
+                            </script>
+                            </div>&nbsp;&nbsp;</span>
+                            <span><div style="float:left;padding-right:10px">
+                            <apex:inputText id="datepicker_nne" value="{!nextnotifendfilter}" onchange="statusfilter();" html-placeholder="End"/>
+                             <script type="text/javascript">
+                                j$('[Id$=datepicker_nne]').datepicker({"dateFormat":"mm/dd/yy"});
+                                //j$('[Id$=datepicker_nne]').keydown(false);
+
+                            </script>
+                            </div>&nbsp;&nbsp;</span>
+                            
+                            <span><div style="float:left;padding-right:10px"><div style="float:left;padding: 5px;">No of Extension: </div>
+                            <multiselect id="noOfExtensionvals" style="float:left;" class="" multiple="true"
+                                ng-model="selectednoOfExtensionvals"  picklistsrc="noOfExtensionvals"
+                                options="c for c in noOfExtensionvals"></multiselect>
+                            </div>&nbsp;&nbsp;</span>
+                        </div><div class="clearfix"></div><br/>
+                    </div>
+                    <apex:pageBlockButtons >
+                        <apex:commandButton id="cancelButton" value="Refresh Table" onclick="statusfilter(); return false;"/>
+                    </apex:pageBlockButtons>
+                    <apex:outputPanel id="paginationpanel1">
+                        <apex:outputpanel rendered="{!opportunityList.size > 0}">
+                            <div class="listCaption">
+                                <div style="float:left;padding: 0px 0px 0px 3px; width:100%">
+                                    <span>
+                                        <apex:commandLink action="{!prevpage}" value="<< Previous" status="loadinggif" rendered="{!HasPrevious}" rerender="paginationpanel1,pb_pd"/>&nbsp;&nbsp;
+                                        <apex:selectList value="{!PageIndex}" size="1" onchange="statusfilter();" rendered="{!PageCount > 1}">
+                                            <apex:selectOptions value="{!pagenumbers}"/>
+                                        </apex:selectList>&nbsp;&nbsp;
+                                        <apex:commandLink action="{!nextpage}" rerender="paginationpanel1,pb_pd" value="Next >>" status="loadinggif" rendered="{!HasNext}"/>
+                                    </span>
+                                </div>
+                            </div><div class="clearfix"></div><br/>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                    <apex:outputPanel id="pb_pd" >
+                        <apex:pageBlockTable value="{!opportunityList}" var="opp">
+                            <apex:column >
+                                <apex:commandButton status="loadinggif" value="Request Approval" action="{!showNewExtensionrequestCreation}" reRender="pgmsg,Extensionpopup" rendered="{!opp.opp.Extension_Approval_Status__c != 'Pending Approval'}">
+                                    <apex:param name="AssignOppIdforExtension"
+                                        value="{!opp.opp.Id}"
+                                        assignTo="{!ContactAddtionoppId}"/>
+                                </apex:commandButton>
+                                <apex:facet name="header">Action</apex:facet>
+                            </apex:column>
+                            <apex:column >
+                                <apex:outputField value="{!opp.opp.Owner.Name}"/> 
+                                <apex:facet name="header">Owner</apex:facet>
+                            </apex:column>
+                            <apex:column >
+                                <a href="/{!opp.opp.Id}" target="_blank"><apex:outputField value="{!opp.opp.Name}"/> </a>
+                                <apex:facet name="header">Opportunity Name</apex:facet>
+                            </apex:column>
+                            <apex:column >
+                                <apex:outputField value="{!opp.opp.Contract_End_Date_New__c}" />
+                                <apex:facet name="header">Contract End Date</apex:facet>
+                            </apex:column>
+                            <apex:column >
+                                <apex:outputField value="{!opp.opp.CloseDate}" />
+                                <apex:facet name="header">Close Date</apex:facet>
+                            </apex:column>
+                            <apex:column >
+                                <apex:outputField value="{!opp.opp.Amount}" />
+                                <apex:facet name="header">Amount</apex:facet>
+                            </apex:column>
+                            <apex:column >
+                                <apex:outputField value="{!opp.opp.Renewable_ACV__c}" />
+                                <apex:facet name="header">Renewal ACV</apex:facet>
+                            </apex:column>
+                            <apex:column >
+                                <apex:outputText value="{!opp.daystocontractdate}"/> 
+                                <apex:facet name="header">Days Past Due</apex:facet>
+                            </apex:column>
+                            <apex:column >
+                                <apex:outputField value="{!opp.opp.Extension_Approval_Status__c}"/> 
+                                <apex:facet name="header">Status</apex:facet>
+                            </apex:column>
+                            <apex:column >
+                                <apex:outputField value="{!opp.opp.New_Extended_Contract_Date__c}" />
+                                <apex:facet name="header">Contract Extended To</apex:facet>
+                            </apex:column>
+                            <apex:column >
+                                <apex:outputField value="{!opp.opp.Number_of_Extension_Requests__c}"/> 
+                                <apex:facet name="header">Number of Extensions</apex:facet>
+                            </apex:column>
+                            <apex:column >
+                                <apex:outputPanel >
+                                    <span title="Edit" id="edit_{!opp.opp.Id}" style="float:left">
+                                        <img src="{!URLFOR($Resource.Renewal_Notification, 'img/edit.png')}" onclick="toggleinputoutput('{!opp.opp.Id}');return false;" style="width: 15px; height: 15px; float: left;"/>
+                                    </span>
+                                    <span id="save_{!opp.opp.Id}"  style="float:left;" class="hideblock">
+                                        <!--<apex:commandLink status="loadinggif" action="{!saveoppty}" reRender="pgmsg,pb_pd" oncomplete="scrolliferror('{!erroronOpptySave}');">
+                                            <apex:param name="AssignOppId2"
+                                                value="{!opp.opp.Id}"
+                                                assignTo="{!oppIdtoSave}"/>
+                                            <apex:image id="save2" value="{!URLFOR($Resource.Renewal_Notification, 'img/save.png')}" width="15" height="15" alt="Save"/>
+                                        </apex:commandLink>-->
+                                        <img src="{!URLFOR($Resource.Renewal_Notification, 'img/save.png')}" onclick="savefn('{!opp.opp.Id}');return false;" style="width: 15px; height: 15px; float: left;"/>
+                                    </span>
+                                    <!--<span id="cancel_{!opp.opp.Id}"  style="float:left;" class="hideblock">
+                                        <img src="{!URLFOR($Resource.Renewal_Notification, 'img/cancel.png')}" onclick="statusfilter();return false;" style="width: 15px; height: 15px; float: left;"/>
+                                    </span>-->
+                                    <span id="cancel_{!opp.opp.Id}"  style="float:left;padding:2px;" class="hideblock">
+                                        <img src="{!URLFOR($Resource.Renewal_Notification, 'img/cancel.png')}" onclick="cancelfn('{!opp.opp.Id}');return false;" style="width: 15px; height: 15px; float: left;"/>
+                                    </span>
+                                    <span id="output_{!opp.opp.Id}" style="text-align:right;" class="showblock">
+                                        <apex:outputField value="{!opp.opp.Past_Due_Notification_Status__c}" rendered="{!!opp.isupcoming}"/> 
+                                        <apex:outputField value="{!opp.opp.Renewal_Notification_Status__c}" rendered="{!opp.isupcoming}"/>  
+                                    </span>
+                                    <span id="input_{!opp.opp.Id}" style="float:right;" class="hideblock">
+                                        <apex:inputField styleClass="input_status_{!opp.opp.Id}" value="{!opp.opp.Past_Due_Notification_Status__c}" rendered="{!!opp.isupcoming}"/> 
+                                        <apex:inputField styleClass="input_status_{!opp.opp.Id}" value="{!opp.opp.Renewal_Notification_Status__c}" rendered="{!opp.isupcoming}"/> 
+                                    </span>
+                                    
+                                    <script>
+                                        function toggleinputoutput(oppId){
+                                            j$('#save_'+oppId).removeClass('hideblock');
+                                            j$('#cancel_'+oppId).removeClass('hideblock');
+                                            j$('#edit_'+oppId).addClass('hideblock');
+                                            j$('#output_'+oppId).addClass('hideblock');
+                                            j$('#input_'+oppId).removeClass('hideblock');
+                                        }
+                                        function cancelfn(oppId){
+                                            j$('#save_'+oppId).addClass('hideblock');
+                                            j$('#cancel_'+oppId).addClass('hideblock');
+                                            j$('#edit_'+oppId).removeClass('hideblock');
+                                            j$('#output_'+oppId).removeClass('hideblock');
+                                            j$('#input_'+oppId).addClass('hideblock');
+                                        }
+                                        function savefn(oppId){
+                                            saveaf(oppId, j$('.input_status_'+oppId).val());
+                                        }
+                                    </script>
+                                </apex:outputPanel>
+                                <apex:facet name="header">Send Notification</apex:facet>
+                            </apex:column>
+                            <!--<apex:column >
+                                <apex:commandLink status="loadinggif" action="{!saveoppty}" reRender="pgmsg,pb_pd" oncomplete="scrolliferror('{!erroronOpptySave}');">
+                                    <apex:param name="AssignOppId2"
+                                        value="{!opp.opp.Id}"
+                                        assignTo="{!oppIdtoSave}"/>
+                                    <apex:image id="save" value="{!URLFOR($Resource.Renewal_Notification, 'img/save.png')}" width="15" height="15" alt="Save"/>
+                                </apex:commandLink>
+                                <apex:facet name="header">Action</apex:facet>
+                            </apex:column>-->
+                            <apex:column >
+                                <apex:commandButton style="background: firebrick;color: white;" value="Terminate Subscription" status="loadinggif"  action="{!NULL}" rerender="pgmsg"  onclick="confirmTermination('{!opp.opp.Id}','{!opp.opp.Owner.Email}','{!opp.customercontactemail}','{!opp.opp.Partner_Account_Contact_Email__c}', '{!additionalemailtoTerminate}','{!terminationTemplateId}', 'Zscaler Subscription Termination for the Customer ');">
+                                </apex:commandButton>
+                                <apex:facet name="header">Terminate Subscription</apex:facet>
+                            </apex:column>
+                            <apex:column >
+                                <apex:outputField value="{!opp.opp.Next_Renewal_Notification_Date__c}" />
+                                <apex:facet name="header">Next Notification Date</apex:facet>
+                            </apex:column>
+                            <apex:column >
+                                {!opp.opp.Partner_Account_Contact_Name__c}<br/>
+                                <apex:commandLink status="loadinggif" action="{!getcontactlists}" reRender="tstpopup" >
+                                    <apex:param name="AssignOppId1"
+                                        value="{!opp.opp.Id}"
+                                        assignTo="{!ContactAddtionoppId}"/>
+                                    <apex:param name="AssignOppId2"
+                                        value="true"
+                                        assignTo="{!showPopup}"/>
+                                    <apex:param name="AssignOppId3"
+                                        value="{!opp.opp.APTS_Primary_Proposal_Lookup__r.Apttus_QPConfig__BillToAccountId__c}"
+                                        assignTo="{!ContactAddtionaccId}"/>
+                                    <apex:param name="AssignOppId4"
+                                        value="Partner"
+                                        assignTo="{!ispartorcust}"/>
+                                    <apex:outputPanel rendered="{!opp.haspartner}">
+                                        <apex:image value="{!URLFOR($Resource.Renewal_Notification, 'img/download-error.png')}" width="18" height="18" alt="Save" rendered="{!opp.showredpartner}"/>
+                                        <apex:image value="{!URLFOR($Resource.Renewal_Notification, 'img/download.png')}" width="18" height="18" alt="Save" rendered="{!opp.showordinarypartner}"/>
+                                    </apex:outputPanel>
+                                </apex:commandLink>
+                                <apex:facet name="header">Add Partner Contacts</apex:facet>
+                            </apex:column>
+                            <apex:column >
+                                {!opp.customercontactname}<br/>
+                                <apex:commandLink status="loadinggif" action="{!getcontactlists}" reRender="tstpopup" >
+                                    <apex:param name="AssignOppId1"
+                                        value="{!opp.opp.Id}"
+                                        assignTo="{!ContactAddtionoppId}"/>
+                                    <apex:param name="AssignOppId2"
+                                        value="true"
+                                        assignTo="{!showPopup}"/>
+                                    <apex:param name="AssignOppId3"
+                                        value="{!opp.opp.AccountId}"
+                                        assignTo="{!ContactAddtionaccId}"/>
+                                    <apex:param name="AssignOppId4"
+                                        value="Customer"
+                                        assignTo="{!ispartorcust}"/>
+                                    <apex:outputPanel rendered="{!opp.hasaccount}">
+                                        <apex:image value="{!URLFOR($Resource.Renewal_Notification, 'img/download-error.png')}" width="18" height="18" alt="Save" rendered="{!opp.showredcustomer}"/>
+                                        <apex:image value="{!URLFOR($Resource.Renewal_Notification, 'img/download.png')}" width="18" height="18" alt="Save" rendered="{!opp.showordinarycustomer}"/>
+                                    </apex:outputPanel>
+                                </apex:commandLink>
+                                <apex:facet name="header">Add Customer Contacts</apex:facet>
+                            </apex:column>
+                            
+                            <apex:column >
+                                <apex:commandButton rerender="pgmsg" value="Notify Now" action="{!NULL}" onclick="openEmailpage('{!opp.opp.Id}','{!opp.opp.Owner.Email}','{!opp.customercontactemail}','{!opp.opp.Partner_Account_Contact_Email__c}','{!pastdueTemplateId}','Your Zscaler Subscription is Past Due for the Customer {!URLENCODE(opp.opp.Account.Name)}');" >
+                                </apex:commandButton>
+                            </apex:column>
+                        </apex:pageBlockTable>
+                    </apex:outputPanel>
+                        <apex:outputPanel id="tstpopup">
+                        <apex:outputPanel styleClass="popupBackground" layout="block" rendered="{!showPopup}"/>
+                        <apex:outputPanel styleClass="custPopup" layout="block" rendered="{!showPopup}">
+                            <apex:pageBlockSection columns="1" rendered="{!RenewalRecipientList.size > 0}" collapsible="true" title="Renewal Recipients">
+                                <apex:outputPanel styleClass="popup-table" layout="block">
+                                    <apex:pageBlockTable value="{!RenewalRecipientList}" var="con" styleClass="popup-table">
+                                        
+                                        <apex:column >
+                                            <apex:inputCheckbox value="{!con.checked}"/>
+                                        </apex:column>
+                                        <apex:column >
+                                            <apex:facet name="header">Contact Name</apex:facet>
+                                            <apex:outputText value="{!con.con.Name}"/>
+                                        </apex:column>
+                                        <apex:column >
+                                            <apex:facet name="header">Contact Email</apex:facet>
+                                            <apex:outputText value="{!con.con.Email}"/>
+                                        </apex:column>
+                                    </apex:pageBlockTable>
+                                </apex:outputPanel>
+                            </apex:pageBlockSection>
+                            <apex:pageBlockSection columns="1" rendered="{!NonRenewalRecipientList.size > 0}" collapsible="true" title="Other Contacts on Account">
+                                <apex:outputPanel styleClass="popup-table" layout="block">
+                                    <apex:pageBlockTable value="{!NonRenewalRecipientList}" var="con" styleClass="popup-table">
+                                        
+                                        <apex:column >
+                                            <apex:inputCheckbox value="{!con.checked}"/>
+                                        </apex:column>
+                                        <apex:column >
+                                            <apex:facet name="header">Contact Name</apex:facet>
+                                            <apex:outputText value="{!con.con.Name}"/>
+                                        </apex:column>
+                                        <apex:column >
+                                            <apex:facet name="header">Contact Email</apex:facet>
+                                            <apex:outputText value="{!con.con.Email}"/>
+                                        </apex:column>
+                                    </apex:pageBlockTable>
+                                </apex:outputPanel>
+                            </apex:pageBlockSection>
+                            <br/>
+                            <apex:commandButton value="Add New Contact" action="{!showNewContactPopup}" reRender="tstpopup,tstpopup_contactcreation" style="position:relative;left:360px;background: #009CDA; color: #F3F3EC; padding: 2px 10px; font-size: 1em; text-decoration: none;" status="popupActionStatus"/>
+                            <apex:actionStatus id="popupActionStatus" startText="Please wait..." stopText="" startStyleClass="loadingIcon" stopStyleClass=""></apex:actionStatus>
+                            <apex:commandButton value="Cancel" action="{!closepopup}" immediate="true" rerender="tstpopup" style="background: #009CDA; color: #F3F3EC; padding: 2px 10px; font-size: 1em;  text-decoration: none; position:relative;left:365px;" status="popupActionStatus"/>
+                            <apex:commandButton value="Save" action="{!savecontacts}" rerender="tstpopup,pgmsg,pb_pd"  style="background: #009CDA; color: #F3F3EC; padding: 2px 10px; font-size: 1em;  text-decoration: none; position:relative;left:365px;" status="popupActionStatus"/>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                    <apex:outputPanel id="tstpopup_contactcreation">
+                        <apex:outputPanel styleClass="popupBackground" layout="block" rendered="{!showPopupContact}"/>
+                        <apex:outputPanel styleClass="custPopup" layout="block" rendered="{!showPopupContact}">
+                        <apex:outputPanel id="hasError">
+                            {!popupMessage}
+                        </apex:outputPanel>
+                          <apex:pageblocksection columns="2"  title="Add New Contact" id="condtl">
+                            <apex:repeat value="{!$ObjectType.contact.FieldSets.NewContactForAttendees}" var="f">
+                                <apex:inputfield value="{!newContact[f]}" required="{!OR(f.required, f.dbrequired)}">
+                                </apex:inputfield>
+                            </apex:repeat>
+                            </apex:pageblocksection>
+                            <br/>
+                            <apex:commandButton value="Create & Add" action="{!createAndAddContact}" reRender="tstpopup_contactcreation,tstpopup" style="position:relative;left:360px;background: #009CDA; color: #F3F3EC; padding: 2px 10px; font-size: 1em; text-decoration: none;" status="popupActionStatus1"/>
+                            <apex:actionStatus id="popupActionStatus1" startText="Please wait..." stopText="" startStyleClass="loadingIcon" stopStyleClass=""></apex:actionStatus>
+                            <button onclick="contactcancelpast();return false;" style="background: #009CDA; color: #F3F3EC; padding: 2px 10px; font-size: 1em;  text-decoration: none; position:relative;left:365px;">Cancel</button>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                    <apex:outputPanel id="Extensionpopup">
+                        <apex:outputPanel styleClass="popupBackground" layout="block" rendered="{!showExtensionPopup}"/>
+                        <apex:outputPanel styleClass="custPopup" layout="block" rendered="{!showExtensionPopup}">
+                        <apex:outputPanel id="hasError1">
+                            {!popupMessage}
+                        </apex:outputPanel>
+                          <apex:pageblocksection columns="2"  title="Add New Extension Request">
+                            <apex:repeat value="{!$ObjectType.Contract_Extension_Request__c.FieldSets.Contract_Extension_Creation_Renewal_Noti}" var="f">
+                                <apex:inputfield value="{!newExtension[f]}" required="{!OR(f.required, f.dbrequired)}">
+                                </apex:inputfield>
+                            </apex:repeat>
+                            </apex:pageblocksection>
+                            <br/>
+                            <apex:commandButton value="Submit for Approval" action="{!createAndAddExtension}" reRender="Extensionpopup,pb_pd" oncomplete="reloadpickvals('{!DaysPastDueVals}','{!NumberofExtensionsVals}');"  style="position:relative;left:360px;background: #009CDA; color: #F3F3EC; padding: 2px 10px; font-size: 1em; text-decoration: none;" status="popupActionStatus3"/>
+                            <apex:actionStatus id="popupActionStatus3" startText="Please wait..." stopText="" startStyleClass="loadingIcon" stopStyleClass=""></apex:actionStatus>
+                            <button onclick="cancelExtensionpopup();return false;" style="background: #009CDA; color: #F3F3EC; padding: 2px 10px; font-size: 1em;  text-decoration: none; position:relative;left:365px;">Cancel</button>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                    <apex:outputPanel id="Opptypopup">
+                        <apex:outputPanel styleClass="popupBackground" layout="block" rendered="{!showPopupOppty}"/>
+                        <apex:outputPanel styleClass="custPopup" layout="block" rendered="{!showPopupOppty}">
+                        <apex:outputPanel id="hasError2">
+                            {!popupMessage}
+                        </apex:outputPanel>
+                          <apex:pageblocksection columns="1"  title="Opportunity Loss">
+                            <apex:repeat value="{!$ObjectType.Opportunity.FieldSets.Closed_Lost_Fields}" var="f">
+                                <apex:inputfield styleClass="{!f}" value="{!OpptoEdit[f]}" required="{!OR(f.required, f.dbrequired)}">
+                                </apex:inputfield>
+                            </apex:repeat>
+                            </apex:pageblocksection>
+                            <br/>
+                            <!--<apex:commandButton value="Terminate Opportunity" action="{!terminateOppty}" status="popupActionStatus4" reRender="Opptypopup" oncomplete="statusfilter();sendterminationemail();reloadpickvals('{!DaysPastDueVals}','{!NumberofExtensionsVals}');"  style="position:relative;left:360px;background: #009CDA; color: #F3F3EC; padding: 2px 10px; font-size: 1em; text-decoration: none;"/>-->
+                            <button onclick="saveOpptyforterminate('{!OpptoEdit.Id}');return false;" style="background: #009CDA; color: #F3F3EC; padding: 2px 10px; font-size: 1em;  text-decoration: none; position:relative;left:365px;">Terminate Opportunity</button>
+                            <apex:actionStatus id="popupActionStatus4" startText="Please wait..." stopText="" startStyleClass="loadingIcon" stopStyleClass=""></apex:actionStatus>
+                            <button onclick="cancelOpptyPopup();return false;" style="background: #009CDA; color: #F3F3EC; padding: 2px 10px; font-size: 1em;  text-decoration: none; position:relative;left:365px;">Cancel</button>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                </apex:pageBlock>
+            </apex:tab>
+        </apex:tabPanel>
+        <apex:actionFunction id="cancelExtensionpopup" name="cancelExtensionpopup" immediate="true" action="{!cancelExtensionpopup}" rerender="Extensionpopup"/>
+        <apex:actionFunction id="contactcancelupcoming" name="contactcancelupcoming" immediate="true" action="{!cancelPopup}" rerender="tstpopup1_contactcreation, tstpopup1"/>
+        <apex:actionFunction id="contactcancelpast" name="contactcancelpast" immediate="true" action="{!cancelPopup}" rerender="tstpopup_contactcreation,tstpopup"/>
+        <apex:actionFunction id="cancelOpptyPopup" name="cancelOpptyPopup" immediate="true" action="{!cancelOpptyPopup}" rerender="Opptypopup"/>
+        <!--<apex:actionFunction id="saveOpptyforterminate" name="saveOpptyforterminate" immediate="true" action="{!terminateOppty}" status="loadinggif" reRender="Opptypopup" oncomplete="sendterminationemail();reloadpickvals('{!DaysPastDueVals}','{!NumberofExtensionsVals}');statusfilter();">
+        </apex:actionFunction>-->
+        
+    </apex:form>
+</apex:page>

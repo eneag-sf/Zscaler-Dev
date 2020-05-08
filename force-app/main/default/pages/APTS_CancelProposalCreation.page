@@ -1,0 +1,2 @@
+<apex:page controller="APTS_CancelProposalCreationController" action="{!deleteProposal}">
+</apex:page>

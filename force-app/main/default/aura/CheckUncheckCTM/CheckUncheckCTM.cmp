@@ -1,0 +1,16 @@
+<aura:component controller="CTMDomainVerificationandCaseCreation" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader,lightning:actionOverride" access="global" >
+    <aura:handler name="change" value="{!v.record}" action="{!c.doinit}" />
+    <aura:attribute name="record" type="Contact"/>
+    <aura:attribute name="showSpinner" type="boolean" default="true"/>
+    <aura:attribute name="simpleRecord" type="Contact"/>
+    <!-- This is equivalent of Standard Constroller -->
+    <force:recordData aura:id="forceRecordCmp"
+                      recordId="{!v.recordId}"
+                      fields="Id, Contacts_that_matter__c, Email, AccountId, Account.Name, Name"
+                      mode="EDIT"
+                      targetRecord="{!v.record}"
+                      targetError="{!v.error}" />
+    <aura:if isTrue="{!v.showSpinner}">
+            <lightning:spinner variant="brand" size="medium" />
+    </aura:if>
+</aura:component>

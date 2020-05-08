@@ -1,0 +1,11 @@
+.THIS.slds-spinner_container, .THIS .slds-spinner_container{
+    background-color: rgba(255, 255, 255, 0);
+}
+.THIS.slds-theme_warning{
+    background-color: rgb(243, 242, 242);
+}
+.THIS .slds-box{
+    background:rgba(252, 252, 252, 0.9);
+    border: 0px;
+    border-radius: 0px;
+}

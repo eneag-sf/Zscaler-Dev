@@ -1,0 +1,43 @@
+<apex:component access="global" controller="APTS_AssetExpPartnerNotfController" >
+  
+  <apex:attribute name="AccountId" description="This is the account Id." 
+                     type="string" assignTo="{!accntId}" />
+    <apex:attribute name="NumberOfDays" description="This is the number of days for expiry mail" 
+                     type="string" assignTo="{!noOfDays}" />  
+   <apex:attribute name="BillToAccountId" description="This is the bill to account Id" 
+                     type="string" assignTo="{!billToId}" />                    
+  
+  <table style="width:30%;border-collapse: collapse; border: 2px solid #2D3291;" border = "1">
+      <tr style=" background-color:#A5BFF4; ">
+          <th>Bill To</th>          
+      </tr>
+      <tr>
+          <td> 
+              <apex:outputText value="{!BillingStreet}" /><br />
+              <apex:outputText value="{!BillingCity}" /><br />
+              <apex:outputText value="{!BillingState}" />&nbsp;
+              <apex:outputText value="{!BillingPostalCode}" /><br />
+              <apex:outputText value="{!BillingCountry}" /><br />
+          </td>
+      </tr>
+  </table>
+ 
+  <table border = "1" style="width:50%;border-collapse: collapse; border: 2px solid #2D3291;">
+        <tr style=" background-color:#A5BFF4; ">
+            <th>Item</th>
+            <th>Description</th>
+         </tr>
+  
+        <apex:repeat value="{!lstAssetExpiring}" var="asset">
+        <tr> 
+            <td align = "center">
+                <apex:outputText value="{!asset.Apttus_Config2__ProductId__r.ProductCode}"/>
+            </td>
+            
+            <td align = "left">
+                <apex:outputText value="{!asset.Apttus_Config2__ProductId__r.Description}"/>
+            </td>      
+        </tr>
+        </apex:repeat>
+    </table>
+</apex:component>

@@ -1,0 +1,69 @@
+<apex:page controller="DealRegConversionController" action="{!convertDealReg}" tabStyle="Deal_Reg__c">
+<apex:form >    
+<apex:pageBlock >
+<!--
+<apex:pageBlockButtons location="top"  >
+                    <apex:outputPanel id="pgButton">
+                    <apex:commandButton value="Convert" style="margin-left: 150px;" />
+                </apex:outputPanel>
+    </apex:pageBlockButtons>
+    -->
+    
+<apex:pageBlockSection title="Deal Reg" columns="2" collapsible="false">
+    <apex:outputField value="{!dealReg.Name}"/>
+    <apex:outputField value="{!dealReg.End_Customer_Name__c}"/>
+    <apex:outputField value="{!dealReg.Partner_Company_Name__c}"/>
+</apex:pageBlockSection>
+    
+<apex:pageBlockSection title="Choose one of the following...." columns="1" collapsible="false">
+    
+
+     <apex:pageblocktable id="allOpp" value="{!oppWrapperList}" var="opp">
+        <apex:column headerValue="Action" width="60px">
+            <b><apex:commandLink value="Select" action="{!associateDealToOpp}" >
+                <apex:param name="selectedOppId" value="{!opp.oppId}" assignTo="{!selectedOppId}"/> 
+            </apex:commandLink></b>
+        </apex:column>
+        
+        <apex:column headervalue="Name" >
+            <apex:outputPanel rendered="{!NOT(opp.isSelected)}">
+                <a href="/{!opp.oppId}" target="_blank">{!opp.oppName}</a>
+            </apex:outputPanel>
+            <apex:outputPanel rendered="{!opp.isSelected}">
+            {!opp.oppName}
+            </apex:outputPanel>
+            
+        </apex:column>
+        
+        
+        <apex:column headervalue="Account Name">
+            <apex:outputText >{!opp.accName}</apex:outputText>
+        </apex:column> 
+        <apex:column headerValue="Partner Name">                        
+            <apex:outputPanel rendered="{!opp.opp.OpportunityPartnersFrom != null && opp.opp.OpportunityPartnersFrom.size > 0}">
+                {!opp.opp.OpportunityPartnersFrom[0].AccountTo.Name}
+            </apex:outputPanel>
+        </apex:column>
+        <apex:column headervalue="Type">
+            <apex:outputText >{!opp.Type}</apex:outputText>
+        </apex:column>
+        <apex:column headervalue="Stage">
+            <apex:outputText >{!opp.stageName}</apex:outputText>
+        </apex:column>
+        <apex:column headervalue="Amount">
+            <apex:outputText >{!opp.amount}</apex:outputText>
+        </apex:column>
+        <apex:column headervalue="Close Date">
+            <apex:outputText value="{0,date,MM/dd/yy}"> <apex:param value="{!opp.closeDate}"/>
+            </apex:outputText>
+        </apex:column>
+        <apex:column headervalue="Deal Reg#">
+            <a href="/{!opp.dealRegId}" target="_blank">{!opp.dealRegName}</a>
+        </apex:column>
+        
+        </apex:pageblocktable>
+        
+ </apex:pageBlockSection>       
+</apex:pageBlock>
+</apex:form>    
+</apex:page>

@@ -1,0 +1,647 @@
+<!--
+    Updated BY : Sateesh U
+    * To create Opportunity partners for all types
+-->
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome"
+    access="global" controller="OpportunityPartnerController">
+    <aura:attribute name="OppId" type="string" />
+    <aura:attribute name="OppRecord" type="Opportunity" />
+    <aura:attribute name="OppPartnersList" type="List" />
+    <aura:attribute name="OppPartnerRecord" type="Opportunity_Partner__c" default="{'Name':''}" />
+    <aura:attribute name="dealRegrec" type="Opportunity_Partner__c" />
+    <aura:attribute name="archWorkshoprec" type="Opportunity_Partner__c" />
+    <aura:attribute name="POVrec" type="Opportunity_Partner__c" />
+    <aura:attribute name="IsAddNewPartner" type="boolean" default="false" />
+    <aura:attribute name="IsPrimary" type="boolean" default="false" />
+    <aura:attribute name="SelectedRecord" type="SObject" />
+    <aura:attribute name="WrapperList" type="OpportunityPartnerController.WrapperClass[]" />
+    <aura:attribute name="PartnerType" type="string" />
+    <aura:attribute name="errorMessage" type="string" />
+
+    <aura:attribute name="IsResellerPresent" type="boolean" default="false" />
+    <aura:attribute name="IsTechPartnerPresent" type="boolean" default="false" />
+    <aura:attribute name="IsIntegratorPresent" type="boolean" default="false" />
+    <aura:attribute name="IsDistributorPresent" type="boolean" default="false" />
+    <aura:attribute name="isDealRegPresent" type="boolean" default="false" />
+    <aura:attribute name="isPOVPresent" type="boolean" default="false" />
+    <aura:attribute name="isArchWorkshopPresent" type="boolean" default="false" />
+    <aura:attribute name="donotshownewRow" type="boolean" default="false" />
+    <aura:attribute name="editMode" type="boolean" default="false" />
+    <aura:attribute name="showEditandDelete" type="boolean" default="false" />
+    <aura:attribute name="partnerid" type="String" />
+    <aura:attribute name="PartnerProgramMap" type="List" />
+
+    <aura:attribute name="showErrors" type="boolean" default="false" />
+    <aura:attribute name="showMainErrors" type="boolean" default="false" />
+    <!-- SHOW LOADING SPINNER-->
+    <lightning:spinner variant="brand" size="large" aura:id="Id_spinner" class="slds-hide" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+
+    <c:customToast aura:id="Custtoast" />
+
+    <aura:if isTrue="{!v.showMainErrors}">
+        <!-- Show the message to ui -->
+        <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error" role="alert">
+            <span class="slds-assistive-text">Error</span>
+            <h2>{!v.errorMessage}</h2>
+        </div>
+    </aura:if>
+
+    <div class="slds-m-around--medium">
+        <article>
+            <div class="slds-media">
+                <div class="slds-media__figure">
+                    <lightning:icon iconName="standard:opportunity" />
+                </div>
+                <div class="slds-media__body">
+                    <h1 class="slds-text-body_small slds-line-height_reset" title="Add/Edit Opportunity Partners">
+                        Add/Remove Opportunity Partners</h1>
+                    <p class="slds-page-header__title slds-truncate slds-align-middle"><a href="{!'/'+v.OppId}"
+                            target="_parent">{!v.OppRecord.Name}</a></p>
+                </div>
+                <div class="slds-float_right" style="align-self: flex-end;">
+                    <a href="{!'/'+v.OppId}" target="_parent">Back To Opportunity</a>
+                </div>
+            </div>
+
+        </article>
+        <div class="slds-m-bottom--small"></div>
+
+        <h3 class="slds-section-title--divider slds-m-bottom--small" style="background-color: #D0E0EB;color: black;">
+            <b>Fulfillment Partners</b>
+            <div class="slds-float_right">
+                <a onclick="{!c.AddNewReseller}" style="color: black;"><b>Add New</b></a>
+            </div>
+        </h3>
+        <div class="slds-align--absolute-center">
+            <aura:if isTrue="{!v.IsResellerPresent}">
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered"
+                    style="width:70%">
+                    <thead>
+                        <tr class="slds-text-title_caps">
+                            <th style="text-align:center;width:10%" class="" scope="col">
+                                <div class="slds-truncate" title="Action">Action</div>
+                            </th>
+                            <th style="text-align:center;width:50%" class="" scope="col">
+                                <div class="slds-truncate" title="Partner">Partner</div>
+                            </th>
+                            <th style="text-align:center;width:50%" class="" scope="col">
+                                <div class="slds-truncate" title="Partner">Partner Program</div>
+                            </th>
+                            <th style="text-align:center;width:10%" class="" scope="col">
+                                <div class="slds-truncate" title="Primary">Primary</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <aura:iteration items="{!v.OppPartnersList}" var="Part">
+                            <aura:if isTrue="{!if(Part.Partner_Type__c == 'Reseller',true,false)}">
+                                <tr class="slds-hint-parent">
+                                    <td style="text-align:center;">
+                                        <aura:if isTrue="{!!Part.Is_Primary__c}">
+                                            <a data-variablename="{!Part.Id}" onclick="{!c.DeleteRecord}">Del</a>
+                                        </aura:if>
+                                    </td>
+                                    <td style="text-align:center;white-space: pre-wrap;">
+                                        <a href="{!'/'+Part.Account__c}" target="_blank">{!Part.Account__r.Name}</a>
+                                    </td>
+                                    <aura:if
+                                        isTrue="{!if((and(Part.Account__r.Model_Type_Partner__c == 'Partner Summit' , not(Part.Restrict_Partner_Program_Change__c))), true, false)}">
+                                        <aura:set attribute="else">
+                                            <td style="text-align:center;white-space: pre-wrap;">
+                                                {!Part.Partner_Program__c}</td>
+                                        </aura:set>
+
+                                        <td style="text-align:center;white-space: nowrap;">
+                                            <!-- <aura:if isTrue="{!!v.editMode}">
+                                                {!Part.Partner_Program__c}&nbsp;
+                                                <div style="float: right;">
+                                                    <lightning:buttonIcon iconName="utility:edit" variant="bare"
+                                                        alternativeText="Edit" iconClass="dark" title="{!Part.Id}"
+                                                        onclick="{!c.editPartner}" />
+                                                </div>
+                                            </aura:if> 
+                                            <aura:if isTrue="{!v.partnerid == Part.Id}">-->
+                                                <lightning:select aura:id="select" title="{!Part.Id}" name="select"
+                                                    label="" onchange="{!c.savePartnerProgram}">
+                                                    <aura:iteration items="{!v.PartnerProgramMap}" var="item">
+                                                        <option value="{!item}"
+                                                            selected="{!item == Part.Partner_Program__c}">
+                                                            {!item}
+                                                        </option>
+                                                    </aura:iteration>
+                                                </lightning:select>
+
+                                            <!--</aura:if> -->
+                                        </td>
+                                    </aura:if>
+                                    <!-- Commenting abhishek's code for temp fix-->
+                                    <!-- <aura:if
+                                        isTrue="{!if(Part.Account__r.Model_Type_Partner__c == 'Both', true, false)}">
+                                        <aura:set attribute="else">
+                                            <td style="text-align:center;white-space: pre-wrap;">
+                                                {!Part.Partner_Program__c}</td>
+                                        </aura:set>
+
+                                        <td style="text-align:center;white-space: nowrap;">
+                                            <aura:if isTrue="{!!v.editMode}">
+                                                {!Part.Partner_Program__c}&nbsp;
+                                                <div style="float: right;">
+                                                    <lightning:buttonIcon iconName="utility:edit" variant="bare"
+                                                        alternativeText="Edit" iconClass="dark" title="{!Part.Id}"
+                                                        onclick="{!c.editPartner}" />
+                                                </div>
+                                            </aura:if>
+                                            <aura:if isTrue="{!and(v.editMode, v.partnerid == Part.Id)}">
+                                                <lightning:select aura:id="select" title="{!Part.Id}" name="select"
+                                                    label="" onchange="{!c.savePartnerProgram}">
+                                                    <aura:iteration items="{!v.PartnerProgramMap}" var="item">
+                                                        <option value="{!item}"
+                                                            selected="{!item == Part.Partner_Program__c}">
+                                                            {!item}
+                                                        </option>
+                                                    </aura:iteration>
+                                                </lightning:select>
+
+                                            </aura:if>
+                                        </td>
+                                    </aura:if> -->
+                                    <td style="text-align:center;">
+                                        <ui:inputRadio value="{!Part.Is_Primary__c}" text="{!Part.Id}"
+                                            change="{!c.ChangeResellerPrimary}" />
+                                    </td>
+                                </tr>
+                            </aura:if>
+                        </aura:iteration>
+                    </tbody>
+                </table>
+                <aura:set attribute="else">
+                    There were no 'Reseller' Partners Associated to this Opportunity.
+                </aura:set>
+            </aura:if>
+        </div>
+        <div class="slds-m-bottom--medium"></div>
+        <h3 class="slds-section-title--divider slds-m-bottom--small"
+            style="background-color: #D0E0EB;color: black;padding: 0.1rem 1rem !important;">
+
+        </h3>
+        <div class="slds-align--absolute-center">
+            <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered"
+                style="width:70%">
+                <thead>
+                    <tr class="slds-text-title_caps">
+                        <th style="background-color: #D0E0EB;color: black;text-align:center;" class="" scope="col">
+                            <div class="slds-truncate" title="Deal Reg">Deal Reg</div>
+                        </th>
+                        <aura:if isTrue="{!v.isDealRegPresent}">
+                            <th style="background-color: #D0E0EB;color: black;text-align:center;border-left:0px;"
+                                class="" scope="col">
+                                <div class="slds-truncate" title="Deal Reg Type">Type</div>
+                            </th>
+                        </aura:if>
+                        <th style="background-color: #D0E0EB;color: black;text-align:center;" class="" scope="col">
+                            <div class="slds-truncate" title="Architecture Workshop">Architecture Workshop</div>
+                        </th>
+                        <th style="background-color: #D0E0EB;color: black;text-align:center;" class="" scope="col">
+                            <div class="slds-truncate" title="POV">POV</div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="slds-hint-parent">
+                        <td style="text-align:center;white-space: pre-wrap;">
+                            <a href="{!'/'+v.dealRegrec.Account__c}" target="_blank">{!v.dealRegrec.Account__r.Name}</a>
+                        </td>
+                        <aura:if isTrue="{!v.isDealRegPresent}">
+                            <td style="text-align:center;white-space: pre-wrap;border-left: 0px;">
+                                {!v.dealRegrec.Account__r.Partner_Type__c}
+                            </td>
+                        </aura:if>
+                        <td style="text-align:center;white-space: nowrap;">
+                            <aura:if isTrue="{!v.isArchWorkshopPresent}">
+                                <a href="{!'/'+v.archWorkshoprec.Account__c}"
+                                    target="_blank">{!v.archWorkshoprec.Account__r.Name}</a>
+                            </aura:if>
+                            <div style="float: right;">
+                                <aura:if isTrue="{!v.showEditandDelete}">
+                                    <lightning:buttonIcon iconName="utility:edit" variant="bare" alternativeText="Edit"
+                                        iconClass="dark" title="{!v.archWorkshoprec.Id}" onclick="{!c.AddNewArch}" />
+                                    <aura:if isTrue="{!v.isArchWorkshopPresent}">
+                                        &nbsp;<a data-variablename="{!v.archWorkshoprec.Id}"
+                                            onclick="{!c.DeleteRecord}">
+                                            <lightning:buttonIcon iconName="utility:delete" variant="bare"
+                                                alternativeText="Delete" iconClass="dark" />
+                                        </a>
+                                    </aura:if>
+                                </aura:if>
+                            </div>
+                        </td>
+                        <td style="text-align:center;white-space: nowrap;">
+                            <aura:if isTrue="{!v.isPOVPresent}">
+                                <a href="{!'/'+v.POVrec.Account__c}" target="_blank">{!v.POVrec.Account__r.Name}</a>
+                            </aura:if>
+                            <div style="float: right;">
+                                <aura:if isTrue="{!v.showEditandDelete}">
+                                    <lightning:buttonIcon iconName="utility:edit" variant="bare" alternativeText="Edit"
+                                        iconClass="dark" title="{!v.POVrec.Id}" onclick="{!c.AddNewPOV}" />
+                                    <aura:if isTrue="{!v.isPOVPresent}">
+                                        &nbsp;<a data-variablename="{!v.POVrec.Id}" onclick="{!c.DeleteRecord}">
+                                            <lightning:buttonIcon iconName="utility:delete" variant="bare"
+                                                alternativeText="Delete" iconClass="dark" />
+                                        </a>
+                                    </aura:if>
+                                </aura:if>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="slds-m-bottom--medium"></div>
+
+        <h3 class="slds-section-title--divider slds-m-bottom--small" style="background-color: #E6E8E3;color: black;">
+            <b>Tech Partner</b>
+            <div class="slds-float_right">
+                <a onclick="{!c.AddNewTechPartner}" style="color: black;"><b>Add New</b></a>
+            </div>
+        </h3>
+        <div class="slds-align--absolute-center">
+            <aura:if isTrue="{!v.IsTechPartnerPresent}">
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered"
+                    style="width:70%">
+                    <thead>
+                        <tr class="slds-text-title_caps">
+                            <th style="text-align:center;width:10%" class="" scope="col">
+                                <div class="slds-truncate" title="Action">Action</div>
+                            </th>
+                            <th style="text-align:center;width:50%" class="" scope="col">
+                                <div class="slds-truncate" title="Partner">Partner</div>
+                            </th>
+                            <th style="text-align:center;width:10%" class="" scope="col">
+                                <div class="slds-truncate" title="Primary">Primary</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <aura:iteration items="{!v.OppPartnersList}" var="Part">
+                            <aura:if isTrue="{!if(Part.Partner_Type__c == 'Tech Partner',true,false)}">
+                                <tr class="slds-hint-parent">
+                                    <td style="text-align:center;">
+                                        <aura:if isTrue="{!!Part.Is_Primary__c}">
+                                            <a data-variablename="{!Part.Id}" onclick="{!c.DeleteRecord}">Del</a>
+                                        </aura:if>
+                                    </td>
+                                    <td style="text-align:center;white-space: pre-wrap;">
+                                        <a href="{!'/'+Part.Account__c}" target="_blank">{!Part.Account__r.Name}</a>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <ui:inputRadio value="{!Part.Is_Primary__c}" text="{!Part.Id}"
+                                            change="{!c.ChangeTechPrimary}" />
+                                        <!--<ui:inputRadio value="{!Part.Is_Primary__c}" text="{!Part.Id}" click="{!c.ChangeTechPrimary}"/>-->
+                                    </td>
+                                </tr>
+                            </aura:if>
+                        </aura:iteration>
+                    </tbody>
+                </table>
+                <aura:set attribute="else">
+                    There were no 'Tech Partner' Partners Associated to with this Opportunity.
+                </aura:set>
+            </aura:if>
+        </div>
+        <div class="slds-m-bottom--medium"></div>
+
+        <h3 class="slds-section-title--divider slds-m-bottom--small" style="background-color: #E6E8E3;color: black;">
+            <b>System Integrator</b>
+            <div class="slds-float_right">
+                <a onclick="{!c.AddNewIntegrator}" style="color: black;"><b>Add New</b></a>
+            </div>
+        </h3>
+        <div class="slds-align--absolute-center">
+            <aura:if isTrue="{!v.IsIntegratorPresent}">
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered"
+                    style="width:70%">
+                    <thead>
+                        <tr class="slds-text-title_caps">
+                            <th style="text-align:center;width:10%" class="" scope="col">
+                                <div class="slds-truncate" title="Action">Action</div>
+                            </th>
+                            <th style="text-align:center;width:50%" class="" scope="col">
+                                <div class="slds-truncate" title="Partner">Partner</div>
+                            </th>
+                            <th style="text-align:center;width:10%" class="" scope="col">
+                                <div class="slds-truncate" title="Primary">Primary</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <aura:iteration items="{!v.OppPartnersList}" var="Part">
+                            <aura:if isTrue="{!if(Part.Partner_Type__c == 'System Integrator',true,false)}">
+                                <tr class="slds-hint-parent">
+                                    <td style="text-align:center;">
+                                        <aura:if isTrue="{!!Part.Is_Primary__c}">
+                                            <a data-variablename="{!Part.Id}" onclick="{!c.DeleteRecord}">Del</a>
+                                        </aura:if>
+                                    </td>
+                                    <td style="text-align:center;white-space: pre-wrap;">
+                                        <a href="{!'/'+Part.Account__c}" target="_blank">{!Part.Account__r.Name}</a>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <!--<ui:inputRadio name="radio3" aura:id="SysIntegratorradio" value="{!Part.Is_Primary__c}" text="{!Part.Id}" change="{!c.ChangeSysIntegratorPrimary}"/>-->
+                                        <ui:inputRadio name="radio3" aura:id="SysIntegratorradio"
+                                            value="{!Part.Is_Primary__c}" text="{!Part.Id}"
+                                            click="{!c.ChangeSysIntegratorPrimary}" />
+                                    </td>
+                                </tr>
+                            </aura:if>
+                        </aura:iteration>
+                    </tbody>
+                </table>
+                <aura:set attribute="else">
+                    There were no 'System Integrator' Partners Associated to with this Opportunity.
+                </aura:set>
+            </aura:if>
+        </div>
+        <div class="slds-m-bottom--medium"></div>
+
+        <h3 class="slds-section-title--divider slds-m-bottom--small" style="background-color: #E6E8E3;color: black;">
+            <b>Distributor</b>
+            <div class="slds-float_right">
+                <a onclick="{!c.AddNewDistributor}" style="color: black;"><b>Add New</b></a>
+            </div>
+        </h3>
+        <div class="slds-align--absolute-center">
+            <aura:if isTrue="{!v.IsDistributorPresent}">
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered"
+                    style="width:70%">
+                    <thead>
+                        <tr class="slds-text-title_caps">
+                            <th style="text-align:center;width:10%" class="" scope="col">
+                                <div class="slds-truncate" title="Action">Action</div>
+                            </th>
+                            <th style="text-align:center;width:50%" class="" scope="col">
+                                <div class="slds-truncate" title="Partner">Partner</div>
+                            </th>
+                            <th style="text-align:center;width:10%" class="" scope="col">
+                                <div class="slds-truncate" title="Primary">Primary</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <aura:iteration items="{!v.OppPartnersList}" var="Part">
+                            <aura:if isTrue="{!if(Part.Partner_Type__c == 'Distributor',true,false)}">
+                                <tr class="slds-hint-parent">
+                                    <td style="text-align:center;">
+                                        <aura:if isTrue="{!!Part.Is_Primary__c}">
+                                            <a data-variablename="{!Part.Id}" onclick="{!c.DeleteRecord}">Del</a>
+                                        </aura:if>
+                                    </td>
+                                    <td style="text-align:center;white-space: pre-wrap;">
+                                        <a href="{!'/'+Part.Account__c}" target="_blank">{!Part.Account__r.Name}</a>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <!--<ui:inputRadio name="radio4" aura:id="Distributorradio" value="{!Part.Is_Primary__c}" text="{!Part.Id}" change="{!c.ChangeDistributorPrimary}"/>-->
+                                        <ui:inputRadio name="radio4" aura:id="Distributorradio"
+                                            value="{!Part.Is_Primary__c}" text="{!Part.Id}"
+                                            click="{!c.ChangeDistributorPrimary}" />
+
+                                    </td>
+                                </tr>
+                            </aura:if>
+                        </aura:iteration>
+                    </tbody>
+                </table>
+                <aura:set attribute="else">
+                    There were no 'Distributor' Partners Associated to with this Opportunity.
+                </aura:set>
+            </aura:if>
+        </div>
+
+        <!--<div class="slds-m-bottom_medium"></div>
+        <h3 class="slds-section-title_divider slds-m-bottom_small" style="background-color: #21a0df;color: white;">
+            <b>Deal Reg</b>
+            </div>
+        </h3>
+        <div class="slds-align_absolute-center">
+            <aura:if isTrue="{!v.isDealRegPresent}">
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered"
+                    style="width:70%">
+                    <thead>
+                        <tr class="slds-text-title_caps">
+                            <th style="text-align:center;width:50%" class="" scope="col">
+                                <div class="slds-truncate" title="Partner">Partner</div>
+                            </th>
+                            <th style="text-align:center;width:10%" class="" scope="col">
+                                <div class="slds-truncate" title="Primary">Primary</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <aura:iteration items="{!v.OppPartnersList}" var="Part">
+                            <aura:if isTrue="{!if(Part.Partner_Type__c == 'Deal Reg',true,false)}">
+                                <tr class="slds-hint-parent">
+
+                                    <td style="text-align:center;white-space: pre-wrap;">
+                                        <a href="{!'/'+Part.Account__c}" target="_blank">{!Part.Account__r.Name}</a>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <ui:inputRadio name="radio5" aura:id="dealregradio"
+                                            value="{!Part.Is_Primary__c}" text="{!Part.Id}" />
+                                    </td>
+                                </tr>
+                            </aura:if>
+                        </aura:iteration>
+                    </tbody>
+                </table>
+                <aura:set attribute="else">
+                    There were no 'Deal Reg' Partner Associated to with this Opportunity.
+                </aura:set>
+            </aura:if>
+        </div>
+        <div class="slds-m-bottom_medium"></div>
+        <h3 class="slds-section-title_divider slds-m-bottom_small" style="background-color: #21a0df;color: white;">
+            <b>Architecture Workshop</b>
+            <div class="slds-float_right">
+                <aura:if isTrue="{!v.isArchWorkshopPresent}">
+                    <a onclick="{!c.AddNewArch}" style="color: white;"><b>Update Partner</b></a>
+                    <aura:set attribute="else">
+                        <a onclick="{!c.AddNewArch}" style="color: white;"><b>Add New</b></a>
+                    </aura:set>
+                </aura:if>
+
+            </div>
+        </h3>
+        <div class="slds-align_absolute-center">
+            <aura:if isTrue="{!v.isArchWorkshopPresent}">
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered"
+                    style="width:70%">
+                    <thead>
+                        <tr class="slds-text-title_caps">
+                            <th style="text-align:center;width:50%" class="" scope="col">
+                                <div class="slds-truncate" title="Partner">Partner</div>
+                            </th>
+                            <th style="text-align:center;width:10%" class="" scope="col">
+                                <div class="slds-truncate" title="Primary">Primary</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <aura:iteration items="{!v.OppPartnersList}" var="Part">
+                            <aura:if isTrue="{!if(Part.Partner_Type__c == 'Architecture Workshop',true,false)}">
+                                <tr class="slds-hint-parent">
+
+                                    <td style="text-align:center;white-space: pre-wrap;">
+                                        <a href="{!'/'+Part.Account__c}" target="_blank">{!Part.Account__r.Name}</a>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <ui:inputRadio name="radio6" aura:id="archradio" value="{!Part.Is_Primary__c}"
+                                            text="{!Part.Id}" />
+                                    </td>
+                                </tr>
+                            </aura:if>
+                        </aura:iteration>
+                    </tbody>
+                </table>
+                <aura:set attribute="else">
+                    There were no 'Architecture Workshop' Partner Associated to with this Opportunity.
+                </aura:set>
+            </aura:if>
+        </div>
+        <div class="slds-m-bottom_medium"></div>
+        <h3 class="slds-section-title_divider slds-m-bottom_small" style="background-color: #21a0df;color: white;">
+            <b>POV</b>
+            <div class="slds-float_right">
+                <aura:if isTrue="{!v.isPOVPresent}">
+                    <a onclick="{!c.AddNewPOV}" style="color: white;"><b>Update Partner</b></a>
+                    <aura:set attribute="else">
+                        <a onclick="{!c.AddNewPOV}" style="color: white;"><b>Add New</b></a>
+                    </aura:set>
+                </aura:if>
+
+            </div>
+        </h3>
+        <div class="slds-align_absolute-center">
+            <aura:if isTrue="{!v.isPOVPresent}">
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered"
+                    style="width:70%">
+                    <thead>
+                        <tr class="slds-text-title_caps">
+                            <th style="text-align:center;width:50%" class="" scope="col">
+                                <div class="slds-truncate" title="Partner">Partner</div>
+                            </th>
+                            <th style="text-align:center;width:10%" class="" scope="col">
+                                <div class="slds-truncate" title="Primary">Primary</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <aura:iteration items="{!v.OppPartnersList}" var="Part">
+                            <aura:if isTrue="{!if(Part.Partner_Type__c == 'POV',true,false)}">
+                                <tr class="slds-hint-parent">
+
+                                    <td style="text-align:center;white-space: pre-wrap;">
+                                        <a href="{!'/'+Part.Account__c}" target="_blank">{!Part.Account__r.Name}</a>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <ui:inputRadio name="radio7" aura:id="povradio" value="{!Part.Is_Primary__c}"
+                                            text="{!Part.Id}" />
+                                    </td>
+                                </tr>
+                            </aura:if>
+                        </aura:iteration>
+                    </tbody>
+                </table>
+                <aura:set attribute="else">
+                    There were no 'POV' Partners Associated to with this Opportunity.
+                </aura:set>
+            </aura:if>
+        </div>-->
+    </div>
+
+    <aura:if isTrue="{!v.IsAddNewPartner}">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+            aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon iconName="utility:close" onclick="{! c.closeModel }" alternativeText="close"
+                        variant="bare-inverse" class="slds-modal__close" />
+                    <h2 class="slds-section-title--divider" style="background-color: white;"><b>Add New Opportunity
+                            Partner</b>
+                        <div class="slds-float_right" style="font-weight: unset !important;font-size: initial;">
+                            <aura:if isTrue="{!!v.donotshownewRow}">
+                                <lightning:button onclick="{!c.AddRow}" variant="brand">Add Row</lightning:button>
+                            </aura:if>
+                        </div>
+                    </h2>
+                </header>
+                <!--###### MODAL BOX BODY Part Start######-->
+                <div class="slds-modal__content slds-p-around_large" id="modal-content-id-1">
+
+                    <aura:if isTrue="{!v.showErrors}">
+                        <!-- Show the message to ui -->
+                        <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error"
+                            role="alert">
+                            <span class="slds-assistive-text">Error</span>
+                            <h2>{!v.errorMessage}</h2>
+                        </div>
+                    </aura:if>
+
+                    <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_striped">
+                        <aura:iteration items="{!v.WrapperList}" var="rec" indexVar="index">
+                            <tr>
+                                <td>
+                                    <c:customLookup objectAPIName="account" label="Account" aura:id="AccLookup"
+                                        IconName="standard:account" selectedRecord="{!rec.SelectedRecord}"
+                                        partnerType="{!v.PartnerType}" />
+                                </td>
+                                <!--<td>
+                                    <label class="slds-form-element__label">Opportunity</label><br/>
+                                    <a href="{!'/'+v.OppRecord.Id}" target="_blank" style="white-space: pre-wrap;">{!v.OppRecord.Name}</a>
+                                </td>-->
+                                <td>
+                                    <label class="slds-form-element__label">Partner Type</label><br />
+                                    {!v.PartnerType}
+                                </td>
+                                <aura:if isTrue="{!!v.donotshownewRow}">
+                                    <td>
+                                        <label class="slds-form-element__label"
+                                            style="margin-top: -7px;">Primary</label><br />
+                                        <!--<ui:inputCheckbox name="radio" aura:id="radioId" value="{!rec.IsRadioChecked}" text="{!index}" change="{!c.ChangeSelected}" class="radioButton"/>-->
+                                        <!--<input type="checkbox" name="radio" id="checkbox" checked="{!rec.IsRadioChecked}" data-index="{!index}" onchange="{!c.ChangeSelected}"/>-->
+                                        <ui:inputRadio name="radio" aura:id="radioId" value="{!rec.IsRadioChecked}"
+                                            text="{!index}" click="{!c.ChangeSelected}" />
+                                    </td>
+
+                                    <td>
+                                        <!--<aura:if isTrue="{!if(index == 0,true,false)}">
+                                        <a onclick="{!c.AddRow}">
+                                            <lightning:icon iconName="utility:add" class="slds-icon slds-icon_small" size="small" alternativeText="add"/>
+                                            <span class="slds-assistive-text">Add Icon</span>
+                                        </a>
+                                        <aura:set attribute="else">-->
+                                        <a data-id="{!index}" onclick="{!c.removeRow}">
+                                            <lightning:icon variant="error" iconName="utility:delete"
+                                                class="slds-icon slds-icon_small" size="small" alternativeText="icon" />
+                                            <span class="slds-assistive-text">Delete Icon</span>
+                                        </a>
+                                        <!--</aura:set>
+                                    </aura:if>-->
+                                    </td>
+                                </aura:if>
+                            </tr>
+                        </aura:iteration>
+                    </table>
+
+
+                    <div class="slds-p-bottom_small"></div>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning:button onclick="{!c.closeModel}" variant="neutral">Cancel</lightning:button>
+                    <lightning:button onclick="{!c.SaveDetails}" variant="brand">Save</lightning:button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </aura:if>
+
+</aura:component>

@@ -1,0 +1,11 @@
+<apex:page controller="ProvisioningFevaRequestController" tabStyle="Provisioning_Request__c" action="{!initFevaProcess}">
+<apex:form >
+ <apex:actionFunction name="initUserCreation" action="{!initUserCreation}" status="status" />
+ <apex:actionStatus startText="Sending request..." id="status"/>
+ </apex:form>
+ <script>
+        if({!step} == 1) {
+            initUserCreation();
+        }
+ </script>
+</apex:page>

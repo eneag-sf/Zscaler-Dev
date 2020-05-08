@@ -1,0 +1,20 @@
+<apex:page showHeader="true" sidebar="true" >
+    <apex:includeLightning />
+    <div id="OppLossReasonFormId" />
+    <script>
+        $Lightning.use("c:OppLossReasonFormAPP", function() {
+            $Lightning.createComponent("c:OppLossReasonFormCMP",
+            { 
+                "recordId" : "{!$CurrentPage.parameters.id}",
+                "oppId" : "{!$CurrentPage.parameters.oppId}",
+                "custpartowneremails" : "{!$CurrentPage.parameters.custpartowneremails}",
+                "terminationTemplateId" : "{!$CurrentPage.parameters.terminationTemplateId}",
+                "subject" : "{!$CurrentPage.parameters.subject}"
+            },
+            "OppLossReasonFormId",
+            function(cmp) {
+                console.log('Component created, do something cool here');
+            });
+        });
+    </script>
+</apex:page>

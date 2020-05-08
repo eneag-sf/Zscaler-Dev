@@ -1,0 +1,13 @@
+.THIS .zs-profile-menu{
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis !important;
+    font-size: 1rem !important;
+    text-decoration: none;
+}
+.THIS .uiPopupTrigger {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis !important;
+}
