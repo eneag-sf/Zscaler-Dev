@@ -24,7 +24,7 @@ public class APTSCU_AssetUtilsTest {
         Apttus__APTS_Admin__c adminPriceList = new Apttus__APTS_Admin__c(Name = 'APTS_DefaultPriceList', Apttus__Value__c = 'ZScaler Price List');
         insert adminPriceBook;
         insert adminPriceList;
-    	assetList = new list<Apttus_Config2__AssetLineItem__c>();
+        assetList = new list<Apttus_Config2__AssetLineItem__c>();
     
         acc = APTS_TestUtil.creatAccount ();
         pricelist = APTS_TestUtil.createpricelist ();
@@ -58,7 +58,7 @@ public class APTSCU_AssetUtilsTest {
         allAssetMap.put(asset.Id, asset);
         Map<String,Decimal> assetQuantityMap=new Map<String,Decimal>();
         assetQuantityMap.put(string.valueOf(prdId).substring(0,15),5);
-        APTSCU_AssetUtils.renewIndividualAssetLineItem (asset,cartid,allAssetMap,assetQuantityMap);
+        APTSCU_AssetUtils.renewIndividualAssetLineItem (asset,cartid,allAssetMap,assetQuantityMap,null,null);
         Test.stopTest();
     }
 

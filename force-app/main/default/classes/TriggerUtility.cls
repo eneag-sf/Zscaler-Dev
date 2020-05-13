@@ -44,6 +44,7 @@ public class TriggerUtility
     Private static boolean architectureHistory = false;
     //End of change - Raghu (Tech Validation Next Step History, Architecture Next Step History)
     private static boolean updateSEManagerEmail = false;
+    private static boolean updateopportuntydfield = false;
     private static boolean updateSENameFromAccount = false;
     private static boolean updateAccountForApprovedPZEN = false;
     private static boolean ERNotification = false;
@@ -475,6 +476,20 @@ public class TriggerUtility
     public static void updateSEManagerEmailReset() {
         updateSEManagerEmail = false;
     }
+
+    //Added by Minkesh for field update - start
+    public static boolean isopportunityfieldupdate() {
+        return updateopportuntydfield;
+    }
+
+    public static void isopportunityfieldupdateExecuted() {
+        updateopportuntydfield = true;
+    }
+
+    public static void isopportunityfieldupdateReset() {
+        updateopportuntydfield = false;
+    }
+     //Added by Minkesh for field update - end
 
     public static boolean isupdateOppNextStepHistoryExecuted() {
         return updateOppNextStepHistory;

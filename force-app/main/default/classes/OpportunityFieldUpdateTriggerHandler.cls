@@ -215,6 +215,8 @@ public class OpportunityFieldUpdateTriggerHandler {
     }
     
     public static void BeforeUpdate(list<Opportunity> newOppList,Map<ID, Opportunity> oldOppMap){
+		System.debug('BeforeUpdate Method Oppfieldupdate=========>newOppList=====>'+newOppList);
+		System.debug('BeforeUpdate Method Oppfieldupdate=========>oldOppMap=====>'+oldOppMap);
         List<string> OppIds = new List<string>();
         Map<string,Apttus_Proposal__Proposal__c> PropIdVsPropMap = new Map<string,Apttus_Proposal__Proposal__c>();
         ZScalarConstants Constants = new ZScalarConstants();
@@ -440,7 +442,8 @@ public class OpportunityFieldUpdateTriggerHandler {
 				opp.Contract_vehicle__c=null;
 			}
 			//Changes for reset Federal Fields on Opportunity cloning:End
-        }
+		}
+		TriggerUtility.isopportunityfieldupdateExecuted(); //Added by Minkesh for field update 
     }
     
     /**

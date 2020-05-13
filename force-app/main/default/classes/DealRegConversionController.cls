@@ -8,6 +8,8 @@ public class DealRegConversionController {
     public list<OpportunityListWrapper> oppWrapperList {get; set;}
     list<Opportunity> oppList = new list<Opportunity>();
     Map<Id, Map<String, Opportunity_Partner__c>> mapOpptoOppPart = new Map<Id, Map<String, Opportunity_Partner__c>>();
+    Map<String, Id> oppPartTypetoOppPartID = new Map<String, Id>();
+    Map<Id, List<Opportunity_Partner__c>> existingdealReg = new Map<Id, List<Opportunity_Partner__c>>();
     public DealRegConversionController (){
         dealRegId = '';
         partnerId= '';
@@ -18,13 +20,26 @@ public class DealRegConversionController {
         dealRegId = ApexPages.currentPage().getParameters().get('Id');
         if(dealRegId != null && dealRegId != ''){
             dealReg = [Select Id, Name, Partner_Account_Program__c, Partner_Program__c, Partner_Category__c, End_Customer_Name__c , Partner_Role__c, Partner_Account__c, Estimated_Amount__c,Expected_Close_Date__c,Partner_Company_Name__c , Lead__c, Contact__c, Contact__r.AccountId, OwnerId, End_Customer_Domain__c, End_Customer_Street_Address__c, End_Customer_City__c, End_Customer_State__c, End_Customer_Country__c, End_Customer_Postal_Code__c  from Deal_Reg__c where ID =: dealRegId];
-            for(Opportunity opp : [Select Id, Name, AccountId, Account.Name, OwnerId, Owner.Name, StageName, CloseDate, Amount, Type, Deal_Reg__c, Deal_Reg__r.Name, (Select id, AccountTo.Name from OpportunityPartnersFrom where IsPrimary =: true limit 1), (Select Id, Partner_Type__c from Opportunity_Partners__r where Is_Primary__c = true and Partner_Type__c in ('Reseller', 'Tech Partner', 'System Integrator', 'Distributor', 'Deal Reg')) from Opportunity Where Account.Domain__c =: dealReg.End_Customer_Domain__c AND isClosed =: false]){
+            
+            for(Opportunity opp : [Select Id, Name, AccountId, Account.Name, OwnerId, Owner.Name, StageName, CloseDate, Amount, Type, Deal_Reg__c, Deal_Reg__r.Name, (Select id, AccountTo.Name from OpportunityPartnersFrom where IsPrimary =: true limit 1), (Select Id, Opportunity__c, Account__c, Is_Primary__c, Partner_Type__c from Opportunity_Partners__r where Partner_Type__c in ('Reseller', 'Tech Partner', 'System Integrator', 'Distributor', 'Deal Reg')) from Opportunity Where Account.Domain__c =: dealReg.End_Customer_Domain__c AND isClosed =: false]){
                 oppList.add(opp);
                 Map<String, Opportunity_Partner__c> mapOppPartners = new Map<String, Opportunity_Partner__c>();
+                List<Opportunity_Partner__c> existingDRs = new List<Opportunity_Partner__c>();
                 for(Opportunity_Partner__c op: opp.Opportunity_Partners__r){
-                    if(!mapOppPartners.containsKey(op.Partner_Type__c)){
+                    
+                    if(op.Is_Primary__c && !mapOppPartners.containsKey(op.Partner_Type__c)){
                         mapOppPartners.put(op.Partner_Type__c, op);
                     }
+                    if(op.Partner_Type__c == 'Deal Reg'){
+                        existingDRs.add(op);
+                        
+                    }
+                    if(op.Opportunity__c != null && op.Partner_Type__c != null && op.Account__c != null){
+                        oppPartTypetoOppPartID.put('' + op.Opportunity__c + op.Account__c + op.Partner_Type__c, op.Id);
+                    }
+                }
+                if(!existingDRs.isEmpty()){
+                    existingdealReg.put(opp.Id, existingDRs);
                 }
                 if(!mapOppPartners.isEmpty()){
                     mapOpptoOppPart.put(opp.Id, mapOppPartners);
@@ -164,15 +179,26 @@ public class DealRegConversionController {
     public void createOpportunityPartner(id accId, id OppId,String partnerProgram){
         
         List<Opportunity_Partner__c> oppPartnerlst = new List<Opportunity_Partner__c>();
-        oppPartnerlst.add(getOppPartner(accId, OppId, dealReg.Partner_Category__c == 'Partner-Distributor' ? 'Distributor' : dealReg.Partner_Category__c == 'Partner-Integrator' ? 'System Integrator' : dealReg.Partner_Category__c == 'Technology Partner'? 'Tech Partner' : 'Reseller',partnerProgram));
-        oppPartnerlst.add(getOppPartner(accId, OppId, 'Deal Reg',partnerProgram));
+        Opportunity_Partner__c nonDRpartner = getOppPartner(accId, OppId, dealReg.Partner_Category__c == 'Partner-Distributor' ? 'Distributor' : dealReg.Partner_Category__c == 'Partner-Integrator' ? 'System Integrator' : dealReg.Partner_Category__c == 'Technology Partner'? 'Tech Partner' : 'Reseller',partnerProgram);
+        if(nonDRpartner != null){
+            oppPartnerlst.add(nonDRpartner);
+        }
+        Opportunity_Partner__c DRpartner = getOppPartner(accId, OppId, 'Deal Reg',partnerProgram);
+        if(DRpartner != null){
+            oppPartnerlst.add(DRpartner);
+        }
         insert oppPartnerlst;
 
-        Map<String, Opportunity_Partner__c> existingOppPartners = mapOpptoOppPart.containskey(oppId) ? mapOpptoOppPart.get(oppId) : new Map<String, Opportunity_Partner__c>();
+        /*Map<String, Opportunity_Partner__c> existingOppPartners = existingdealReg.containskey(oppId) ? existingdealReg.get(oppId) : new Map<String, Opportunity_Partner__c>();
         if(!existingOppPartners.isEmpty() && existingOppPartners.containsKey('Deal Reg')){
             List<Opportunity_Partner__c> lsttoDelete = new List<Opportunity_Partner__c>();
             lsttoDelete.add(existingOppPartners.get('Deal Reg'));
             DeleteOpportunityPartner.deleteopppart(lsttoDelete);
+        }*/
+        
+        List<Opportunity_Partner__c> existingDRlst = existingdealReg.containskey(oppId) ? existingdealReg.get(oppId) : new List<Opportunity_Partner__c>();
+        if(!existingDRlst.isEmpty()){
+            DeleteOpportunityPartner.deleteopppart(existingDRlst);
         }
         /*
         Partner oppPartner = new Partner();
@@ -184,6 +210,10 @@ public class DealRegConversionController {
     }
     public Opportunity_Partner__c getOppPartner(id accId, id OppId, String parttype,String partnerProgram){
         Map<String, Opportunity_Partner__c> existingOppPartners = mapOpptoOppPart.containskey(oppId) ? mapOpptoOppPart.get(oppId) : new Map<String, Opportunity_Partner__c>();
+        String oppparttype = '' + OppId + accId + parttype;
+        if(oppparttype != null && oppparttype != '' && oppPartTypetoOppPartID != null && !oppPartTypetoOppPartID.isEmpty() && oppPartTypetoOppPartID.containsKey(oppparttype) && parttype != 'Deal Reg'){
+            return null;
+        }
         
         Opportunity_Partner__c oppPartner = new Opportunity_Partner__c();
         oppPartner.Account__c = accId;

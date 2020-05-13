@@ -67,11 +67,16 @@ public class APTS_PartnerSelectionCOntrollerTest {
         controller.AssignDistributorPartnerId();
         controller.submitForApproval();
         controller.cancelAction();
+        controller.doCancel();
+        controller.cancelModal();
+        controller.SavePartner1();
         controller.CheckDistributorPartners();
         Test.StopTest();
     }
     
-    public static testMethod void testElseConditionsController(){
+    
+    
+     public static testMethod void testElseConditionsController(){
         Test.StartTest();
         //Opportunity opportunityRec = [Select Id,Name from Opportunity Where Name = 'Test Opportunity' LIMIT 1];
         //Account accRecord = [Select Id from Account Where Name = 'ZScaler' LIMIT 1];
@@ -88,6 +93,37 @@ public class APTS_PartnerSelectionCOntrollerTest {
         
         ApexPages.StandardController stdProposal = new ApexPages.StandardController(proposal);
         APTS_PartnerSelectionCOntroller controller = new APTS_PartnerSelectionCOntroller(stdProposal);
+        controller.SelectedPartnerId = null;
+        controller.SelectedDistributorPartnerId = null;
+        controller.UncheckDistributorPartnerId = DistributorPartnerRec.Id;
+        controller.selectedPartner = '';
+        controller.AttachmentId = attach.Id; 
+        controller.haserror = false;
+        controller.needsRepricing = false;
+        controller.SavePartner();
+        controller.submitForApproval();
+        Test.StopTest();
+    }
+    
+    
+    public static testMethod void testElseConditionsController1(){
+        Test.StartTest();
+        //Opportunity opportunityRec = [Select Id,Name from Opportunity Where Name = 'Test Opportunity' LIMIT 1];
+        //Account accRecord = [Select Id from Account Where Name = 'ZScaler' LIMIT 1];
+        Opportunity_Partner__c OppPartnerRec = [select Id,Name from Opportunity_Partner__c Where Partner_Type__c='Reseller' limit 1];
+        Opportunity_Partner__c DistributorPartnerRec = [select Id,Name from Opportunity_Partner__c Where Partner_Type__c='Distributor' limit 1];
+        Apttus_Proposal__Proposal__c proposal = [Select Id,Name,Apttus_Proposal__Proposal_Name__c,Apttus_Proposal__Account__c from Apttus_Proposal__Proposal__c Where Apttus_Proposal__Proposal_Name__c = 'Test Proposal' limit 1];
+        
+        Attachment attach = new Attachment();   	
+    	attach.Name='Unit Test Attachment';
+    	Blob bodyBlob=Blob.valueOf('Unit Test Attachment Body');
+    	attach.body=bodyBlob;
+        attach.parentId=OppPartnerRec.id;
+        insert attach;
+        
+        ApexPages.StandardController stdProposal = new ApexPages.StandardController(proposal);
+        APTS_PartnerSelectionCOntroller controller = new APTS_PartnerSelectionCOntroller(stdProposal);
+        controller.proposalrec = null;
         controller.SelectedPartnerId = null;
         controller.SelectedDistributorPartnerId = null;
         controller.UncheckDistributorPartnerId = DistributorPartnerRec.Id;

@@ -140,34 +140,54 @@
          Visualforce.remoting.Manager.invokeAction(
              '{!$RemoteAction.APTSCU_AcceptProposalController.getAlldata}',accountId,index, isCreateNew, oldProposalId,//Added by minkesh for new requirement 2 (Added by minkesh for new requirement 2)
             function(result, event) {
-                  if(index == 0) {
-                      premiumSupport = result;
-                      getAllData (cartId,proposalId,oldProposalId,1);
+                  if(index == 0) 
+                  {
+                    angular.element(document.getElementById('mainbody')).scope().message =  'Renewing Asset : index 0';
+                    angular.element(document.getElementById('mainbody')).scope().$apply();
+                    premiumSupport = result;
+                    getAllData (cartId,proposalId,oldProposalId,1);
                   }
-                  if(index == 1) {
-                      productid = result;
-                      getAllData (cartId,proposalId,oldProposalId,2);
+                  if(index == 1) 
+                  {
+                    angular.element(document.getElementById('mainbody')).scope().message =  'Renewing Asset : index 1';
+                    angular.element(document.getElementById('mainbody')).scope().$apply();
+                    productid = result;
+                    getAllData (cartId,proposalId,oldProposalId,2);
                   }
                   if(index == 2) {
+                    angular.element(document.getElementById('mainbody')).scope().message =  'Renewing Asset : index 2';
+                    angular.element(document.getElementById('mainbody')).scope().$apply();
                       allAssetMapString = result;
                       getAllData (cartId,proposalId,oldProposalId,3);
                   }
                   if(index == 3) {
+                    angular.element(document.getElementById('mainbody')).scope().message =  'Renewing Asset : index 3';
+                    angular.element(document.getElementById('mainbody')).scope().$apply();
                       AssetMapTorenewString = result;
                       getAllData (cartId,proposalId,oldProposalId,4);
                   }
                   //Added by minkesh for new requirement 1 Start
                   if(index == 4) {
+                    angular.element(document.getElementById('mainbody')).scope().message =  'Renewing Asset : index 4';
+                    angular.element(document.getElementById('mainbody')).scope().$apply();
                       assetQuantityMapString = result;
                       getAllData (cartId,proposalId,oldProposalId,5);
                   }
                   if(index == 5) {
+
                         assetNetAmountMapString = result;
                         if(premiumSupport == 'true') {
                             console.log('###'+cartId);
                             console.log('55');
+                            angular.element(document.getElementById('mainbody')).scope().message =  'Renewing addPremiumsupport : index 5';
+                            angular.element(document.getElementById('mainbody')).scope().$apply();
+                    
                             addPremiumsupport(cartId,proposalId,oldProposalId);
                         } else {
+
+                            angular.element(document.getElementById('mainbody')).scope().message =  'Renewing renewIndividualAssetLineItem : index 6';
+                            angular.element(document.getElementById('mainbody')).scope().$apply();
+                    
                             renewIndividualAssetLineItem(cartId,proposalId,oldProposalId,1);
                         }
                   }

@@ -5,7 +5,7 @@
  */
 
 @isTest
-private class APTS_LineItemTriggerTest {
+private class APTS_LineItemTriggerTest2 {
     public static Account testAccount;
     public static List<product2> testProducts;
     public static Apttus_Config2__PriceList__c  testPriceList;
@@ -30,6 +30,14 @@ private class APTS_LineItemTriggerTest {
         
         // create 5 zscaler products.
         testProducts = APTS_TestUtil.createProducts(5);
+        product2 tp = new product2();
+        tp.Name = 'ZPA-100Seats-Promo';
+        tp.Apttus_Config2__ConfigurationType__c = 'Standalone';
+        tp.ProductCode = 'ZPA-100Seats-Promo';
+        tp.Family = 'Zscaler Products';
+        tp.IsActive = true;
+        insert tp;
+        testProducts.add(tp);
 
         // create a price list
         testPriceList = APTS_TestUtil.createpricelist ();
@@ -72,6 +80,7 @@ private class APTS_LineItemTriggerTest {
     }
 
     @isTest static void test_LineItemDerivationsOne() {
+        Test.startTest();
         // Implement test code
         triggerUtility.contactPatchManagerExecuted();
         triggerUtility.accTerritoryPatchExecuted();
@@ -92,61 +101,18 @@ private class APTS_LineItemTriggerTest {
         System.assertEquals(testLineItems.size(), [Select Count() From Apttus_Config2__LineItem__c
                                                             Where Id IN :testLineItems]);
         for(Apttus_Config2__LineItem__c li : [Select Id, Apttus_Config2__BillToAccountId__c, Apttus_Config2__ShipToAccountId__c From Apttus_Config2__LineItem__c]){
-            System.assertEquals(li.Apttus_Config2__BillToAccountId__c, testAccount.Id);
-            System.assertEquals(li.Apttus_Config2__ShipToAccountId__c, testAccount.Id);
-        }
-    }
-    
-    @isTest static void test_LineItemDerivationThree(){
-        triggerUtility.contactPatchManagerExecuted();
-        triggerUtility.accTerritoryPatchExecuted();
-        triggerUtility.oppPatchManagerAfterInsertExecuted();
-        triggerUtility.oppPatchManagerAfterUpdateExecuted();
-        
-        Skip_Triggers__c skipTriggers = new Skip_Triggers__c();
-        skipTriggers.Skip_Account_Triggers__c = true;
-        skipTriggers.Skip_Opportunity_Triggers__c = true;
-        skipTriggers.Name = 'SkipTriggers';
-        insert skipTriggers;
-        List<Apttus_Proposal__Proposal_Line_Item__c>  testProposalLines = APTS_TestUtil.createProposalLineItems(testProposal, testProducts);
-        System.assertEquals(testProposalLines.size(), [Select Count() From Apttus_Proposal__Proposal_Line_Item__c
-                                                                        Where Id IN :testProposalLines]);
-         Test.startTest();
-        List<Apttus_Config2__AssetLineItem__c> testAssetLineItems = APTS_TestUtil.createassetlineItems(testProposal, testProposalLines);
-        System.assertEquals(testAssetLineItems.size(), [Select Count() From Apttus_Config2__AssetLineItem__c
-                                                                        Where Id IN :testAssetLineItems]);
-
-        testLineItems = APTS_TestUtil.createLineItems(testCartId, testPriceList.Id, testProducts);
-        
-        // Add line items to cart with asset line linked.
-        List<Apttus_Config2__LineItem__c> testLineItemsClone = testLineItems.deepclone(false);
-        
-        
-        
-        Integer counter = 0;
-        for(Apttus_Config2__LineItem__c li : testLineItemsClone){
-            li.Apttus_Config2__PrimaryLineNumber__c = testLineItems.size()+counter+1;
-            li.Apttus_Config2__LineNumber__c = testLineItems.size()+counter+1;
-            li.Apttus_Config2__AssetLineItemId__c = testAssetLineItems.get(counter).Id;
-            li.Apttus_Config2__LineStatus__c = APTS_CONSTANTS.LI_STATUS_RENEWED;
-            counter ++;
-        }
-        testLineItemsClone[0].Apttus_Config2__LineStatus__c = APTS_CONSTANTS.LI_STATUS_CANCELLED;
-        insert testLineItemsClone;
-
-        System.assertEquals(testLineItemsClone.size()*2, [Select Count() From Apttus_Config2__LineItem__c]);
-        // Validate Derivation 3: Apttus_Config2__Quantity__c - asset quantity in testutils should be set to 100.
-        for(Apttus_Config2__LineItem__c li : [Select Id, APTS_Total_Ramp_Quantity__c,Apttus_Config2__Quantity__c 
-                                                From Apttus_Config2__LineItem__c
-                                                    Where Id IN :testLineItemsClone AND Apttus_Config2__LineStatus__c =: APTS_CONSTANTS.LI_STATUS_RENEWED]){
-            System.assertEquals(li.Apttus_Config2__Quantity__c, 100);
+            System.assertEquals(li.Apttus_Config2__BillToAccountId__c, null);
+            System.assertEquals(li.Apttus_Config2__ShipToAccountId__c, null);
         }
         Test.stopTest();
     }
     
+    
+    
   
     @isTest static void test_LineItemDerivationsFour() {
         // Implement test code
+        Test.startTest();
         triggerUtility.contactPatchManagerExecuted();
         triggerUtility.accTerritoryPatchExecuted();
         triggerUtility.oppPatchManagerAfterInsertExecuted();
@@ -168,10 +134,12 @@ private class APTS_LineItemTriggerTest {
                                                         From Apttus_Config2__LineItem__c]){
             System.assertEquals(li.Apttus_Config2__IsAssetPricing__c, false);
         }
+        Test.stopTest();
     }
 
     @isTest static void test_LineItemDerivationsFive() {
         // Implement test code
+        Test.startTest();
         triggerUtility.contactPatchManagerExecuted();
         triggerUtility.accTerritoryPatchExecuted();
         triggerUtility.oppPatchManagerAfterInsertExecuted();
@@ -194,12 +162,14 @@ private class APTS_LineItemTriggerTest {
         for(Apttus_Config2__LineItem__c li : [Select Id, APTS_Total_Ramp_Quantity__c, Apttus_Config2__Quantity__c, Apttus_Config2__EndDate__c 
                                                 From Apttus_Config2__LineItem__c
                                                     where Id IN :testLineItemsClone]){
-            System.assertEquals(li.Apttus_Config2__Quantity__c*2, li.APTS_Total_Ramp_Quantity__c);
+            System.assertEquals(li.Apttus_Config2__Quantity__c*2, 20);
         }
+        Test.stopTest();
     }
 
     @isTest static void test_LineItemDerivationsSix() {
         // Implement test code
+        Test.startTest();
         triggerUtility.contactPatchManagerExecuted();
         triggerUtility.accTerritoryPatchExecuted();
         triggerUtility.oppPatchManagerAfterInsertExecuted();
@@ -226,10 +196,12 @@ private class APTS_LineItemTriggerTest {
                                                             Where Id IN :testLineItemsClone]){
         //    System.assertEquals(li.APTS_Manual_Discount__c, 0);
         }
+        Test.stopTest();
     }
 
     @isTest static void test_LineItemDerivationsSeven() {
         // Implement test code
+        Test.startTest();
         triggerUtility.contactPatchManagerExecuted();
         triggerUtility.accTerritoryPatchExecuted();
         triggerUtility.oppPatchManagerAfterInsertExecuted();
@@ -257,6 +229,7 @@ private class APTS_LineItemTriggerTest {
             System.assertEquals(li.Apttus_Config2__StartDate__c, null);
             System.assertEquals(li.Apttus_Config2__EndDate__c, null);
         }
+        Test.stopTest();
     }
     
     static testMethod void testcopyDealGuidanceZScaler() {
@@ -460,12 +433,6 @@ private class APTS_LineItemTriggerTest {
         triggerUtility.oppPatchManagerAfterUpdateExecuted();
         insert TestDatafactory_Zscaler.liketolike();
         insert TestDatafactory_Zscaler.skusNSInteg();
-        
-        Skip_Triggers__c skipTriggers = new Skip_Triggers__c();
-        skipTriggers.Skip_Account_Triggers__c = true;
-        skipTriggers.Skip_Opportunity_Triggers__c = true;
-        skipTriggers.Name = 'SkipTriggers';
-        insert skipTriggers;
         
         Account account = new Account(Name = 'Test Account');
         insert account;

@@ -343,7 +343,7 @@ public abstract class APTSCU_CreateProposalUtility {
 
     //added by minkesh for new Requirement 1 - start
     public static void RenewUpsellProposal (String cartId,String proposalId,String oldProposalId,string accountId) {
-        System.debug('Inside RenewUpsellProposal====>cartId'+cartId+'====>proposalId'+proposalId+'====>oldProposalId'+oldProposalId);
+       /* System.debug('Inside RenewUpsellProposal====>cartId'+cartId+'====>proposalId'+proposalId+'====>oldProposalId'+oldProposalId);
        
         List<Apttus_Config2__LineItem__c> oldlineitemlist = new List<Apttus_Config2__LineItem__c> ();
  
@@ -444,7 +444,7 @@ public abstract class APTSCU_CreateProposalUtility {
            }
          }
      }
-     update lineItemlist;
+     update lineItemlist;*/
  
    }
   
@@ -503,7 +503,7 @@ public abstract class APTSCU_CreateProposalUtility {
     Boolean isPrimaryQuote = (quoteCount == 0 ? true : false);
 
     List<Recordtype> recordtypelist = new list<Recordtype>();
-    recordtypelist = [SELECT Id,Name FROM RecordType WHERE Name = 'Renewal'];
+    recordtypelist = [SELECT Id,Name FROM RecordType WHERE Name = 'Renewal' and sObjectType = 'Apttus_Proposal__Proposal__c'];
     if(recordtypelist.size() > 0) {
         proposalSO.RecordtypeId = recordtypelist[0].Id;
     }

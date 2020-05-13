@@ -52,7 +52,9 @@ private class APTSCU_AcceptProposalControllerTest
         
         primaryprop = APTS_TestUtil.createproposal(opp.id,acc.id,pricelist.id,true);
         String prdId = APTS_TestUtil.createProduct (); 
-        APTS_TestUtil.createassetlineItems ( prop.Id,acc.id,prdId,null );
+        Apttus_Config2__AssetLineItem__c asset = APTS_TestUtil.createassetlineItems ( prop.Id,acc.id,prdId,null );
+        asset.Apttus_Config2__NetPrice__c = 239;
+        update asset;
         
         Apttus__APTS_Admin__c testAdmin = new Apttus__APTS_Admin__c(Name = 'Generate Document Email Template');
         testAdmin.Apttus__Value__c = 'Zscaler Proposal';
@@ -64,6 +66,16 @@ private class APTSCU_AcceptProposalControllerTest
         testOpptyPartner.OpportunityId = opp.Id;
         //testOpptyPartner.Role = 'Vendor';
         insert testOpptyPartner;
+        
+        
+        Opportunity_Partner__c partner1 = new Opportunity_Partner__c();
+        partner1.Is_Primary__c = true;
+        partner1.Partner_Program__c = 'Partner Summit';
+        partner1.Account__c = acc1.Id;
+        partner1.Opportunity__c = opp.Id;
+        partner1.Partner_Type__c = 'Reseller';
+        partner1.Approval_Status__c = 'Approved';
+        insert partner1;
         
     }
     
@@ -97,7 +109,7 @@ private class APTSCU_AcceptProposalControllerTest
         TriggerUtility.prospectTypeUpdExecuted();
         //opp.APTS_Primary_Proposal__c=NULL;
         //update opp;
-        newProposalId = APTSCU_AcceptProposalController.createRenewalOpportunity(prop.id,acc.id,opp.id,acc.id);
+        newProposalId = APTSCU_AcceptProposalController.createRenewalOpportunity(prop.id,acc.id,opp.id,acc.id).split('::')[0];
      
         
         
@@ -116,18 +128,19 @@ private class APTSCU_AcceptProposalControllerTest
         TriggerUtility.prospectTypeUpdExecuted();
         Product2 prod= new Product2(name='ZScaler Product',productcode='ZCES-SUP-PREM', family = 'Zscaler Products');
         insert prod;
-        String str1 = APTSCU_AcceptProposalController.getAlldata(acc.id, 0);
-        String str2 = APTSCU_AcceptProposalController.getAlldata(acc.id, 1);
-        String str3 = APTSCU_AcceptProposalController.getAlldata(acc.id, 2);
-        String str4 = APTSCU_AcceptProposalController.getAlldata(acc.id, 3);
-        String str5 = APTSCU_AcceptProposalController.getAlldata(acc.id, 4);
+        String str1 = APTSCU_AcceptProposalController.getAlldata(acc.id, 0,false, String.valueOf(prop.Id));
+        String str2 = APTSCU_AcceptProposalController.getAlldata(acc.id, 1,false, String.valueOf(prop.Id));
+        String str3 = APTSCU_AcceptProposalController.getAlldata(acc.id, 2,false, String.valueOf(prop.Id));
+        String str4 = APTSCU_AcceptProposalController.getAlldata(acc.id, 3,false, String.valueOf(prop.Id));
+        String str5 = APTSCU_AcceptProposalController.getAlldata(acc.id, 4,false, String.valueOf(prop.Id));
+        String str6 = APTSCU_AcceptProposalController.getAlldata(acc.id, 5,false, String.valueOf(prop.Id));
         List<Product2> listOfProd = APTS_TestUtil.createProducts(2);
         List<Apttus_Config2__LineItem__c> listOfLineItem = APTS_TestUtil.createLineItems(cartId, pricelist.Id, listOfProd);
         Apttus_Proposal__Proposal_Line_Item__c testPli = APTS_TestUtil.createProposalLineItem (prop.Id, listOfProd[0].id);
         Apttus_Config2__AssetLineItem__c  testAli = APTS_TestUtil.createassetlineItems(prop.Id, acc.Id, listOfProd[0].id, testPli.Id);
-        Boolean flag1 = APTSCU_AcceptProposalController.renewIndividualAssetLineItem(2, cartId, str3, str4, str5);
-        Boolean flag2 = APTSCU_AcceptProposalController.renewIndividualAssetLineItem(3, cartId, str3, str4, str5);
-        Boolean flag3 = APTSCU_AcceptProposalController.renewIndividualAssetLineItem(4, cartId, str3, str4, str5);
+        Boolean flag1 = APTSCU_AcceptProposalController.renewIndividualAssetLineItem(2, cartId, str3, str4, str5,  String.valueOf(prop.Id), str6);
+        Boolean flag2 = APTSCU_AcceptProposalController.renewIndividualAssetLineItem(3, cartId, str3, str4, str5,  String.valueOf(prop.Id), str6);
+        Boolean flag3 = APTSCU_AcceptProposalController.renewIndividualAssetLineItem(4, cartId, str3, str4, str5,  String.valueOf(prop.Id), str6);
         Test.stopTest();
     }
     
@@ -158,6 +171,8 @@ Update standardPricebook;
         update listOfLineItem;
         APTSCU_AcceptProposalController controller = new APTSCU_AcceptProposalController();
         APTSCU_AcceptProposalController.finalizeProposal(cartId,controller.templateId);
+        //APTSCU_AcceptProposalController.makePrimary(String.ValueOf(Prop.Id));
+       
         Test.stopTest();
     }
     

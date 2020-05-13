@@ -60,6 +60,8 @@ public class OpportunityPartnerControllerTest {
         OpportunityPartnerController.updatePartnerProgram(OppPartner.Id, 'Partner Summit',Opp.Id );
         
         OpportunityPartnerController.SavePartnerRec(OppPartner.Opportunity__c,JsonString,'POV');
+        OpportunityPartnerController.SavePartnerRec(OppPartner.Opportunity__c,JsonString,'Architecture Workshop');
+        OpportunityPartnerController.SavePartnerRec(OppPartner.Opportunity__c,JsonString,'Deal Reg');
         OpportunityPartnerController.UpdatePrimaryPartner(OppPartner.Id,'POV',Opp.Id);
         
         OpportunityPartnerController.UuncheckPrimaryPartner(OppPartner.Id, 'POV',Opp.Id );

@@ -127,7 +127,7 @@ public class DealRegConversionControllerTest{
         controller.contactConversion();
         controller.updateDealStatustoConverted();
         controller.updateDealStatustoExpired(deal.id);
-        controller.createOpportunityPartner(accInsertList[1].Id, Opp.id);        
+        controller.createOpportunityPartner(accInsertList[1].Id, Opp.id,'Partner Summit');        
         //controller.leadConversion(le.Id);  
         controller.leadConversionWithAccAndOpp(le.id, accInsertList[0].Id, opp.Id);  
         controller.selectedOppId = opp.Id;

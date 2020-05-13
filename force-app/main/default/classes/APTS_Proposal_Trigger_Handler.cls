@@ -1090,7 +1090,10 @@ public class APTS_Proposal_Trigger_Handler{
             proposalSOTobeUpdated.ThreatLabz_Service_SKU_Count__c = 0;
             proposalSOTobeUpdated.Included_DAS_Package__c = '';
             proposalSOTobeUpdated.Is_ZPA_100_Seats_Promo_Present__c = 0;
-
+            // CR# 312 | Parth - Start
+            proposalSOTobeUpdated.CSPM_Approval_Required__c = false;
+            // CR# 312 | Parth - End
+            
             // Executive Proposal Fields
             proposalSOTobeUpdated.Subscription_to_Zscaler_Internet_Access__c = 0;
             proposalSOTobeUpdated.Subscription_to_Zscaler_Private_Access__c = 0;
@@ -1120,7 +1123,15 @@ public class APTS_Proposal_Trigger_Handler{
                 && proposalLinesList.size() > 0)
             {
                 for(Apttus_Proposal__Proposal_Line_Item__c pliSO : proposalLinesList)
-                {
+                {    
+                    // CR# 312 - Parth - Start
+                    if(pliSo.APTS_Product_Code__c == APTS_CONSTANTS.PROD_SKU_ZCSPM_CLOUD_INFRA_PRE 
+                        || pliSo.APTS_Product_Code__c == APTS_CONSTANTS.PROD_SKU_ZCSPM_OS_HARDENING_PRE 
+                        || pliSo.APTS_Product_Code__c == APTS_CONSTANTS.PROD_SKU_ZCSPM_K8_HARDENING_PRE
+                        || pliSo.APTS_Product_Code__c == APTS_CONSTANTS.PROD_SKU_ZCSPM_SAAS_PRE){
+                        proposalSOTobeUpdated.CSPM_Approval_Required__c = true;
+                    }
+                    // CR# 312 - Parth - End
 
                     if(!pliSO.Apttus_QPConfig__IsPrimaryLine__c && pliSO.Apttus_QPConfig__PriceGroup__c != null
                             && pliSO.Apttus_QPConfig__PriceGroup__c == 'Price Ramp')

@@ -118,6 +118,13 @@ public with sharing class APTS_CONSTANTS {
     public static final String PROD_SKU_ZB2B_BUS_PRE          =   'ZB2B-BUS-PRE';
     //CR# 238 - Minkesh  - End
     
+    //CR# 312 - Parth - Start
+    public static final String PROD_SKU_ZCSPM_CLOUD_INFRA_PRE = 'ZCSPM-CLOUD-INFRA-PRE';
+    public static final String PROD_SKU_ZCSPM_OS_HARDENING_PRE = 'ZCSPM-OS-HARDENING-PRE';
+    public static final String PROD_SKU_ZCSPM_K8_HARDENING_PRE = 'ZCSPM-K8-HARDENING-PRE';
+    public static final String PROD_SKU_ZCSPM_SAAS_PRE = 'ZCSPM-SAAS-PRE';
+    //CR# 312 - Parth - End
+    
     
     //Added New Pre Sku : Gurjinder : Start
     public static final String DATA_PROTECTION_BUNDLE       =   'ZDATA-PROT-BUNDLE-PRE';

@@ -145,7 +145,7 @@ public without sharing class APTS_LineItemUtils_Master {
 
 
         List<Apttus_Config2__ProductConfiguration__c> productConfigList = new List<Apttus_Config2__ProductConfiguration__c> ();
-
+        
         productConfigList = [Select Id, Apttus_Config2__ShipToAccountId__c, Apttus_Config2__BillToAccountId__c, Apttus_Config2__BillToAccountId__r.Name,
                                        Apttus_Config2__AccountId__c, APTS_Record_Type__c, Apttus_Config2__ExpectedStartDate__c,
                                        Apttus_Config2__ExpectedEndDate__c, APTS_Asset_SKU__c, Apttus_QPConfig__Proposald__c, Apttus_QPConfig__Proposald__r.OwnerID,
@@ -164,6 +164,7 @@ public without sharing class APTS_LineItemUtils_Master {
                                                       AND Apttus_Config2__LineStatus__c != :APTS_CONSTANTS.LI_STATUS_CANCELLED)
                                             From Apttus_Config2__ProductConfiguration__c
                                                 Where Id IN :configIdSet];
+
         // get all the product configuration SO for the given lines.
         if(isAfter != true) {
             for(Apttus_Config2__ProductConfiguration__c pConfig : productConfigList ){

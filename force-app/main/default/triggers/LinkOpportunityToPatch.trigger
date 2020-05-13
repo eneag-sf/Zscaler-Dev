@@ -45,13 +45,21 @@ trigger LinkOpportunityToPatch on Opportunity (after insert, before update, afte
                 TriggerUtility.oppPatchManagerAfterUpdateExecuted();
             }
         }
-        
+        System.debug('OpportunityFieldUpdateTriggerHandler1==========>');
         If(Trigger.isBefore){
             if(Trigger.isInsert){
                 OpportunityFieldUpdateTriggerHandler.BeforeInsert(trigger.New);
             }
+            
             if(Trigger.isUpdate){
-                OpportunityFieldUpdateTriggerHandler.BeforeUpdate(trigger.New,Trigger.OldMap);
+                System.debug('OpportunityFieldUpdateTriggerHandler2==========>');
+                if (!TriggerUtility.isopportunityfieldupdate()) {
+                    System.debug('OpportunityFieldUpdateTriggerHandler3==========>');
+                    //Added by Minkesh for field update - start
+                    OpportunityFieldUpdateTriggerHandler.BeforeUpdate(trigger.New,Trigger.OldMap);
+                }
+                    // OpportunityFieldUpdateTriggerHandler.BeforeUpdate(trigger.New,Trigger.OldMap); //commented by Minkesh to resollve 101 soql issue
+                    //Added by Minkesh for field update - end
                 UpdateIncumbentPartners.BeforeUpdate(trigger.New,Trigger.OldMap);
             } 
         }

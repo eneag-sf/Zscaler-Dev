@@ -308,7 +308,9 @@ public class APTSCU_AssetUtils {
               liSO.Apttus_Config2__PricingStatus__c = 'Pending';
               //system.debug('# asset: '+asset);
               // Added By Minkesh for requirement 1
-              liSO.APTS_Manual_Discount__c = assetNetAmountMap.get(string.valueOf(asset.Apttus_Config2__ProductId__c).substring(0,15));//asset.Adjustment_Amount__c;
+              if(assetNetAmountMap!=null){
+              liSO.APTS_Manual_Discount__c = assetNetAmountMap.get(string.valueOf(asset.Apttus_Config2__ProductId__c).substring(0,15));
+              }//asset.Adjustment_Amount__c;
               //liSO.APTS_Manual_Discount__c =  asset.APTS_Total_Discount_Percentage__c - asset.APTS_New_Logo_Disc__c - asset.APTS_Deal_Reg_Disc__c;
               //system.debug('@@@assetQuantityMap'+assetQuantityMap);
               //system.debug('string.valueOf(asset.Apttus_Config2__ProductId__c).substring(0,15)' +string.valueOf(asset.Apttus_Config2__ProductId__c).substring(0,15));
@@ -316,7 +318,7 @@ public class APTSCU_AssetUtils {
               // Update: HE, 01/04/2017 - populate the ramp end date on renewal line item.
               liSO.APTS_Ramp_End_Date__c = prodConfig.Apttus_QPConfig__Proposald__r.Apttus_Proposal__ExpectedEndDate__c;
               // Added By Minkesh for requirement 1 -start
-              if(oldProposalId == allAssetMap.get(assetActDO.AssetLineItemId).Apttus_QPConfig__ProposalId__c) {
+              if(oldProposalId!=null && oldProposalId == allAssetMap.get(assetActDO.AssetLineItemId).Apttus_QPConfig__ProposalId__c) {
                 liSO.Apttus_Config2__AdjustmentType__c = 'Price Override';
                 //if(asset.Apttus_QPConfig__ProposalLineItemId__r.Apttus_QPConfig__NetPrice__c != null) {
                     liSO.APTS_Manual_Discount__c = assetNetAmountMap.get(string.valueOf(asset.Apttus_Config2__ProductId__c).substring(0,15));

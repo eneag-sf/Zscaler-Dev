@@ -25,7 +25,7 @@ public with sharing class APTS_PricingHelper {
         Decimal adjustedtotalDiscountAmt = 0;
         Double  totalDiscountAmt = 0;
 
-      /*  if (liSO.APTS_Partner_Disc__c != null) {
+        /*if (liSO.APTS_Partner_Disc__c != null) {
             partnerDiscountPct = liSO.APTS_Partner_Disc__c;
         }
 

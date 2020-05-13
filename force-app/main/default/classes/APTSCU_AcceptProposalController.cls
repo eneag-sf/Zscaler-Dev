@@ -97,7 +97,8 @@ public class APTSCU_AcceptProposalController {
          // Added By Minkesh for requirement 2 -start
          List<Apttus_Config2__AssetLineItem__c> newAssetList = new List<Apttus_Config2__AssetLineItem__c>();
          for(Apttus_Config2__AssetLineItem__c asset : assetLineItems) {
-             if(string.valueof(asset.Apttus_QPConfig__ProposalId__c).substring(0,15) == proposalId.substring(0,15)) {
+             if(asset.Apttus_QPConfig__ProposalId__c != null && proposalId != null 
+                 && string.valueof(asset.Apttus_QPConfig__ProposalId__c).substring(0,15) == proposalId.substring(0,15)) {
                  newAssetList.add(asset);
              }
          }
@@ -414,7 +415,13 @@ public class APTSCU_AcceptProposalController {
                     clonedOpp.Name = clonedOpp.Name + ' - Renew';
                 }*/
                 //added by minkesh for new Requirement 2 - end
-                
+                // CR# 253 : Correct Opportunity Type start
+                 List<Recordtype> recordtypelist = new list<Recordtype>();
+                 recordtypelist = [SELECT Id FROM RecordType WHERE DeveloperName = 'Renewal_Opportunity' AND sObjectType = 'Opportunity'];
+                 if(recordtypelist.size() > 0) {
+                     clonedOpp.RecordtypeId = recordtypelist[0].Id;
+                 }
+                 // CR# 253 : Correct Opportunity Type end
                 clonedOpp.Name = clonedOpp.Name + ' - Renew';
                 clonedOpp.APTS_Primary_Proposal_Lookup__c = null;
                 clonedOpp.NextStep = null;
@@ -955,7 +962,7 @@ public class APTSCU_AcceptProposalController {
     //added by minkesh for new Requirement 1 - start
     @RemoteAction
     public static void RenewUpsellProposal (string cartId, string proposalId, string oldProposalId,string accountId) {
-        APTSCU_CreateProposalUtility.RenewUpsellProposal(cartId,proposalId,oldProposalId,accountId);
+        //APTSCU_CreateProposalUtility.RenewUpsellProposal(cartId,proposalId,oldProposalId,accountId);
     }
     //added by minkesh for new Requirement 1 - end
 
@@ -972,7 +979,7 @@ public class APTSCU_AcceptProposalController {
     @RemoteAction
     public static void generateDocument(String proposalId, String apiServerURL, String templateId,String sessionId) {
 
-        APTSCU_CreateProposalUtility.generateDocument(proposalId,apiServerURL,templateId,sessionId);
+        //APTSCU_CreateProposalUtility.generateDocument(proposalId,apiServerURL,templateId,sessionId);
     }
 
      @RemoteAction
